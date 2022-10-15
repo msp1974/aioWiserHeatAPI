@@ -48,10 +48,19 @@ TEXT_WEEKENDS = "Weekends"
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 WEEKENDS = ["Saturday", "Sunday"]
 SPECIAL_DAYS = [TEXT_WEEKDAYS, TEXT_WEEKENDS]
-SPECIAL_TIMES = {"Sunrise":3000, "Sunset": 4000}
+SPECIAL_TIMES = {"Sunrise": 3000, "Sunset": 4000}
 
 # Battery Level Enum
-TRV_BATTERY_LEVEL_MAPPING = { 3.0:100, 2.9:80, 2.8:60, 2.7:40, 2.6:20, 2.5:10, 2.4:5, 2.3:0 }
+TRV_BATTERY_LEVEL_MAPPING = {
+    3.0: 100,
+    2.9: 80,
+    2.8: 60,
+    2.7: 40,
+    2.6: 20,
+    2.5: 10,
+    2.4: 5,
+    2.3: 0,
+}
 
 # Wiser Hub Rest Api URL Constants
 WISERHUBURL = "http://{}/data/v2/"
@@ -76,22 +85,27 @@ class WiserUnitsEnum(enum.Enum):
     imperial = "imperial"
     metric = "metric"
 
+
 class WiserAwayActionEnum(enum.Enum):
     off = TEXT_OFF
     nochange = TEXT_NO_CHANGE
+
 
 class WiserShutterAwayActionEnum(enum.Enum):
     close = TEXT_CLOSE
     nochange = TEXT_NO_CHANGE
 
+
 class WiserDeviceModeEnum(enum.Enum):
     auto = TEXT_AUTO
     manual = TEXT_MANUAL
+
 
 class WiserHeatingModeEnum(enum.Enum):
     off = TEXT_OFF
     auto = TEXT_AUTO
     manual = TEXT_MANUAL
+
 
 class WiserScheduleTypeEnum(enum.Enum):
     heating = TEXT_HEATING
@@ -100,12 +114,13 @@ class WiserScheduleTypeEnum(enum.Enum):
     lighting = TEXT_LIGHTING
     shutters = TEXT_SHUTTERS
 
+
 DEFAULT_LEVEL_SCHEDULE = {
-    "Monday": {"Time":[],"Level":[]},
-    "Tuesday": {"Time":[],"Level":[]},
-    "Wednesday": {"Time":[],"Level":[]},
-    "Thursday": {"Time":[],"Level":[]},
-    "Friday": {"Time":[],"Level":[]},
-    "Saturday": {"Time":[],"Level":[]},
-    "Sunday": {"Time":[],"Level":[]}
+    "Monday": {"Time": [], "Level": []},
+    "Tuesday": {"Time": [], "Level": []},
+    "Wednesday": {"Time": [], "Level": []},
+    "Thursday": {"Time": [], "Level": []},
+    "Friday": {"Time": [], "Level": []},
+    "Saturday": {"Time": [], "Level": []},
+    "Sunday": {"Time": [], "Level": []},
 }
