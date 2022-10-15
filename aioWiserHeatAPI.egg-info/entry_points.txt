@@ -1,0 +1,2 @@
+[console_scripts]
+wiser = aioWiserHeatAPIv2.cli:main

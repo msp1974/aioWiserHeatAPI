@@ -1,0 +1,15 @@
+*.pyc
+*.yaml
+*.json
+build
+dist
+dist-issue
+wiserHeatAPIv2.egg-info
+.idea
+/t.py
+params.py
+venv
+tests/
+tests/test_yaml.py
+tests/test_api_schedule.py
+tests/test_zigbee.py
