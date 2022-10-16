@@ -1,8 +1,11 @@
+import asyncio
 from . import _LOGGER
 
-from time import sleep
 from typing import cast
-from zeroconf import AsyncServiceBrowser, AsyncServiceStateChange, AsyncZeroconf
+from zeroconf import ServiceStateChange, IPVersion
+from zeroconf.asyncio import AsyncServiceBrowser, AsyncZeroconf, AsyncServiceInfo
+
+MDNS_TIMEOUT = 2
 
 
 class _WiserDiscoveredHub(object):
@@ -32,21 +35,52 @@ class WiserDiscovery(object):
 
     def __init__(self):
         self._discovered_hubs = []
+        self.mdns_timeout = MDNS_TIMEOUT
 
-    async def _zeroconf_on_service_state_change(
+    @property
+    def mdns_timeout(self):
+        return self._mdns_timeout
+
+    @mdns_timeout.setter
+    def mdns_timeout(self, mdns_timeout):
+        self._mdns_timeout = mdns_timeout
+
+    def async_on_service_state_change(
         self,
         zeroconf: AsyncZeroconf,
         service_type: str,
         name: str,
-        state_change: AsyncServiceStateChange,
+        state_change: ServiceStateChange,
     ) -> None:
         """
         Look for Wiser Hub in discovered services and set IP and Name in
         global vars
         """
-        if state_change is AsyncServiceStateChange.Added:
+
+        loop = asyncio.get_running_loop()
+        loop.create_task(
+            self.async_parse_state_change(zeroconf, service_type, name, state_change)
+        )
+
+    async def async_parse_state_change(
+        self, zeroconf, service_type, name, state_change
+    ):
+
+        info = AsyncServiceInfo(service_type, name)
+
+        if state_change != ServiceStateChange.Removed:
+            info_success = await info.async_request(zeroconf, 3000)
+
+            if not info_success:
+                return
+
             if "WiserHeat" in name:
-                info = zeroconf.get_service_info(service_type, name)
+                if state_change == ServiceStateChange.Added:
+                    info_success = await info.async_request(zeroconf, 3000)
+
+                    if not info_success:
+                        return
+
                 if info:
                     addresses = [
                         "%s:%d" % (addr, cast(int, info.port))
@@ -74,17 +108,21 @@ class WiserDiscovery(object):
         """
         timeout = 0
 
-        zeroconf = AsyncZeroconf()
+        self.aioZeroConf = AsyncZeroconf(ip_version=IPVersion.V4Only)
         services = ["_http._tcp.local."]
-        AsyncServiceBrowser(
-            zeroconf, services, handlers=[self._zeroconf_on_service_state_change]
+        self.aioBrowser = AsyncServiceBrowser(
+            self.aioZeroConf.zeroconf,
+            services,
+            handlers=[self.async_on_service_state_change],
         )
 
-        while (
-            len(self._discovered_hubs) < 1 or timeout < min_search_time * 10
-        ) and timeout < max_search_time * 10:
-            sleep(0.1)
-            timeout += 1
-
-        zeroconf.close()
+        if self.mdns_timeout > 0:
+            await asyncio.sleep(self.mdns_timeout)
+            await self.async_close()
         return self._discovered_hubs
+
+    async def async_close(self) -> None:
+        assert self.aioZeroConf is not None
+        assert self.aioBrowser is not None
+        await self.aioBrowser.async_cancel()
+        await self.aioZeroConf.async_close()
