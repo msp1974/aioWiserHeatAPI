@@ -5,11 +5,5 @@ build
 dist
 dist-issue
 aioWiserHeatAPI.egg-info
-.idea
-/t.py
-params.py
 venv
 tests/
-tests/test_yaml.py
-tests/test_api_schedule.py
-tests/test_zigbee.py
