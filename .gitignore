@@ -4,7 +4,7 @@
 build
 dist
 dist-issue
-wiserHeatAPIv2.egg-info
+aioWiserHeatAPI.egg-info
 .idea
 /t.py
 params.py
