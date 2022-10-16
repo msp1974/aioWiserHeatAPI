@@ -20,9 +20,9 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=["zeroconf>=0.37.0","aiofiles"],
-    python_requires='>=3.9',
-    entry_points = {
-        'console_scripts': ['wiser = aioWiserHeatAPI.cli:main'],
-    }
+    install_requires=["zeroconf", "aiofiles", "pyyaml"],
+    python_requires=">=3.10",
+    entry_points={
+        "console_scripts": ["wiser = aioWiserHeatAPI.cli:main"],
+    },
 )
