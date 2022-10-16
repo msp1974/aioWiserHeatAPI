@@ -63,6 +63,7 @@ class WiserAPI(object):
         self,
         host: str,
         secret: str,
+        port: Optional[int] = 80,
         session: Optional[aiohttp.ClientSession] = None,
         units: Optional[WiserUnitsEnum] = WiserUnitsEnum.metric,
     ):
@@ -75,6 +76,7 @@ class WiserAPI(object):
         # Set connection params
         self._wiser_api_connection.host = host
         self._wiser_api_connection.secret = secret
+        self._wiser_api_connection.port = port
         self._wiser_api_connection.units = units
 
         # Hub Data

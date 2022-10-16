@@ -1,11 +1,8 @@
-from email import header
-from unittest.mock import patch
 from . import _LOGGER
 
 from .const import (
     REST_TIMEOUT,
     WISERHUBDOMAIN,
-    WISERHUBNETWORK,
     WISERHUBSCHEDULES,
     WiserUnitsEnum,
 )
@@ -19,21 +16,15 @@ from .exceptions import (
 import asyncio
 import aiohttp
 import enum
-import json
-import logging
-import re
-from typing import Any, Optional, cast
 
-# import requests
-# from requests.adapters import HTTPAdapter
-# from requests.packages.urllib3.util.retry import Retry
-# import urllib3
+from typing import Any, Optional, cast
 
 # Connection info class
 class _WiserConnectionInfo(object):
     def __init(self):
         self.host = None
         self.secret = None
+        self.port = None
         self.units = WiserUnitsEnum.metric
 
 
@@ -95,7 +86,11 @@ class _WiserRestController(object):
             response = cast(
                 aiohttp.ClientResponse,
                 await getattr(self._session, action.value)(
-                    url.format(self._wiser_connection_info.host), **kwargs
+                    url.format(
+                        self._wiser_connection_info.host,
+                        self._wiser_connection_info.port,
+                    ),
+                    **kwargs,
                 ),
             )
 
