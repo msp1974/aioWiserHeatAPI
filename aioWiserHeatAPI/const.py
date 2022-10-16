@@ -15,7 +15,17 @@ TEMP_OFF = -20
 ROOMSTAT_MIN_BATTERY_LEVEL = 1.7
 ROOMSTAT_FULL_BATTERY_LEVEL = 2.7
 TRV_FULL_BATTERY_LEVEL = 3.0
-TRV_MIN_BATTERY_LEVEL = 2.4
+TRV_BATTERY_LEVEL_MAPPING = {
+    3.0: 100,
+    2.9: 80,
+    2.8: 60,
+    2.7: 40,
+    2.6: 20,
+    2.5: 10,
+    2.4: 5,
+    2.3: 0,
+}
+
 
 # Other Constants
 REST_BACKOFF_FACTOR = 1
@@ -50,20 +60,9 @@ WEEKENDS = ["Saturday", "Sunday"]
 SPECIAL_DAYS = [TEXT_WEEKDAYS, TEXT_WEEKENDS]
 SPECIAL_TIMES = {"Sunrise": 3000, "Sunset": 4000}
 
-# Battery Level Enum
-TRV_BATTERY_LEVEL_MAPPING = {
-    3.0: 100,
-    2.9: 80,
-    2.8: 60,
-    2.7: 40,
-    2.6: 20,
-    2.5: 10,
-    2.4: 5,
-    2.3: 0,
-}
 
 # Wiser Hub Rest Api URL Constants
-WISERHUBURL = "http://{}/data/v2/"
+WISERHUBURL = "http://{}:{}/data/v2/"
 WISERHUBDOMAIN = WISERHUBURL + "domain/"
 WISERHUBNETWORK = WISERHUBURL + "network/"
 WISERHUBSCHEDULES = WISERHUBURL + "schedules/"
