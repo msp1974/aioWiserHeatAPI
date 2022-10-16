@@ -223,7 +223,7 @@ class _WiserDeviceCollection(object):
         """
         Gets a device object from the devices id
         param id: id of device
-        return: _WiserSmartValve, _Wiser_RoomStat or _WiserSmartPlug object
+        return: Any of _WiserSmartValve, _WiserRoomStat, _WiserHeatingActuator, _WiserUFHController, _WiserSmartPlug, _WiserLight, _WiserDimmableLight, _WiserShutter objects
         """
         try:
             return [device for device in self.all if device.id == id][0]
@@ -234,7 +234,7 @@ class _WiserDeviceCollection(object):
         """
         Gets a list of devices belonging to the room id
         param room_id: the id of the room
-        return: _WiserSmartValve, _Wiser_RoomStat or _WiserSmartPlug object
+        return: Any of _WiserSmartValve, _WiserRoomStat, _WiserHeatingActuator, _WiserUFHController, _WiserSmartPlug, _WiserLight, _WiserDimmableLight, _WiserShutter objects
         """
         try:
             return [device for device in self.all if device.room_id == room_id]
@@ -245,7 +245,7 @@ class _WiserDeviceCollection(object):
         """
         Gets a device object from the devices zigbee node id
         param node_id: zigbee node id of device
-        return: _WiserSmartValve, _Wiser_RoomStat or _WiserSmartPlug object
+        return: Any of _WiserSmartValve, _WiserRoomStat, _WiserHeatingActuator, _WiserUFHController, _WiserSmartPlug, _WiserLight, _WiserDimmableLight, _WiserShutter objects
         """
         try:
             return [device for device in self.all if device.node_id == node_id][0]
@@ -256,7 +256,7 @@ class _WiserDeviceCollection(object):
         """
         Gets a device object from the devices serial number
         param node_id: serial number of device
-        return: _WiserSmartValve, _Wiser_RoomStat or _WiserSmartPlug object
+        return: Any of _WiserSmartValve, _WiserRoomStat, _WiserHeatingActuator, _WiserUFHController, _WiserSmartPlug, _WiserLight, _WiserDimmableLight, _WiserShutter objects
         """
         try:
             return [
@@ -269,7 +269,7 @@ class _WiserDeviceCollection(object):
         """
         Gets a list of device from the devices zigbee parent node id
         param node_id: zigbee parent node id of device
-        return: List of _WiserSmartValve, _Wiser_RoomStat or _WiserSmartPlug object
+        return: Any of _WiserSmartValve, _WiserRoomStat, _WiserHeatingActuator, _WiserUFHController, _WiserSmartPlug, _WiserLight, _WiserDimmableLight, _WiserShutter objects
         """
         try:
             return [device for device in self.all if device.parent_node_id == node_id]
