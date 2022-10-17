@@ -1,6 +1,4 @@
-from concurrent.futures.process import _threads_wakeups
 import aiofiles
-import enum
 import json
 import time
 from datetime import datetime, timedelta
@@ -224,7 +222,7 @@ class _WiserSchedule(object):
         return self._remove_schedule_elements(self._schedule_data.copy())
 
     @property
-    def _ws_schedule_data(self) -> dict:
+    def ws_schedule_data(self) -> dict:
         """Get formatted schedule data for webservice support"""
         s = self._remove_schedule_elements(
             self._convert_from_wiser_schedule(self.schedule_data, generic_setpoint=True)
