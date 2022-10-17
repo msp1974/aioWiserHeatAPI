@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="aioWiserHeatAPI",
-    version="0.0.1",
+    version="0.1.0",
     author="Mark Parker",
     author_email="msparker@sky.com",
     description="An AsyncIO API for controlling the Drayton Wiser Heating system",
