@@ -1,8 +1,14 @@
+import inspect
 from . import _LOGGER
 
 from .helpers.device import _WiserElectricalDevice
 from .helpers.misc import is_value_in_list
-from .const import TEXT_UNKNOWN, WiserShutterAwayActionEnum, WiserDeviceModeEnum
+from .const import (
+    TEXT_UNKNOWN,
+    WISERDEVICE,
+    WiserShutterAwayActionEnum,
+    WiserDeviceModeEnum,
+)
 
 
 class _WiserLiftMovementRange(object):
@@ -41,6 +47,33 @@ class _WiserLiftMovementRange(object):
 
 class _WiserShutter(_WiserElectricalDevice):
     """Class representing a Wiser Shutter device"""
+
+    async def _send_command(self, cmd: dict, device_level: bool = False):
+        """
+        Send control command to the smart plug
+        param cmd: json command structure
+        return: boolen - true = success, false = failed
+        """
+        if device_level:
+            result = await self._wiser_rest_controller._send_command(
+                WISERDEVICE.format(self.id), cmd
+            )
+            if result:
+                self._data = result
+        else:
+            result = await self._wiser_rest_controller._send_command(
+                self._endpoint.format(self.shutter_id), cmd
+            )
+            if result:
+                self._device_type_data = result
+        if result:
+            _LOGGER.debug(
+                "Wiser smart plug - {} command successful".format(
+                    inspect.stack()[1].function
+                )
+            )
+            return True
+        return False
 
     @property
     def available_away_mode_actions(self):
