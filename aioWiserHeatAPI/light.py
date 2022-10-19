@@ -1,6 +1,7 @@
+import inspect
 from . import _LOGGER
 
-from .const import TEXT_ON, TEXT_OFF, TEXT_UNKNOWN, WiserDeviceModeEnum
+from .const import TEXT_ON, TEXT_OFF, TEXT_UNKNOWN, WISERDEVICE, WiserDeviceModeEnum
 from .helpers.device import _WiserElectricalDevice
 
 
@@ -27,6 +28,33 @@ class _WiserOutputRange(object):
 
 class _WiserLight(_WiserElectricalDevice):
     """Class representing a Wiser Light device"""
+
+    async def _send_command(self, cmd: dict, device_level: bool = False):
+        """
+        Send control command to the smart plug
+        param cmd: json command structure
+        return: boolen - true = success, false = failed
+        """
+        if device_level:
+            result = await self._wiser_rest_controller._send_command(
+                WISERDEVICE.format(self.id), cmd
+            )
+            if result:
+                self._data = result
+        else:
+            result = await self._wiser_rest_controller._send_command(
+                self._endpoint.format(self.light_id), cmd
+            )
+            if result:
+                self._device_type_data = result
+        if result:
+            _LOGGER.debug(
+                "Wiser smart plug - {} command successful".format(
+                    inspect.stack()[1].function
+                )
+            )
+            return True
+        return False
 
     @property
     def control_source(self) -> str:
