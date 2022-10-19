@@ -48,6 +48,10 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
+### 0.1.2
+
+* Fixed calling wrong enpoint id for lights and shutters
+
 ### 0.1.0
 
 * Initial asyncio release
