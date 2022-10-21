@@ -992,13 +992,18 @@ class _WiserScheduleCollection(object):
 
     def get_by_name(
         self, schedule_type: WiserScheduleTypeEnum, name: str
-    ) -> _WiserSchedule:
+    ) :
         """
         Gets a schedule object from the schedules name
         (room name, smart plug name, hotwater)
         param name: name of schedule
         return: _WiserSchedule object
         """
+        if schedule_type in [
+            WiserScheduleTypeEnum.lighting,
+            WiserScheduleTypeEnum.shutters,
+        ]:
+            schedule_type = WiserScheduleTypeEnum.level
         try:
             if schedule_type == WiserScheduleTypeEnum.level:
                 return [
@@ -1009,7 +1014,7 @@ class _WiserScheduleCollection(object):
             return [
                 schedule
                 for schedule in self.all
-                if schedule.schedule_type == schedule_type and schedule.name == name
+                if schedule.schedule_type == schedule_type.value and schedule.name == name
             ][0]
         except IndexError:
             return None
