@@ -1,15 +1,29 @@
 import inspect
 from .. import _LOGGER
 
-from ..const import TEXT_UNKNOWN, WISERDEVICE, WiserAwayActionEnum, WiserDeviceModeEnum, WiserShutterAwayActionEnum
+from ..const import (
+    TEXT_UNKNOWN,
+    WISERDEVICE,
+    WiserAwayActionEnum,
+    WiserDeviceModeEnum,
+    WiserShutterAwayActionEnum,
+)
 from ..helpers.misc import is_value_in_list
 from ..helpers.signal import _WiserSignalStrength
 from ..rest_controller import _WiserRestController
 
+
 class _WiserDevice(object):
     """Class representing a wiser heating device"""
 
-    def __init__(self, wiser_rest_controller: _WiserRestController, endpoint: str, data: dict, device_type_data: dict, schedule: dict = None):
+    def __init__(
+        self,
+        wiser_rest_controller: _WiserRestController,
+        endpoint: str,
+        data: dict,
+        device_type_data: dict,
+        schedule: dict = None,
+    ):
         self._data = data
         self._device_type_data = device_type_data
         self._wiser_rest_controller = wiser_rest_controller
@@ -22,11 +36,15 @@ class _WiserDevice(object):
         return: boolen - true = success, false = failed
         """
         if device_level:
-            result = await self._wiser_rest_controller._send_command(WISERDEVICE.format(self.id), cmd)
+            result = await self._wiser_rest_controller._send_command(
+                WISERDEVICE.format(self.id), cmd
+            )
             if result:
                 self._data = result
         else:
-            result = await self._wiser_rest_controller._send_command(self._endpoint.format(self.id), cmd)
+            result = await self._wiser_rest_controller._send_command(
+                self._endpoint.format(self.id), cmd
+            )
             if result:
                 self._device_type_data = result
         if result:
@@ -37,7 +55,7 @@ class _WiserDevice(object):
             )
             return True
         return False
- 
+
     @property
     def device_lock_enabled(self) -> bool:
         """Get or set device lock"""
@@ -52,7 +70,7 @@ class _WiserDevice(object):
     def device_type_id(self) -> int:
         """Get the device id for the specific device type"""
         return self._data.get("id")
-    
+
     @property
     def identify(self) -> bool:
         """Get or set if the identify function is enabled"""
@@ -127,12 +145,22 @@ class _WiserDevice(object):
     def signal(self) -> _WiserSignalStrength:
         """Get zwave network information"""
         return _WiserSignalStrength(self._data)
-        
+
 
 class _WiserElectricalDevice(_WiserDevice):
     """Class representing a wiser electrical device"""
-    def __init__(self, wiser_rest_controller: _WiserRestController, endpoint: str, data: dict, device_type_data: dict, schedule: dict):
-        super().__init__(wiser_rest_controller, endpoint, data, device_type_data, schedule)
+
+    def __init__(
+        self,
+        wiser_rest_controller: _WiserRestController,
+        endpoint: str,
+        data: dict,
+        device_type_data: dict,
+        schedule: dict,
+    ):
+        super().__init__(
+            wiser_rest_controller, endpoint, data, device_type_data, schedule
+        )
         self._schedule = schedule
 
         # Add device id to schedule
@@ -155,16 +183,23 @@ class _WiserElectricalDevice(_WiserDevice):
         """Get or set the away action of the light (off or no change)"""
         return self._device_type_data.get("AwayAction", TEXT_UNKNOWN)
 
-    async def set_away_mode_action(self, action: WiserAwayActionEnum | WiserShutterAwayActionEnum | str) -> bool:
-        if type(action) == WiserAwayActionEnum or type(action) == WiserShutterAwayActionEnum:
+    async def set_away_mode_action(
+        self, action: WiserAwayActionEnum | WiserShutterAwayActionEnum | str
+    ) -> bool:
+        if (
+            type(action) == WiserAwayActionEnum
+            or type(action) == WiserShutterAwayActionEnum
+        ):
             action = action.value
-        
+
         if is_value_in_list(action, self.available_away_mode_actions):
             if await self._send_command({"AwayAction": action}):
                 self._away_action = action
                 return True
         else:
-            raise ValueError(f"{action} is not a valid away mode action.  Valid modes are {self.available_away_mode_actions}")
+            raise ValueError(
+                f"{action} is not a valid away mode action.  Valid modes are {self.available_away_mode_actions}"
+            )
 
     @property
     def device_type_id(self) -> int:
@@ -182,7 +217,9 @@ class _WiserElectricalDevice(_WiserDevice):
         if is_value_in_list(mode, self.available_modes):
             return await self._send_command({"Mode": mode.title()})
         else:
-            raise ValueError(f"{mode} is not a valid mode.  Valid modes are {self.available_modes}")
+            raise ValueError(
+                f"{mode} is not a valid mode.  Valid modes are {self.available_modes}"
+            )
 
     @property
     def name(self) -> str:
@@ -201,4 +238,3 @@ class _WiserElectricalDevice(_WiserDevice):
     def schedule_id(self) -> int:
         """Get the schedule id for the light"""
         return self._device_type_data.get("ScheduleId")
-

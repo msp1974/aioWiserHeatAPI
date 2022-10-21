@@ -1,6 +1,5 @@
-from ..const import (
-    TEXT_UNKNOWN
-)
+from ..const import TEXT_UNKNOWN
+
 
 class _WiserFirmwareUpgradeItem:
     """Data structure for upgrade info for a Wiser Hub"""
@@ -11,7 +10,7 @@ class _WiserFirmwareUpgradeItem:
     @property
     def id(self) -> int:
         "Get the id of the firmware filename"
-        return self._data.get("id",0)
+        return self._data.get("id", 0)
 
     @property
     def filename(self) -> str:
@@ -21,6 +20,7 @@ class _WiserFirmwareUpgradeItem:
 
 class _WiserFirmareUpgradeInfo:
     """Data structure to hold upgrade file info for a Wiser Hub"""
+
     def __init__(self, data: dict):
         self._data = data
         self._items = []

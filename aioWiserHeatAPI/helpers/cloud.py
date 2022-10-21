@@ -1,6 +1,5 @@
-from ..const import (
-    TEXT_UNKNOWN
-)
+from ..const import TEXT_UNKNOWN
+
 
 class _WiserCloud:
     """Data structure for cloud information for a Wiser Hub"""
@@ -38,4 +37,3 @@ class _WiserCloud:
     def diagnostic_telemetry_enabled(self) -> bool:
         """Get if diagnostic telemetry is enabled"""
         return self._data.get("EnableDiagnosticTelemetry", False)
-

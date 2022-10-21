@@ -1,6 +1,5 @@
-from ..const import (
-    TEXT_UNKNOWN
-)
+from ..const import TEXT_UNKNOWN
+
 
 class _WiserZigbee:
     """Data structure for zigbee information for a Wiser Hub"""
@@ -12,7 +11,7 @@ class _WiserZigbee:
     def error_72_reset(self) -> int:
         """Get error72reset info"""
         return self._data.get("Error72Reset", 0)
-    
+
     @property
     def jpan_count(self) -> int:
         """Get jpan count info"""

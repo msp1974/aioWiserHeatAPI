@@ -1,7 +1,5 @@
-from ..const import (
-    TEXT_UNKNOWN,
-    WISERHUBNETWORK
-)
+from ..const import TEXT_UNKNOWN, WISERHUBNETWORK
+
 
 class _WiserDetectedNetwork:
     """Data structure for detected network"""
@@ -12,7 +10,7 @@ class _WiserDetectedNetwork:
     @property
     def ssid(self) -> str:
         return self._data.get("SSID")
-    
+
     @property
     def channel(self) -> int:
         return self._data.get("Channel")
@@ -106,7 +104,7 @@ class _WiserNetwork:
     def signal_rssi(self) -> int:
         """Get the wifi signal rssi value"""
         return self._data.get("RSSI", {}).get("Current", 0)
-    
+
     @property
     def signal_rssi_min(self) -> int:
         """Get the wifi signal min rssi value"""
@@ -127,7 +125,9 @@ class _WiserNetwork:
         """Get the ssid of the wifi network the hub is connected to"""
         return self._data.get("SSID", TEXT_UNKNOWN)
 
-    async def connect_to_network(self, ssid: str, password: str, channel: int = None, security_mode: str = None):
+    async def connect_to_network(
+        self, ssid: str, password: str, channel: int = None, security_mode: str = None
+    ):
         """
         Connect hub to wifi network
         param ssid: wifi network ssid
@@ -146,5 +146,7 @@ class _WiserNetwork:
 
         if security_mode:
             cmd_data["SecurityMode"] = security_mode
-        
-        return await self._wiser_rest_controller._send_command(f"{WISERHUBNETWORK}/Station", cmd_data)
+
+        return await self._wiser_rest_controller._send_command(
+            f"{WISERHUBNETWORK}/Station", cmd_data
+        )
