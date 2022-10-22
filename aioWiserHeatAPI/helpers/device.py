@@ -165,7 +165,7 @@ class _WiserElectricalDevice(_WiserDevice):
 
         # Add device id to schedule
         if self._schedule:
-            self._schedule._assignments.append({"id": self.id, "name": self.name})
+            self._schedule._assignments.append({"id": self.device_type_id, "name": self.name})
             self._schedule._device_ids.append(self.id)
 
     @property
