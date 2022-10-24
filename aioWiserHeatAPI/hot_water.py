@@ -127,9 +127,7 @@ class _WiserHotwater(object):
             mode = mode.value
 
         if is_value_in_list(mode, self.available_modes):
-            print(f"Sendign command")
             result = await self._send_command({"Mode": mode.title()})
-            print(result)
             if result:
                 self._mode = mode
                 return True
