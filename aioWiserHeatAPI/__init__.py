@@ -1,7 +1,7 @@
 name = "aioWiserHeatAPI"
 __all__ = ["wiserAPI", "wiserDiscovery"]
 
-__VERSION__ = "0.1.5"
+__VERSION__ = "0.1.6"
 
 import logging
 
