@@ -50,7 +50,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ### 0.1.5
 
-* Add ALL as special day option in schedule file for settign schedules from file
+* Add ALL as special day option in schedule file for setting schedules from file
 
 ### 0.1.4
 
