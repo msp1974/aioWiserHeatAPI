@@ -134,7 +134,6 @@ class _WiserRestController(object):
                 f"Connection timed out trying to communicate with Wiser Hub {self._wiser_connection_info.host}"
             )
         elif raise_for_endpoint_error:
-            self._session.close()
             raise WiserHubRESTError(
                 f"Unknown error getting communicating with Wiser Hub {self._wiser_connection_info.host}.  Error code is: {response.status}"
             )
