@@ -15,6 +15,7 @@ from .const import (
     SPECIAL_TIMES,
     TEMP_MINIMUM,
     TEMP_OFF,
+    TEXT_ALL,
     TEXT_DEGREESC,
     TEXT_HEATING,
     TEXT_LEVEL,
@@ -139,9 +140,12 @@ class _WiserSchedule(object):
                         if day.title() == TEXT_WEEKDAYS:
                             for weekday in WEEKDAYS:
                                 schedule_output.update({weekday: schedule_day})
-                        if day.title() == TEXT_WEEKENDS:
+                        elif day.title() == TEXT_WEEKENDS:
                             for weekend_day in WEEKENDS:
                                 schedule_output.update({weekend_day: schedule_day})
+                        elif day.title() == TEXT_ALL:
+                            for day in WEEKDAYS + WEEKENDS:
+                                schedule_output.update({day: schedule_day})
                     else:
                         schedule_output.update({day: schedule_day})
             return schedule_output

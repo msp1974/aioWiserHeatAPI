@@ -53,11 +53,12 @@ TEXT_TIME = "Time"
 TEXT_UNKNOWN = "Unknown"
 TEXT_WEEKDAYS = "Weekdays"
 TEXT_WEEKENDS = "Weekends"
+TEXT_ALL = "All"
 
 # Day Value Lists
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 WEEKENDS = ["Saturday", "Sunday"]
-SPECIAL_DAYS = [TEXT_WEEKDAYS, TEXT_WEEKENDS]
+SPECIAL_DAYS = [TEXT_WEEKDAYS, TEXT_WEEKENDS, TEXT_ALL]
 SPECIAL_TIMES = {"Sunrise": 3000, "Sunset": 4000}
 
 
