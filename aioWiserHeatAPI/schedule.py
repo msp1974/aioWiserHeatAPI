@@ -326,7 +326,7 @@ class _WiserSchedule(object):
             )
             return True
         except Exception as ex:
-            _LOGGER.error(f"Error copying schedule: {ex}")
+            _LOGGER.error(f"Error setting schedule: {ex}")
             return False
 
     async def set_schedule_from_file(self, schedule_file: str) -> bool:
@@ -355,6 +355,26 @@ class _WiserSchedule(object):
                 )
         except Exception as ex:
             _LOGGER.error(f"Error setting schedule from file: {ex}")
+            return False
+
+    async def set_schedule_from_yaml_data(self, schedule_data: str) -> bool:
+        """
+        Set new schedule
+        param scheduleData: json data respresenting a schedule
+        return: boolen - true = successfully set, false = failed to set
+        """
+        try:
+            schedule_data = yaml.load(schedule_data, SafeLoader)
+            if self._validate_schedule_type(schedule_data):
+                    schedule = self._convert_to_wiser_schedule(schedule_data)
+                    await self.set_schedule(schedule)
+                    return True
+            else:
+                _LOGGER.error(
+                    f"This is an incorrect schedule type for this device.  It should be a {self.schedule_type} schedule."
+                )
+        except Exception as ex:
+            _LOGGER.error(f"Error setting schedule from yaml data: {ex}")
             return False
 
     async def set_schedule_from_yaml_file(self, schedule_yaml_file: str) -> bool:
