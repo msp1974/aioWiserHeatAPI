@@ -1,5 +1,6 @@
 import inspect
 from datetime import datetime
+from typing import Union
 from . import _LOGGER
 
 from .devices import _WiserDeviceCollection
@@ -214,7 +215,7 @@ class _WiserRoom(object):
         """Get or set current mode for the room (Off, Manual, Auto)"""
         return self._mode
 
-    async def set_mode(self, mode: WiserHeatingModeEnum | str) -> bool:
+    async def set_mode(self, mode: Union[WiserHeatingModeEnum, str]) -> bool:
         if type(mode) == WiserHeatingModeEnum:
             mode = mode.value
 

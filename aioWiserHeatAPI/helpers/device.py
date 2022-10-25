@@ -1,4 +1,5 @@
 import inspect
+from typing import Union
 from .. import _LOGGER
 
 from ..const import (
@@ -165,7 +166,9 @@ class _WiserElectricalDevice(_WiserDevice):
 
         # Add device id to schedule
         if self._schedule:
-            self._schedule._assignments.append({"id": self.device_type_id, "name": self.name})
+            self._schedule._assignments.append(
+                {"id": self.device_type_id, "name": self.name}
+            )
             self._schedule._device_ids.append(self.id)
 
     @property
@@ -184,7 +187,7 @@ class _WiserElectricalDevice(_WiserDevice):
         return self._device_type_data.get("AwayAction", TEXT_UNKNOWN)
 
     async def set_away_mode_action(
-        self, action: WiserAwayActionEnum | WiserShutterAwayActionEnum | str
+        self, action: Union[WiserAwayActionEnum, WiserShutterAwayActionEnum, str]
     ) -> bool:
         if (
             type(action) == WiserAwayActionEnum
@@ -211,7 +214,7 @@ class _WiserElectricalDevice(_WiserDevice):
         """Get or set the current mode of the light (Manual or Auto)"""
         return self._device_type_data.get("Mode", TEXT_UNKNOWN)
 
-    async def set_mode(self, mode: WiserDeviceModeEnum | str) -> bool:
+    async def set_mode(self, mode: Union[WiserDeviceModeEnum, str]) -> bool:
         if type(mode) == WiserDeviceModeEnum:
             mode = mode.value
         if is_value_in_list(mode, self.available_modes):

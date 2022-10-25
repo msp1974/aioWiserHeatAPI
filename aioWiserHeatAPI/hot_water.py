@@ -1,4 +1,5 @@
 import inspect
+from typing import Union
 from . import _LOGGER
 
 from datetime import datetime
@@ -122,7 +123,7 @@ class _WiserHotwater(object):
         except KeyError:
             return None
 
-    async def set_mode(self, mode: WiserDeviceModeEnum | str):
+    async def set_mode(self, mode: Union[WiserDeviceModeEnum, str]):
         if type(mode) == WiserDeviceModeEnum:
             mode = mode.value
 
