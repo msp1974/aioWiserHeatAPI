@@ -1,9 +1,13 @@
-# Drayton Wiser Hub API Async v0.1.6
+# Drayton Wiser Hub API Async v0.1.7
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
 The API functionality provides the following functionality to control the wiser heating system for 1,2 and 3 channel heat hubs
 The API also supports Smart Plugs and initial basic functionality for Shutter and Lights
+
+## Requirements
+
+Requires a minimum of Python v3.9
 
 ## Installation
 
@@ -47,6 +51,11 @@ To help understand the api simply look at the test sample code ```tests/test_api
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+
+### 0.1.7
+
+* Fixed error intiallising WiserUFHController class
+* Made python3.9 compatible
 
 ### 0.1.6
 
