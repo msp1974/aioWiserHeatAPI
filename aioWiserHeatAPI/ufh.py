@@ -28,11 +28,12 @@ class _WiserUFHController(_WiserDevice):
     def __init__(
         self,
         wiser_rest_controller: _WiserRestController,
+        endpoint: str,
         data: dict,
         device_type_data: dict,
         schedule: dict = None,
     ):
-        super().__init__(wiser_rest_controller, data, device_type_data)
+        super().__init__(wiser_rest_controller, endpoint, data, device_type_data)
         self._relays = []
         self.build_relay_collection(self._device_type_data.get("Relays", []))
 
