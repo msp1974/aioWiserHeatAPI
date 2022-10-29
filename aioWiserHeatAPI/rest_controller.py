@@ -95,7 +95,7 @@ class _WiserRestController(object):
             )
 
             if not response.ok:
-                self._process_nok_response(response, raise_for_endpoint_error)
+                self._process_nok_response(response, url, raise_for_endpoint_error)
             else:
                 #    if action == WiserRestActionEnum.GET:
                 if len(await response.text()) > 0:
@@ -107,19 +107,22 @@ class _WiserRestController(object):
 
         except asyncio.TimeoutError as ex:
             raise WiserHubConnectionError(
-                f"Connection timeout trying to communicate with Wiser Hub {self._wiser_connection_info.host}.  Error is {ex}"
+                f"Connection timeout trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             )
         except aiohttp.ClientResponseError as ex:
             raise WiserHubConnectionError(
-                f"Response error trying to communicate with Wiser Hub {self._wiser_connection_info.host}.  Error is {ex}"
+                f"Response error trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             )
         except aiohttp.ClientConnectorError as ex:
             raise WiserHubConnectionError(
-                f"Connection error trying to communicate with Wiser Hub {self._wiser_connection_info.host}.  Error is {ex}"
+                f"Connection error trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             )
 
     def _process_nok_response(
-        self, response: aiohttp.ClientResponse, raise_for_endpoint_error: bool = True
+        self,
+        response: aiohttp.ClientResponse,
+        url: str,
+        raise_for_endpoint_error: bool = True,
     ):
         if response.status == 401:
             raise WiserHubAuthenticationError(
@@ -127,18 +130,16 @@ class _WiserRestController(object):
             )
         elif response.status == 404 and raise_for_endpoint_error:
             raise WiserHubRESTError(
-                f"Rest endpoint not found on Wiser Hub {self._wiser_connection_info.host}"
+                f"Rest endpoint not found on Wiser Hub {self._wiser_connection_info.host} for url {url}"
             )
         elif response.status == 408:
             raise WiserHubConnectionError(
-                f"Connection timed out trying to communicate with Wiser Hub {self._wiser_connection_info.host}"
+                f"Connection timed out trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}"
             )
         elif raise_for_endpoint_error:
             raise WiserHubRESTError(
-                f"Unknown error getting communicating with Wiser Hub {self._wiser_connection_info.host}.  Error code is: {response.status}"
+                f"Unknown error getting communicating with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error code is: {response.status}"
             )
-        else:
-            print("Error of the Unknown kind!")
 
     async def _get_hub_data(self, url: str, raise_for_endpoint_error: bool = True):
         """Get data from hub"""
