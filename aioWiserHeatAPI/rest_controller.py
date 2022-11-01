@@ -1,3 +1,4 @@
+import json
 from . import _LOGGER
 
 from .const import (
@@ -98,9 +99,10 @@ class _WiserRestController(object):
             if not response.ok:
                 self._process_nok_response(response, url, raise_for_endpoint_error)
             else:
-                if len(await response.content) > 0:
-                    response = re.sub(rb"[^\x20-\x7F]+", b"", response.content)
-                    return await response.json()
+                content = await response.content.read()
+                if len(content) > 0:
+                    response = re.sub(rb"[^\x20-\x7F]+", b"", content)
+                    return json.loads(response)
                 else:
                     return {}
             return {}
