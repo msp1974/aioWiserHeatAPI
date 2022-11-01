@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v0.1.9
+# Drayton Wiser Hub API Async v0.1.8
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -52,13 +52,10 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
-### 0.1.9
-
-* Fix for unicode decode error
-
 ### 0.1.8
 
 * Add url to exception messages
+* Fix for unicode decode error
 
 ### 0.1.7
 
