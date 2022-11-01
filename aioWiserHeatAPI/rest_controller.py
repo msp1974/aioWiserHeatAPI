@@ -16,6 +16,7 @@ from .exceptions import (
 import asyncio
 import aiohttp
 import enum
+import re
 
 from typing import Any, Optional, cast
 
@@ -97,9 +98,8 @@ class _WiserRestController(object):
             if not response.ok:
                 self._process_nok_response(response, url, raise_for_endpoint_error)
             else:
-                #    if action == WiserRestActionEnum.GET:
-                if len(await response.text()) > 0:
-                    # response = re.sub(rb'[^\x20-\x7F]+', b'', response.content.iter_any())
+                if len(await response.content) > 0:
+                    response = re.sub(rb"[^\x20-\x7F]+", b"", response.content)
                     return await response.json()
                 else:
                     return {}
