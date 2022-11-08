@@ -109,7 +109,7 @@ class _WiserRestController(object):
 
         except asyncio.TimeoutError as ex:
             raise WiserHubConnectionError(
-                f"Connection timeout trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
+                f"Connection timeout trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}"
             )
         except aiohttp.ClientResponseError as ex:
             raise WiserHubConnectionError(
