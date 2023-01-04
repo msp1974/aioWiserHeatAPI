@@ -14,3 +14,9 @@ def is_value_in_list(value: str, item_list: list) -> bool:
         if value.casefold() == item.casefold():
             return True
     return False
+
+
+def is_valid_level(level: int) -> bool:
+    if level >= 0 and level <= 100:
+        return True
+    return False
