@@ -71,6 +71,11 @@ class _WiserRestController(object):
         return: boolean
         """
 
+        url = url.format(
+            self._wiser_connection_info.host,
+            self._wiser_connection_info.port,
+        )
+
         kwargs = {
             "headers": {
                 "SECRET": self._wiser_connection_info.secret,
@@ -88,16 +93,15 @@ class _WiserRestController(object):
             response = cast(
                 aiohttp.ClientResponse,
                 await getattr(self._session, action.value)(
-                    url.format(
-                        self._wiser_connection_info.host,
-                        self._wiser_connection_info.port,
-                    ),
+                    url,
                     **kwargs,
                 ),
             )
 
             if not response.ok:
-                self._process_nok_response(response, url, raise_for_endpoint_error)
+                self._process_nok_response(
+                    response, url, data, raise_for_endpoint_error
+                )
             else:
                 content = await response.content.read()
                 if len(content) > 0:
@@ -124,6 +128,7 @@ class _WiserRestController(object):
         self,
         response: aiohttp.ClientResponse,
         url: str,
+        data: dict,
         raise_for_endpoint_error: bool = True,
     ):
         if response.status == 401:
@@ -140,7 +145,7 @@ class _WiserRestController(object):
             )
         elif raise_for_endpoint_error:
             raise WiserHubRESTError(
-                f"Unknown error getting communicating with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error code is: {response.status}"
+                f"Unknown error communicating with Wiser Hub {self._wiser_connection_info.host} for url {url} with data {data}.  Error code is: {response.status}"
             )
 
     async def _get_hub_data(self, url: str, raise_for_endpoint_error: bool = True):
