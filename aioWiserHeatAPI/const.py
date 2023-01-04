@@ -11,6 +11,7 @@ TEMP_HW_ON = 110
 TEMP_HW_OFF = -20
 TEMP_OFF = -20
 
+
 # Battery Constants
 ROOMSTAT_MIN_BATTERY_LEVEL = 1.7
 ROOMSTAT_FULL_BATTERY_LEVEL = 2.7
@@ -84,6 +85,16 @@ WISERLIGHT = "Light/{}"
 class WiserUnitsEnum(enum.Enum):
     imperial = "imperial"
     metric = "metric"
+
+
+class WiserTempLimitsEnum(enum.Enum):
+    heating = {"min": 5, "max": 30, "off": -20, "type": "range"}
+    current = {"min": -19, "max": 99, "off": -20, "type": "range"}
+    hotwater = {"on": 110, "off": -20, "type": "onoff"}
+    boostDelta = {"min": 0, "max": 5, "type": "range"}
+    floorHeatingMin = {"min": 5, "max": 39, "off": -20, "type": "range"}
+    floorHeatingMax = {"min": 5, "max": 40, "off": -20, "type": "range"}
+    floorHeatingOffset = {"min": -9, "max": 9, "type": "range"}
 
 
 class WiserAwayActionEnum(enum.Enum):

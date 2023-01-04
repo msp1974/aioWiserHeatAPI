@@ -7,6 +7,7 @@ from ..const import (
     TEMP_HW_ON,
     MAX_BOOST_INCREASE,
     WiserUnitsEnum,
+    WiserTempLimitsEnum,
 )
 
 
@@ -17,7 +18,7 @@ class _WiserTemperatureFunctions(object):
     @staticmethod
     def _to_wiser_temp(
         temp: float,
-        type: str = "set_heating",
+        type: str = "heating",
         units: WiserUnitsEnum = WiserUnitsEnum.metric,
     ) -> int:
         """
@@ -37,7 +38,7 @@ class _WiserTemperatureFunctions(object):
     @staticmethod
     def _from_wiser_temp(
         temp: int,
-        type: str = "set_heating",
+        type: str = "heating",
         units: WiserUnitsEnum = WiserUnitsEnum.metric,
     ) -> float:
         """
@@ -61,7 +62,15 @@ class _WiserTemperatureFunctions(object):
         return None
 
     @staticmethod
-    def _validate_temperature(temp: float, type: str = "set_heating") -> float:
+    def _is_valid_temp(self, temp: float, hw: bool = False) -> bool:
+        if hw and temp in [TEMP_HW_ON, TEMP_HW_OFF]:
+            return True
+        elif temp == TEMP_OFF or (temp >= TEMP_MINIMUM and temp <= TEMP_MAXIMUM):
+            return True
+        return False
+
+    @staticmethod
+    def _validate_temperature(temp: float, type: str = "heating") -> float:
         """
         Validates temperature value is in range of Wiser Hub allowed values
         Sets to min or max temp if value exceeds limits
@@ -69,32 +78,24 @@ class _WiserTemperatureFunctions(object):
         return: float
         """
 
-        # Accomodate hw temps
-        if type == "hotwater" and temp in [TEMP_HW_ON, TEMP_HW_OFF]:
-            return temp
+        # Get limits type
+        limits = WiserTempLimitsEnum[type].value
+        if limits.get("type") == "onoff":
+            if temp in [limits.get("on"), limits.get("off")]:
+                return temp
+            return limits.get("off")
 
-        # Accomodate temp deltas
-        if type == "delta":
-            if temp > MAX_BOOST_INCREASE:
-                return MAX_BOOST_INCREASE
-            return temp
-
-        # Accomodate reported current temps
-        if type == "current":
-            if temp < TEMP_OFF:
-                return TEMP_MINIMUM
-            return temp
-
-        # Accomodate heating temps
-        if type == "set_heating":
+        if limits.get("type") == "range":
             if temp >= TEMP_ERROR:
-                return TEMP_MINIMUM
-            elif temp > TEMP_MAXIMUM:
-                return TEMP_MAXIMUM
-            elif temp < TEMP_MINIMUM and temp != TEMP_OFF:
-                return TEMP_MINIMUM
+                return limits.get("min")
+            elif temp > limits.get("max"):
+                return limits.get("max")
+            elif temp < limits.get("min") and temp != limits.get("off", TEMP_OFF):
+                return limits.get("min")
             else:
                 return temp
+
+        raise ValueError("Invalid temperature type for validation")
 
     @staticmethod
     def _convert_from_F(temp: float) -> float:

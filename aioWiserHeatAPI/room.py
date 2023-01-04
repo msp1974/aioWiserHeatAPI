@@ -359,7 +359,7 @@ class _WiserRoom(object):
                 "RequestOverride": {
                     "Type": "Boost",
                     "DurationMinutes": duration,
-                    "IncreaseSetPointBy": tf._to_wiser_temp(inc_temp, "delta"),
+                    "IncreaseSetPointBy": tf._to_wiser_temp(inc_temp, "boostDelta"),
                 }
             }
         )
