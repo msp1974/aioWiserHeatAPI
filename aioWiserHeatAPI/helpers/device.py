@@ -50,7 +50,7 @@ class _WiserDevice(object):
                 self._device_type_data = result
         if result:
             _LOGGER.debug(
-                "Wiser smart plug - {} command successful".format(
+                "Wiser device - {} command successful".format(
                     inspect.stack()[1].function
                 )
             )
