@@ -1,5 +1,5 @@
 from aioWiserHeatAPI.const import TEXT_UNKNOWN
-from .temp import _WiserTemperatureFunctions
+from .temp import _WiserTemperatureFunctions as tf
 
 
 class _WiserOpenThermBoilerParameters(object):
@@ -9,24 +9,36 @@ class _WiserOpenThermBoilerParameters(object):
         self._data = data
 
     @property
-    def hw_setpoint_transfer_enable(self) -> bool:
-        return self._data.get("dhwSetpointTransferEnable", None)
+    def ch_max_setpoint_read_write(self) -> bool:
+        return self._data.get("maxChSetpointReadWrite", None)
 
     @property
-    def ch_setpoint_transfer_enable(self) -> bool:
+    def ch_max_setpoint_transfer_enable(self) -> bool:
         return self._data.get("maxChSetpointTransferEnable", None)
+
+    @property
+    def ch_setpoint_lower_bound(self) -> bool:
+        return self._data.get("maxChSetpointLowerBound", None)
+
+    @property
+    def ch_setpoint_upper_bound(self) -> bool:
+        return self._data.get("maxChSetpointUpperBound", None)
 
     @property
     def hw_setpoint_read_write(self) -> bool:
         return self._data.get("dhwSetpointReadWrite", None)
 
     @property
-    def ch_setpoint_read_write(self) -> bool:
-        return self._data.get("maxChSetpointReadWrite", None)
+    def hw_setpoint_transfer_enable(self) -> bool:
+        return self._data.get("dhwSetpointTransferEnable", None)
 
     @property
-    def ch_setpoint_transfer_enable(self) -> bool:
-        return self._data.get("maxChSetpointTransferEnable", None)
+    def hw_setpoint_lower_bound(self) -> bool:
+        return self._data.get("dhwSetpointLowerBound", None)
+
+    @property
+    def hw_setpoint_upper_bound(self) -> bool:
+        return self._data.get("dhwSetpointUpperBound", None)
 
 
 class _WiserOpenThermOperationalData(object):
@@ -43,23 +55,21 @@ class _WiserOpenThermOperationalData(object):
     @property
     def ch_flow_temperature(self) -> str:
         """Get Ch1FlowTemperature"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
+        return tf._from_wiser_temp(
             self._data.get("Ch1FlowTemperature", None), "current"
         )
 
     @property
     def ch_return_temperature(self) -> str:
         """Get ChReturnTemperature"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
+        return tf._from_wiser_temp(
             self._data.get("ChReturnTemperature", None), "current"
         )
 
     @property
     def hw_temperature(self) -> str:
         """Get Dhw1Temperature"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
-            self._data.get("Dhw1Temperature", None), "current"
-        )
+        return tf._from_wiser_temp(self._data.get("Dhw1Temperature", None), "current")
 
     @property
     def relative_modulation_level(self) -> int:
@@ -82,14 +92,14 @@ class _WiserOpentherm(object):
     @property
     def ch_flow_active_lower_setpoint(self) -> float:
         """Get chFlowActiveLowerSetpoint"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
+        return tf._from_wiser_temp(
             self._data.get("chFlowActiveLowerSetpoint", None), "current"
         )
 
     @property
     def ch_flow_active_upper_setpoint(self) -> float:
         """Get chFlowActiveUpperSetpoint"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
+        return tf._from_wiser_temp(
             self._data.get("chFlowActiveUpperSetpoint", None), "current"
         )
 
@@ -101,9 +111,7 @@ class _WiserOpentherm(object):
     @property
     def ch1_flow_setpoint(self) -> float:
         """Get ch1FlowSetpoint"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
-            self._data.get("ch1FlowSetpoint", None), "current"
-        )
+        return tf._from_wiser_temp(self._data.get("ch1FlowSetpoint", None), "current")
 
     @property
     def ch2_flow_enabled(self) -> bool:
@@ -113,9 +121,7 @@ class _WiserOpentherm(object):
     @property
     def ch2_flow_setpoint(self) -> float:
         """Get ch2FlowSetpoint"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
-            self._data.get("ch2FlowSetpoint", None), "current"
-        )
+        return tf._from_wiser_temp(self._data.get("ch2FlowSetpoint", None), "current")
 
     @property
     def connection_status(self) -> str:
@@ -135,9 +141,7 @@ class _WiserOpentherm(object):
     @property
     def hw_flow_setpoint(self) -> float:
         """Get dhwFlowSetpoint"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
-            self._data.get("dhwFlowSetpoint", None), "current"
-        )
+        return tf._from_wiser_temp(self._data.get("dhwFlowSetpoint", None), "current")
 
     @property
     def operating_mode(self) -> str:
@@ -157,16 +161,12 @@ class _WiserOpentherm(object):
     @property
     def room_setpoint(self) -> float:
         """Get roomTemperature"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
-            self._data.get("roomSetpoint", None), "current"
-        )
+        return tf._from_wiser_temp(self._data.get("roomSetpoint", None), "current")
 
     @property
     def room_temperature(self) -> float:
         """Get roomTemperature"""
-        return _WiserTemperatureFunctions._from_wiser_temp(
-            self._data.get("roomTemperature", None), "current"
-        )
+        return tf._from_wiser_temp(self._data.get("roomTemperature", None), "current")
 
     @property
     def tracked_room_id(self) -> int:
