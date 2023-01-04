@@ -41,6 +41,7 @@ from .exceptions import (
     WiserHubConnectionError,
     WiserHubAuthenticationError,
     WiserHubRESTError,
+    WiserScheduleError,
 )
 
 from .cli import log_response_to_file
