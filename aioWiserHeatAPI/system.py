@@ -49,7 +49,9 @@ class _WiserSystem(object):
             self._system_data.get("CloudConnectionStatus"), self._data.get("Cloud", {})
         )
         self._device_data = self._get_system_device(device_data)
-        self._network_data = _WiserNetwork(network_data.get("Station", {}))
+        self._network_data = _WiserNetwork(
+            network_data.get("Station", {}), self._wiser_rest_controller
+        )
         self._opentherm_data = _WiserOpentherm(
             opentherm_data,
             self._system_data.get("OpenThermConnectionStatus", TEXT_UNKNOWN),
