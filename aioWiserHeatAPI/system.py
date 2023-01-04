@@ -53,6 +53,7 @@ class _WiserSystem(object):
             network_data.get("Station", {}), self._wiser_rest_controller
         )
         self._opentherm_data = _WiserOpentherm(
+            self._wiser_rest_controller,
             opentherm_data,
             self._system_data.get("OpenThermConnectionStatus", TEXT_UNKNOWN),
         )

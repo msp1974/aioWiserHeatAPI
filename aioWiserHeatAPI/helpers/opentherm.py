@@ -1,4 +1,5 @@
-from aioWiserHeatAPI.const import TEXT_UNKNOWN
+from ..const import WISERHUBOPENTHERM
+from ..rest_controller import _WiserRestController
 from .temp import _WiserTemperatureFunctions as tf
 
 
@@ -85,9 +86,15 @@ class _WiserOpenThermOperationalData(object):
 class _WiserOpentherm(object):
     """Data structure for Opentherm data"""
 
-    def __init__(self, data: dict, enabled_status: str):
+    def __init__(
+        self,
+        wiser_rest_controller: _WiserRestController,
+        data: dict,
+        enabled_status: str,
+    ):
         self._data = data
         self._enabled_status = enabled_status
+        self._wiser_rest_controller = wiser_rest_controller
 
     @property
     def ch_flow_active_lower_setpoint(self) -> float:
@@ -172,3 +179,9 @@ class _WiserOpentherm(object):
     def tracked_room_id(self) -> int:
         """Get TrackedRoomId"""
         return self._data.get("TrackedRoomId", None)
+
+    async def set_opentherm_parameter(self, cmd_data: str) -> bool:
+        """Allow settign of opentherm param"""
+        return await self._wiser_rest_controller._send_command(
+            f"{WISERHUBOPENTHERM}", cmd_data
+        )
