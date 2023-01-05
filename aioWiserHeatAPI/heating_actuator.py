@@ -7,8 +7,9 @@ from .rest_controller import _WiserRestController
 class _WiserTemperatureSensor:
     """Data structure for plug in temp sensor"""
 
-    def __init__(self, data: dict, wiser_rest_controller: _WiserRestController):
+    def __init__(self, data: dict, wiser_rest_controller: _WiserRestController, id):
         self._data = data
+        self._id = id
         self._wiser_rest_controller = wiser_rest_controller
 
     def _send_command(self, cmd: dict):
@@ -18,7 +19,7 @@ class _WiserTemperatureSensor:
         return: boolen - true = success, false = failed
         """
         return self._wiser_rest_controller._send_command(
-            WISERHEATINGACTUATOR.format(self.id), cmd
+            WISERHEATINGACTUATOR.format(self._id), cmd
         )
 
     @property
@@ -129,6 +130,7 @@ class _WiserHeatingActuator(_WiserDevice):
             return _WiserTemperatureSensor(
                 self._device_type_data.get("FloorTemperatureSensor", {}),
                 self._wiser_rest_controller,
+                self.id,
             )
 
     @property
