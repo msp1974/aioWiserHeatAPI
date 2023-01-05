@@ -60,7 +60,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 * Added temp sensor support for heating actuator
 * Added support for network diagnostics
 * Added support for non standard port
-* Add all boiler parameters to opentherm
+* Add boiler parameters to opentherm
 * Support setting opentherm parameters
 
 ### 0.1.8
