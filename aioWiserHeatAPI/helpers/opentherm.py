@@ -180,8 +180,8 @@ class _WiserOpentherm(object):
         """Get TrackedRoomId"""
         return self._data.get("TrackedRoomId", None)
 
-    async def set_opentherm_parameter(self, cmd_data: str) -> bool:
+    async def set_opentherm_parameter(self, endpoint: str, cmd_data: str) -> bool:
         """Allow settign of opentherm param"""
         return await self._wiser_rest_controller._send_command(
-            f"{WISERHUBOPENTHERM}", cmd_data
+            f"{WISERHUBOPENTHERM}{endpoint}", cmd_data
         )
