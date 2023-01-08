@@ -1,5 +1,5 @@
 from ..const import WISERHUBOPENTHERM
-from ..rest_controller import _WiserRestController
+from ..rest_controller import _WiserRestController, WiserRestActionEnum
 from .temp import _WiserTemperatureFunctions as tf
 
 
@@ -182,6 +182,6 @@ class _WiserOpentherm(object):
 
     async def set_opentherm_parameter(self, endpoint: str, cmd_data: str) -> bool:
         """Allow settign of opentherm param"""
-        return await self._wiser_rest_controller._send_command(
-            f"{WISERHUBOPENTHERM}{endpoint}", cmd_data
+        return await self._wiser_rest_controller._do_hub_action(
+            WiserRestActionEnum.PATCH, f"{WISERHUBOPENTHERM}{endpoint}", cmd_data
         )
