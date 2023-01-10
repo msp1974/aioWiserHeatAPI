@@ -511,10 +511,10 @@ class _WiserHeatingSchedule(_WiserSchedule):
                     else:
                         raise WiserScheduleInvalidTime(f"Invalid time value - {value}")
                 if key.title() in [TEXT_TEMP, TEXT_SETPOINT]:
-                    temp = tf._to_wiser_temp(
-                        float(value) if str(value).title() != TEXT_OFF else TEMP_OFF
-                    )
-                    if tf._is_valid_temp(temp):
+                    if tf._is_valid_temp(value):
+                        temp = tf._to_wiser_temp(
+                            float(value) if str(value).title() != TEXT_OFF else TEMP_OFF
+                        )
                         temps.append(temp)
                     else:
                         raise WiserScheduleInvalidSetting(

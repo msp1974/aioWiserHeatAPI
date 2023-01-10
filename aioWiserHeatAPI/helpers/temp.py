@@ -62,7 +62,7 @@ class _WiserTemperatureFunctions(object):
         return None
 
     @staticmethod
-    def _is_valid_temp(self, temp: float, hw: bool = False) -> bool:
+    def _is_valid_temp(temp: float, hw: bool = False) -> bool:
         if hw and temp in [TEMP_HW_ON, TEMP_HW_OFF]:
             return True
         elif temp == TEMP_OFF or (temp >= TEMP_MINIMUM and temp <= TEMP_MAXIMUM):
