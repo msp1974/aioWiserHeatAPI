@@ -54,6 +54,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ### 1.0.2
 * Fixed error in boost_all_rooms using old temp validation type (no longer supported)
+* Fixed error in validating temps from yaml file
 
 ### 1.0.1
 
