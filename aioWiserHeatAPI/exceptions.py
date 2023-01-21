@@ -23,6 +23,10 @@ class WiserScheduleInvalidSetting(Exception):
     pass
 
 
+class WiserExtraConfigError(Exception):
+    pass
+
+
 class WiserHubNotImplementedError(Exception):
     # _LOGGER.info("Function not yet implemented")
     pass

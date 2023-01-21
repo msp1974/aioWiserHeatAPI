@@ -1,4 +1,6 @@
 import json
+
+from aioWiserHeatAPI.helpers.extra_config import _WiserExtraConfig
 from . import _LOGGER
 
 from .const import (
@@ -56,6 +58,9 @@ class _WiserRestController(object):
             session = aiohttp.ClientSession()
         self._session = session
         self._timeout = aiohttp.ClientTimeout(total=timeout)
+        self._hub_name = None
+        self._extra_config_file = None
+        self._extra_config: _WiserExtraConfig
 
     async def _do_hub_action(
         self,
@@ -155,6 +160,15 @@ class _WiserRestController(object):
             url,
             raise_for_endpoint_error=raise_for_endpoint_error,
         )
+
+    async def _get_extra_config_data(self):
+        # Load extra config file
+
+        if self._extra_config_file:
+            self._extra_config = _WiserExtraConfig(
+                self._extra_config_file, self._hub_name.lower()
+            )
+            await self._extra_config.async_load_config()
 
     async def _send_command(
         self,

@@ -1,9 +1,13 @@
+import asyncio
 import inspect
 from datetime import datetime
 from typing import Union
+
 from . import _LOGGER
 
 from .devices import _WiserDeviceCollection
+from .helpers.automations import _WiserRoomAutomations
+from .helpers.extra_config import _WiserExtraConfig
 from .helpers.misc import is_value_in_list
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController, WiserRestActionEnum
@@ -30,16 +34,23 @@ class _WiserRoom(object):
         room: dict,
         schedule: _WiserSchedule,
         devices: list,
+        enable_automations: bool,
     ):
         self._wiser_rest_controller = wiser_rest_controller
         self._data = room
         self._schedule = schedule
         self._devices = devices
+        self._enable_automations = enable_automations
+        self._extra_config = self._wiser_rest_controller._extra_config.config(
+            "Rooms", str(self.id)
+        )
         self._mode = self._effective_heating_mode(
             self._data.get("Mode"), self.current_target_temperature
         )
         self._name = room.get("Name")
         self._window_detection_active = room.get("WindowDetectionActive", TEXT_UNKNOWN)
+
+        self._default_extra_config = {"passive_mode": False, "min": 14, "max": 18}
 
         # Add device id to schedule
         if self._schedule:
@@ -71,6 +82,41 @@ class _WiserRoom(object):
             )
             return True
         return False
+
+    async def _update_extra_config(self, key: str, value):
+        await self._wiser_rest_controller._extra_config.async_update_config(
+            "Rooms", str(self.id), {key: value}
+        )
+
+    @property
+    def passive_mode_lower_temp(self) -> float:
+        if self._extra_config and "min" in self._extra_config:
+            return self._extra_config["min"]
+        return self._default_extra_config["min"]
+
+    @property
+    def passive_mode_upper_temp(self) -> float:
+        if self._extra_config and "max" in self._extra_config:
+            return self._extra_config["max"]
+        return self._default_extra_config["max"]
+
+    async def set_passive_mode_lower_temp(self, temp):
+        await self._update_extra_config("min", temp)
+        await self.set_target_temperature(temp)
+
+    async def set_passive_mode_upper_temp(self, temp):
+        await self._update_extra_config("max", temp)
+
+    async def enable_passive_mode(self, enable: bool):
+        if self._enable_automations:
+            if enable:
+                self._mode = "Passive"
+                await self._update_extra_config("passive_mode", True)
+                await self._send_command({"Mode": WiserHeatingModeEnum.manual.value})
+                await self.set_target_temperature(self.passive_mode_lower_temp)
+            else:
+                await self._update_extra_config("passive_mode", False)
+                await self.set_mode(WiserHeatingModeEnum.auto)
 
     @property
     def available_modes(self) -> str:
@@ -160,6 +206,12 @@ class _WiserRoom(object):
         return self._data.get("HeatingType", TEXT_UNKNOWN)
 
     @property
+    def hub_heating_mode(self) -> str:
+        self._effective_heating_mode(
+            self._data.get("Mode"), self.current_target_temperature
+        )
+
+    @property
     def id(self) -> int:
         """Get the id of the room"""
         return self._data.get("id")
@@ -213,6 +265,12 @@ class _WiserRoom(object):
     @property
     def mode(self) -> str:
         """Get or set current mode for the room (Off, Manual, Auto)"""
+        if (
+            self._enable_automations
+            and self._extra_config
+            and self._extra_config.get("passive_mode")
+        ):
+            self._mode = WiserHeatingModeEnum.passive.value
         return self._mode
 
     async def set_mode(self, mode: Union[WiserHeatingModeEnum, str]) -> bool:
@@ -433,7 +491,7 @@ class _WiserRoom(object):
         return await self._send_command({"RequestOverride": {"Type": "None"}})
 
 
-class _WiserRoomCollection(object):
+class _WiserRoomCollection(_WiserRoomAutomations):
     """Class holding all wiser room objects"""
 
     def __init__(
@@ -442,11 +500,16 @@ class _WiserRoomCollection(object):
         room_data: dict,
         schedules: _WiserScheduleCollection,
         devices: _WiserDeviceCollection,
+        extra_config: _WiserExtraConfig,
+        enable_automations: bool,
     ):
+        super().__init__()
         self._wiser_rest_controller = wiser_rest_controller
         self._room_data = room_data
         self._schedules = schedules
         self._devices = devices
+        self._extra_config = extra_config
+        self._enable_automations = enable_automations
         self._rooms = []
         self._build()
 
@@ -465,6 +528,7 @@ class _WiserRoomCollection(object):
                     room,
                     schedule[0] if len(schedule) > 0 else None,
                     devices,
+                    self._enable_automations,
                 )
             )
 

@@ -46,6 +46,7 @@ TEXT_OFF = "Off"
 TEXT_ON = "On"
 TEXT_ONOFF = "OnOff"
 TEXT_OPEN = "Open"
+TEXT_PASSIVE = "Passive"
 TEXT_SETPOINT = "Setpoint"
 TEXT_SHUTTERS = "Shutters"
 TEXT_STATE = "State"
@@ -116,6 +117,7 @@ class WiserHeatingModeEnum(enum.Enum):
     off = TEXT_OFF
     auto = TEXT_AUTO
     manual = TEXT_MANUAL
+    passive = TEXT_PASSIVE
 
 
 class WiserScheduleTypeEnum(enum.Enum):

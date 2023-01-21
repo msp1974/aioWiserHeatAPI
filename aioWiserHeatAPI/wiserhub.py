@@ -18,6 +18,8 @@ import asyncio
 import aiohttp
 import pathlib
 from typing import Optional
+
+
 from . import _LOGGER, __VERSION__
 
 from .const import (
@@ -47,6 +49,7 @@ from .exceptions import (
 from .cli import log_response_to_file
 from .devices import _WiserDeviceCollection
 from .heating import _WiserHeatingChannelCollection
+from .helpers.extra_config import _WiserExtraConfig
 from .hot_water import _WiserHotwater
 from .moments import _WiserMomentCollection
 from .rest_controller import _WiserRestController, _WiserConnectionInfo
@@ -67,6 +70,8 @@ class WiserAPI(object):
         port: Optional[int] = 80,
         session: Optional[aiohttp.ClientSession] = None,
         units: Optional[WiserUnitsEnum] = WiserUnitsEnum.metric,
+        extra_config_file: Optional[str] = None,
+        enable_automations: Optional[bool] = True,
     ):
 
         # Connection variables
@@ -79,6 +84,8 @@ class WiserAPI(object):
         self._wiser_api_connection.secret = secret
         self._wiser_api_connection.port = port
         self._wiser_api_connection.units = units
+        self._wiser_api_connection.extra_config_file = extra_config_file
+        self._wiser_api_connection.enable_automations = enable_automations
 
         # Hub Data
         self._domain_data = {}
@@ -94,6 +101,10 @@ class WiserAPI(object):
         self._rooms = None
         self._schedules = None
         self._system = None
+
+        self._enable_automations = enable_automations
+        self._extra_config_file = extra_config_file
+        self._extra_config = None
 
         # Log initialisation info
         _LOGGER.info(
@@ -126,6 +137,17 @@ class WiserAPI(object):
         self._schedule_data = await self._wiser_rest_controller._get_hub_data(
             WISERHUBSCHEDULES
         )
+
+        # Set hub name on rest controller
+        self._wiser_rest_controller._hub_name = (
+            self._network_data.get("Station", {})
+            .get("NetworkInterface", {})
+            .get("HostName", "")
+        )
+
+        # load extra data
+        self._wiser_rest_controller._extra_config_file = self._extra_config_file
+        await self._wiser_rest_controller._get_extra_config_data()
 
         # Only get opentherm data if connected
         if (
@@ -168,6 +190,8 @@ class WiserAPI(object):
                 room_data,
                 self._schedules.get_by_type(WiserScheduleTypeEnum.heating),
                 self._devices,
+                self._extra_config,
+                self._enable_automations,
             )
 
             # Hot Water
@@ -193,6 +217,10 @@ class WiserAPI(object):
                 self._moments = _WiserMomentCollection(
                     self._wiser_rest_controller, self._domain_data.get("Moment")
                 )
+
+            # Run automations
+            if self._enable_automations:
+                await self._rooms.run_automations()
 
             # If gets here with no exceptions then success and return true
             return True
