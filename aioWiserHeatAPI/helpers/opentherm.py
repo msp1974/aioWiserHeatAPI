@@ -19,11 +19,15 @@ class _WiserOpenThermBoilerParameters(object):
 
     @property
     def ch_setpoint_lower_bound(self) -> bool:
-        return self._data.get("maxChSetpointLowerBound", None)
+        return tf._from_wiser_temp(
+            self._data.get("maxChSetpointLowerBound", None), "current"
+        )
 
     @property
     def ch_setpoint_upper_bound(self) -> bool:
-        return self._data.get("maxChSetpointUpperBound", None)
+        return tf._from_wiser_temp(
+            self._data.get("maxChSetpointUpperBound", None), "current"
+        )
 
     @property
     def hw_setpoint_read_write(self) -> bool:
@@ -35,11 +39,19 @@ class _WiserOpenThermBoilerParameters(object):
 
     @property
     def hw_setpoint_lower_bound(self) -> bool:
-        return self._data.get("dhwSetpointLowerBound", None)
+        return tf._from_wiser_temp(
+            self._data.get("dhwSetpointLowerBound", None), "current"
+        )
 
     @property
     def hw_setpoint_upper_bound(self) -> bool:
-        return self._data.get("dhwSetpointUpperBound", None)
+        return tf._from_wiser_temp(
+            self._data.get("dhwSetpointUpperBound", None), "current"
+        )
+
+    @property
+    def json_data(self) -> dict:
+        return self._data
 
 
 class _WiserOpenThermOperationalData(object):
@@ -81,6 +93,10 @@ class _WiserOpenThermOperationalData(object):
     def slave_status(self) -> int:
         """Get SlaveStatus"""
         return self._data.get("SlaveStatus", None)
+
+    @property
+    def json_data(self) -> dict:
+        return self._data
 
 
 class _WiserOpentherm(object):
@@ -179,6 +195,10 @@ class _WiserOpentherm(object):
     def tracked_room_id(self) -> int:
         """Get TrackedRoomId"""
         return self._data.get("TrackedRoomId", None)
+
+    @property
+    def json_data(self) -> dict:
+        return self._data
 
     async def set_opentherm_parameter(self, endpoint: str, cmd_data: str) -> bool:
         """Allow settign of opentherm param"""
