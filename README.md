@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.1.0
+# Drayton Wiser Hub API Async v1.1.1
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -52,10 +52,16 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
+### 1.1.1
+
+* Fix issue setting on/off schedule - issue #349
+
 ### 1.1.0
+
 * Added room passive mode automation control
 
 ### 1.0.2
+
 * Fixed error in boost_all_rooms using old temp validation type (no longer supported)
 * Fixed error in validating temps from yaml file
 
