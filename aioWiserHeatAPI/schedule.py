@@ -632,7 +632,7 @@ class _WiserOnOffSchedule(_WiserSchedule):
             for key, value in item.items():
                 if key.title() == TEXT_TIME:
                     if self._is_valid_time(value):
-                        time = str(value).replace(":", "")
+                        time = int(str(value).replace(":", ""))
                     else:
                         raise WiserScheduleInvalidTime(f"Invalid time value - {value}")
                 if key.title() in [TEXT_STATE, TEXT_SETPOINT]:
