@@ -18,6 +18,10 @@ class _WiserOpenThermBoilerParameters(object):
         return self._data.get("maxChSetpointTransferEnable", None)
 
     @property
+    def ch_setpoint(self) -> bool:
+        return tf._from_wiser_temp(self._data.get("maxChSetpoint", None), "current")
+
+    @property
     def ch_setpoint_lower_bound(self) -> bool:
         return tf._from_wiser_temp(
             self._data.get("maxChSetpointLowerBound", None), "current"
@@ -36,6 +40,10 @@ class _WiserOpenThermBoilerParameters(object):
     @property
     def hw_setpoint_transfer_enable(self) -> bool:
         return self._data.get("dhwSetpointTransferEnable", None)
+
+    @property
+    def hw_setpoint(self) -> bool:
+        return tf._from_wiser_temp(self._data.get("dhwSetpoint", None), "current")
 
     @property
     def hw_setpoint_lower_bound(self) -> bool:
@@ -78,6 +86,11 @@ class _WiserOpenThermOperationalData(object):
         return tf._from_wiser_temp(
             self._data.get("ChReturnTemperature", None), "current"
         )
+
+    @property
+    def hw_flow_rate(self) -> str:
+        """Get Dhw1Temperature"""
+        return self._data.get("DhwFlowRate", None)
 
     @property
     def hw_temperature(self) -> str:
