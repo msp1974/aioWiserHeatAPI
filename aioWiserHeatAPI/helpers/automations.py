@@ -22,19 +22,25 @@ class _WiserRoomAutomations:
         # If any active rooms are heating
         if active_heating_rooms:
             for room in passive_rooms:
-                # Check it is in manual mode
-                if room.hub_heating_mode != WiserHeatingModeEnum.manual.value:
-                    await room._send_command(
-                        {"Mode": WiserHeatingModeEnum.manual.value}
+                # If room is boosted do not override
+                if not room.is_boosted:
+                    # Check it is in manual mode
+                    if room.hub_heating_mode != WiserHeatingModeEnum.manual.value:
+                        await room._send_command(
+                            {"Mode": WiserHeatingModeEnum.manual.value}
+                        )
+                    # Set target temp to heat passive room in 0.5 increments
+                    target_temp = min(
+                        round(((room.current_temperature + 0.5) * 2 / 2)),
+                        room.passive_mode_upper_temp,
                     )
-                # Set target temp to heat passive room in 0.5 increments
-                target_temp = min(
-                    room.current_temperature + 0.5, room.passive_mode_upper_temp
-                )
-                if target_temp != room.current_target_temperature:
-                    await room.set_target_temperature(target_temp)
+                    if target_temp != room.current_target_temperature:
+                        await room.set_target_temperature(target_temp)
         else:
             # Stop any passive rooms heating by setting to min temp
             for room in passive_rooms:
-                if room.current_target_temperature > room.passive_mode_lower_temp:
+                if (
+                    room.current_target_temperature > room.passive_mode_lower_temp
+                    and not room.is_boosted
+                ):
                     await room.set_target_temperature(room.passive_mode_lower_temp)
