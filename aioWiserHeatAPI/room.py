@@ -112,6 +112,8 @@ class _WiserRoom(object):
             if enable:
                 self._mode = "Passive"
                 await self._update_extra_config("passive_mode", True)
+                if self.is_override:
+                    await self.cancel_overrides()
                 await self._send_command({"Mode": WiserHeatingModeEnum.manual.value})
                 await self.set_target_temperature(self.passive_mode_lower_temp)
             else:
