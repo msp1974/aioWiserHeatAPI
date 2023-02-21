@@ -22,6 +22,7 @@ from .const import (
     TEXT_UNKNOWN,
     WISERROOM,
     WiserHeatingModeEnum,
+    WiserPassiveModeEnum,
 )
 
 
@@ -50,11 +51,16 @@ class _WiserRoom(object):
         self._name = room.get("Name")
         self._window_detection_active = room.get("WindowDetectionActive", TEXT_UNKNOWN)
 
-        self._default_extra_config = {"passive_mode": False, "min": 14, "max": 18}
+        self._default_extra_config = {
+            "passive_mode": WiserPassiveModeEnum.disabled.value,
+            "min": 14,
+            "max": 18,
+        }
 
         # Add device id to schedule
         if self._schedule:
             self.schedule._assignments.append({"id": self.id, "name": self.name})
+
 
     def _effective_heating_mode(self, mode: str, temp: float) -> str:
         if mode.casefold() == TEXT_MANUAL.casefold() and temp == TEMP_OFF:
@@ -89,36 +95,64 @@ class _WiserRoom(object):
         )
 
     @property
+    def available_passive_modes(self) -> list:
+        if self.schedule:
+            return [mode.value for mode in WiserPassiveModeEnum]
+        else:
+            return [mode.value for mode in WiserPassiveModeEnum if mode != WiserPassiveModeEnum.schedule]
+
+    @property
+    def passive_mode(self) -> str:
+        if self._extra_config and "passive_mode" in self._extra_config:
+            # Migrate from initial version of extra config
+            if self._extra_config["passive_mode"] == False:
+                return WiserPassiveModeEnum.disabled.value
+            elif self._extra_config["passive_mode"] == True:
+                return WiserPassiveModeEnum.manual.value
+            else:
+                return self._extra_config["passive_mode"] if self._extra_config["passive_mode"] in self.available_passive_modes else WiserPassiveModeEnum.disabled.value
+        return self._default_extra_config["passive_mode"]
+
+    @property
     def passive_mode_lower_temp(self) -> float:
         if self._extra_config and "min" in self._extra_config:
-            return self._extra_config["min"]
-        return self._default_extra_config["min"]
+            return min(self._extra_config["min"], self.passive_mode_upper_temp)
+        return min(self._default_extra_config["min"], self.passive_mode_upper_temp)
 
     @property
     def passive_mode_upper_temp(self) -> float:
-        if self._extra_config and "max" in self._extra_config:
-            return self._extra_config["max"]
-        return self._default_extra_config["max"]
+        if self.passive_mode == WiserPassiveModeEnum.schedule.value and self.schedule:
+            return self.schedule.current_setting
+        else:
+            if self._extra_config and "max" in self._extra_config:
+                return self._extra_config["max"]
+            return self._default_extra_config["max"]
+        
+    async def set_passive_mode(self, mode: WiserPassiveModeEnum | str):
+        if type(mode) == WiserPassiveModeEnum:
+            mode = mode.value
+
+        if is_value_in_list(mode, self.available_passive_modes):
+            await self._update_extra_config("passive_mode", mode)
+            if mode == WiserPassiveModeEnum.disabled.value:
+                await self.set_mode(WiserHeatingModeEnum.auto)
+            else:
+                if self.is_override:
+                    await self.cancel_overrides()
+                await self._send_command({"Mode": WiserHeatingModeEnum.manual.value})
+                await self.set_target_temperature(self.passive_mode_lower_temp)
+        else:
+            raise ValueError(
+                f"{mode} is not a valid Passive mode type.  Valid modes types are {self.available_passive_modes}"
+            )
 
     async def set_passive_mode_lower_temp(self, temp):
         await self._update_extra_config("min", temp)
         await self.set_target_temperature(temp)
 
     async def set_passive_mode_upper_temp(self, temp):
-        await self._update_extra_config("max", temp)
-
-    async def enable_passive_mode(self, enable: bool):
-        if self._enable_automations:
-            if enable:
-                self._mode = "Passive"
-                await self._update_extra_config("passive_mode", True)
-                if self.is_override:
-                    await self.cancel_overrides()
-                await self._send_command({"Mode": WiserHeatingModeEnum.manual.value})
-                await self.set_target_temperature(self.passive_mode_lower_temp)
-            else:
-                await self._update_extra_config("passive_mode", False)
-                await self.set_mode(WiserHeatingModeEnum.auto)
+        if self.passive_mode != WiserPassiveModeEnum.schedule:
+            await self._update_extra_config("max", temp)
 
     @property
     def available_modes(self) -> str:
@@ -208,7 +242,7 @@ class _WiserRoom(object):
         return self._data.get("HeatingType", TEXT_UNKNOWN)
 
     @property
-    def hub_heating_mode(self) -> str:
+    def heating_mode(self) -> str:
         self._effective_heating_mode(
             self._data.get("Mode"), self.current_target_temperature
         )
@@ -269,10 +303,9 @@ class _WiserRoom(object):
         """Get or set current mode for the room (Off, Manual, Auto)"""
         if (
             self._enable_automations
-            and self._extra_config
-            and self._extra_config.get("passive_mode")
+            and self.passive_mode != WiserPassiveModeEnum.disabled.value
         ):
-            self._mode = WiserHeatingModeEnum.passive.value
+            return self.passive_mode
         return self._mode
 
     async def set_mode(self, mode: Union[WiserHeatingModeEnum, str]) -> bool:

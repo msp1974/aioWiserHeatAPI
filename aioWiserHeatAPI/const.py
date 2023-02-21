@@ -117,7 +117,6 @@ class WiserHeatingModeEnum(enum.Enum):
     off = TEXT_OFF
     auto = TEXT_AUTO
     manual = TEXT_MANUAL
-    passive = TEXT_PASSIVE
 
 
 class WiserScheduleTypeEnum(enum.Enum):
@@ -126,6 +125,12 @@ class WiserScheduleTypeEnum(enum.Enum):
     level = TEXT_LEVEL
     lighting = TEXT_LIGHTING
     shutters = TEXT_SHUTTERS
+
+
+class WiserPassiveModeEnum(enum.Enum):
+    disabled = "Disabled"
+    manual = "Passive Manual"
+    schedule = "Passive Follow Schedule"
 
 
 DEFAULT_LEVEL_SCHEDULE = {

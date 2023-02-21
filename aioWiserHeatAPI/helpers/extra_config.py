@@ -38,6 +38,15 @@ class _WiserExtraConfig:
             else:
                 self._config[section][key] = value
 
+        await self.async_write_config()
+
+    async def async_remove_config(self, section: str, key: str):
+        if key and self._config[section].get(key):
+            del self._config[section][key]
+
+        await self.async_write_config()
+
+    async def async_write_config(self):
         # Write to config file
         async with aiofiles.open(self._config_file, mode="w") as config_file:
             try:
