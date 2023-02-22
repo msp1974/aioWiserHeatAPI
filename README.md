@@ -55,6 +55,9 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 ### 1.2.0
 
 * Breaking Change - changes to passive mode from on or off to disabled, passive manual and passive follow schedule
+* Support boost in passive mode
+* Add additional opentherm parameters
+* Fix not clearing overrides when enabling passive mode
 
 ### 1.1.1
 
