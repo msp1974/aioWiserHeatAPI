@@ -25,11 +25,13 @@ from typing import Any, Optional, cast
 
 # Connection info class
 class _WiserConnectionInfo(object):
-    def __init(self):
+    def __init__(self):
         self.host = None
         self.secret = None
         self.port = None
         self.units = WiserUnitsEnum.metric
+        self.extra_config_file = None
+        self.enable_automations = False
 
 
 # Enums
@@ -60,7 +62,7 @@ class _WiserRestController(object):
         self._timeout = aiohttp.ClientTimeout(total=timeout)
         self._hub_name = None
         self._extra_config_file = None
-        self._extra_config: _WiserExtraConfig
+        self._extra_config: _WiserExtraConfig = None
 
     async def _do_hub_action(
         self,
