@@ -38,8 +38,8 @@ Create a file called params.py and place two lines, one with the wiser IP or hos
 e.g.
 
 ```code
-HOST=192.168.0.22
-KEY=ABCDCDCDCCCDCDC
+HOST="192.168.0.22"
+KEY="ABCDCDCDCCCDCDC"
 ```
 
 ## 5. Run the sample
