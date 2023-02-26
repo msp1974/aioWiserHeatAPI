@@ -108,7 +108,7 @@ class WiserAPI(object):
 
         # Log initialisation info
         _LOGGER.info(
-            f"WiserHub API v{__VERSION__} Initialised - Host: {host}, Units: {self._wiser_api_connection.units.name.title()}"
+            f"WiserHub API v{__VERSION__} Initialised - Host: {host}, Units: {self._wiser_api_connection.units.name.title()}, Extra Config: {self._extra_config_file}, Automations: {self._enable_automations}"
         )
 
         if (
@@ -190,7 +190,6 @@ class WiserAPI(object):
                 room_data,
                 self._schedules.get_by_type(WiserScheduleTypeEnum.heating),
                 self._devices,
-                self._extra_config,
                 self._enable_automations,
             )
 
