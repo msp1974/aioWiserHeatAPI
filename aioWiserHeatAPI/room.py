@@ -3,6 +3,7 @@ import inspect
 from datetime import datetime
 from typing import Union
 
+
 from . import _LOGGER
 
 from .devices import _WiserDeviceCollection
@@ -42,8 +43,10 @@ class _WiserRoom(object):
         self._schedule = schedule
         self._devices = devices
         self._enable_automations = enable_automations
-        self._extra_config = self._wiser_rest_controller._extra_config.config(
-            "Rooms", str(self.id)
+        self._extra_config = (
+            self._wiser_rest_controller._extra_config.config("Rooms", str(self.id))
+            if self._wiser_rest_controller._extra_config
+            else None
         )
         self._mode = self._effective_heating_mode(
             self._data.get("Mode"), self.current_target_temperature
@@ -61,13 +64,12 @@ class _WiserRoom(object):
         if self._schedule:
             self.schedule._assignments.append({"id": self.id, "name": self.name})
 
-
     def _effective_heating_mode(self, mode: str, temp: float) -> str:
         if mode.casefold() == TEXT_MANUAL.casefold() and temp == TEMP_OFF:
-            return WiserHeatingModeEnum["off"].value
+            return WiserHeatingModeEnum.off.value
         elif mode.casefold() == TEXT_MANUAL.casefold():
-            return WiserHeatingModeEnum["manual"].value
-        return WiserHeatingModeEnum["auto"].value
+            return WiserHeatingModeEnum.manual.value
+        return WiserHeatingModeEnum.auto.value
 
     async def _send_command(
         self, cmd: dict, method: WiserRestActionEnum = WiserRestActionEnum.PATCH
@@ -99,7 +101,17 @@ class _WiserRoom(object):
         if self.schedule:
             return [mode.value for mode in WiserPassiveModeEnum]
         else:
-            return [mode.value for mode in WiserPassiveModeEnum if mode != WiserPassiveModeEnum.schedule]
+            return [
+                mode.value
+                for mode in WiserPassiveModeEnum
+                if mode != WiserPassiveModeEnum.schedule
+            ]
+
+    @property
+    def is_passive_mode(self) -> bool:
+        return (
+            True if self.passive_mode != WiserPassiveModeEnum.disabled.value else False
+        )
 
     @property
     def passive_mode(self) -> str:
@@ -110,7 +122,7 @@ class _WiserRoom(object):
             elif self._extra_config["passive_mode"] == True:
                 return WiserPassiveModeEnum.manual.value
             else:
-                return self._extra_config["passive_mode"] if self._extra_config["passive_mode"] in self.available_passive_modes else WiserPassiveModeEnum.disabled.value
+                return self._extra_config["passive_mode"]
         return self._default_extra_config["passive_mode"]
 
     @property
@@ -127,7 +139,7 @@ class _WiserRoom(object):
             if self._extra_config and "max" in self._extra_config:
                 return self._extra_config["max"]
             return self._default_extra_config["max"]
-        
+
     async def set_passive_mode(self, mode: WiserPassiveModeEnum | str):
         if type(mode) == WiserPassiveModeEnum:
             mode = mode.value
@@ -243,7 +255,7 @@ class _WiserRoom(object):
 
     @property
     def heating_mode(self) -> str:
-        self._effective_heating_mode(
+        return self._effective_heating_mode(
             self._data.get("Mode"), self.current_target_temperature
         )
 
@@ -535,7 +547,6 @@ class _WiserRoomCollection(_WiserRoomAutomations):
         room_data: dict,
         schedules: _WiserScheduleCollection,
         devices: _WiserDeviceCollection,
-        extra_config: _WiserExtraConfig,
         enable_automations: bool,
     ):
         super().__init__()
@@ -543,9 +554,8 @@ class _WiserRoomCollection(_WiserRoomAutomations):
         self._room_data = room_data
         self._schedules = schedules
         self._devices = devices
-        self._extra_config = extra_config
         self._enable_automations = enable_automations
-        self._rooms = []
+        self._rooms: list(_WiserRoom) = []
         self._build()
 
     def _build(self):
