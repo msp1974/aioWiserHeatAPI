@@ -110,7 +110,10 @@ class _WiserRoom(object):
     @property
     def is_passive_mode(self) -> bool:
         return (
-            True if self.passive_mode != WiserPassiveModeEnum.disabled.value else False
+            True
+            if self._enable_automations
+            and self.passive_mode != WiserPassiveModeEnum.disabled.value
+            else False
         )
 
     @property
@@ -313,10 +316,7 @@ class _WiserRoom(object):
     @property
     def mode(self) -> str:
         """Get or set current mode for the room (Off, Manual, Auto)"""
-        if (
-            self._enable_automations
-            and self.passive_mode != WiserPassiveModeEnum.disabled.value
-        ):
+        if self.is_passive_mode:
             return self.passive_mode
         return self._mode
 
