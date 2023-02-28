@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.2.1
+# Drayton Wiser Hub API Async v1.2.2
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -7,7 +7,7 @@ The API also supports Smart Plugs and initial basic functionality for Shutter an
 
 ## Requirements
 
-Requires a minimum of Python v3.9
+Requires a minimum of Python v3.10
 
 ## Installation
 
@@ -51,6 +51,10 @@ To help understand the api simply look at the test sample code ```tests/test_api
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+
+### 1.2.2
+
+* Improve logic defining is_passive_mode property
 
 ### 1.2.1
 
