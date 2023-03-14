@@ -1,4 +1,4 @@
-from aioWiserHeatAPI.const import WiserHeatingModeEnum, WiserPassiveModeEnum
+from aioWiserHeatAPI.const import WiserHeatingModeEnum
 
 
 class _WiserRoomAutomations:
@@ -18,25 +18,17 @@ class _WiserRoomAutomations:
         if not passive_rooms:
             return
 
-        # Check all passive rooms are set to manual
-        for room in passive_rooms:
-            if (
-                room.heating_mode != WiserHeatingModeEnum.manual.value
-                and not room.is_boosted
-            ):
-                await room._send_command({"Mode": WiserHeatingModeEnum.manual.value})
-
         # If any active rooms are heating
         if active_heating_rooms:
             for room in passive_rooms:
                 # If room is boosted do not override
                 if not room.is_boosted:
-                    # Set target temp to heat passive room in 0.5 increments
+                    # Set target temp to heat passive room in 1 increments
                     target_temp = min(
-                        round((room.current_temperature + 0.5) * 2) / 2,
+                        round((room.current_temperature + 1) * 2) / 2,
                         (
                             room.schedule.current_setting
-                            if room.passive_mode == WiserPassiveModeEnum.schedule.value
+                            if room.mode == WiserHeatingModeEnum.auto.value
                             and room.schedule
                             else room.passive_mode_upper_temp
                         ),

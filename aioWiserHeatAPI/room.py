@@ -8,22 +8,24 @@ from . import _LOGGER
 
 from .devices import _WiserDeviceCollection
 from .helpers.automations import _WiserRoomAutomations
-from .helpers.extra_config import _WiserExtraConfig
 from .helpers.misc import is_value_in_list
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController, WiserRestActionEnum
 from .schedule import _WiserSchedule, _WiserScheduleCollection
 
 from .const import (
+    DEFAULT_BOOST_DELTA,
     TEMP_MINIMUM,
     TEMP_OFF,
+    TEXT_BOOST,
     TEXT_MANUAL,
     TEXT_OFF,
     TEXT_ON,
     TEXT_UNKNOWN,
+    WISER_BOOST_DURATION,
     WISERROOM,
     WiserHeatingModeEnum,
-    WiserPassiveModeEnum,
+    WiserPresetOptionsEnum,
 )
 
 
@@ -51,14 +53,18 @@ class _WiserRoom(object):
         self._mode = self._effective_heating_mode(
             self._data.get("Mode"), self.current_target_temperature
         )
+
         self._name = room.get("Name")
         self._window_detection_active = room.get("WindowDetectionActive", TEXT_UNKNOWN)
 
         self._default_extra_config = {
-            "passive_mode": WiserPassiveModeEnum.disabled.value,
+            "passive_mode": False,
             "min": 14,
             "max": 18,
         }
+
+        self._boost_temperature_delta = DEFAULT_BOOST_DELTA
+        self.stored_manual_target_temperature_alt_source = "current"
 
         # Add device id to schedule
         if self._schedule:
@@ -97,35 +103,27 @@ class _WiserRoom(object):
         )
 
     @property
-    def available_passive_modes(self) -> list:
-        if self.schedule:
-            return [mode.value for mode in WiserPassiveModeEnum]
-        else:
-            return [
-                mode.value
-                for mode in WiserPassiveModeEnum
-                if mode != WiserPassiveModeEnum.schedule
-            ]
-
-    @property
     def is_passive_mode(self) -> bool:
         return (
             True
             if self._enable_automations
-            and self.passive_mode != WiserPassiveModeEnum.disabled.value
+            and self.passive_mode_enabled
+            and self.mode != WiserHeatingModeEnum.off.value
+            and not self.is_boosted
             else False
         )
 
     @property
-    def passive_mode(self) -> str:
+    def passive_mode_enabled(self) -> bool:
         if self._extra_config and "passive_mode" in self._extra_config:
             # Migrate from initial version of extra config
-            if self._extra_config["passive_mode"] == False:
-                return WiserPassiveModeEnum.disabled.value
-            elif self._extra_config["passive_mode"] == True:
-                return WiserPassiveModeEnum.manual.value
+            if (
+                self._extra_config["passive_mode"] == "Disabled"
+                or self._extra_config["passive_mode"] == False
+            ):
+                return False
             else:
-                return self._extra_config["passive_mode"]
+                return True
         return self._default_extra_config["passive_mode"]
 
     @property
@@ -136,43 +134,50 @@ class _WiserRoom(object):
 
     @property
     def passive_mode_upper_temp(self) -> float:
-        if self.passive_mode == WiserPassiveModeEnum.schedule.value and self.schedule:
+        if (
+            self.is_passive_mode
+            and self.mode == WiserHeatingModeEnum.auto.value
+            and self.schedule
+        ):
             return self.schedule.current_setting
         else:
             if self._extra_config and "max" in self._extra_config:
                 return self._extra_config["max"]
             return self._default_extra_config["max"]
 
-    async def set_passive_mode(self, mode: WiserPassiveModeEnum | str):
-        if type(mode) == WiserPassiveModeEnum:
-            mode = mode.value
+    async def set_passive_mode(self, enable: bool):
+        await self._update_extra_config("passive_mode", enable)
 
-        if is_value_in_list(mode, self.available_passive_modes):
-            await self._update_extra_config("passive_mode", mode)
-            if mode == WiserPassiveModeEnum.disabled.value:
-                await self.set_mode(WiserHeatingModeEnum.auto)
-            else:
-                if self.is_override:
-                    await self.cancel_overrides()
-                await self._send_command({"Mode": WiserHeatingModeEnum.manual.value})
-                await self.set_target_temperature(self.passive_mode_lower_temp)
-        else:
-            raise ValueError(
-                f"{mode} is not a valid Passive mode type.  Valid modes types are {self.available_passive_modes}"
-            )
+        # Set to min of temp range when initialised
+        if enable and self.mode != WiserHeatingModeEnum.off.value:
+            await self.set_target_temperature(self.passive_mode_lower_temp)
+
+        # Set target temp back to last manual temp if in manual mode
+        if (not enable) and self.mode == WiserHeatingModeEnum.manual.value:
+            await self.set_target_temperature(self.stored_manual_target_temperature)
 
     async def set_passive_mode_lower_temp(self, temp):
         await self._update_extra_config("min", temp)
-        await self.set_target_temperature(temp)
 
     async def set_passive_mode_upper_temp(self, temp):
-        if self.passive_mode != WiserPassiveModeEnum.schedule:
-            await self._update_extra_config("max", temp)
+        await self._update_extra_config("max", temp)
 
     @property
-    def available_modes(self) -> str:
+    def available_modes(self) -> list:
         """Get available heating modes"""
         return [mode.value for mode in WiserHeatingModeEnum]
+
+    @property
+    def available_presets(self) -> list:
+        """Get available preset modes"""
+        # Remove advance schedule if no schedule exists or in passive mode
+        if self.is_passive_mode or not self.schedule:
+            return [
+                mode.value
+                for mode in WiserPresetOptionsEnum
+                if mode != WiserPresetOptionsEnum.advance_schedule
+            ]
+        return [mode.value for mode in WiserPresetOptionsEnum]
 
     @property
     def away_mode_suppressed(self) -> str:
@@ -193,6 +198,13 @@ class _WiserRoom(object):
             return (self.boost_end_time - datetime.now()).total_seconds()
         else:
             return 0
+
+    @property
+    def boost_temperature_delta(self) -> float:
+        return self._boost_temperature_delta
+
+    def set_boost_temperature_delta(self, temperature_delta: float):
+        self._boost_temperature_delta = temperature_delta
 
     @property
     def comfort_mode_score(self) -> int:
@@ -316,8 +328,6 @@ class _WiserRoom(object):
     @property
     def mode(self) -> str:
         """Get or set current mode for the room (Off, Manual, Auto)"""
-        if self.is_passive_mode:
-            return self.passive_mode
         return self._mode
 
     async def set_mode(self, mode: Union[WiserHeatingModeEnum, str]) -> bool:
@@ -337,7 +347,7 @@ class _WiserRoom(object):
                 ):
                     if self.current_target_temperature == TEMP_OFF:
                         await self.set_target_temperature(
-                            self.scheduled_target_temperature
+                            self.stored_manual_target_temperature
                         )
             elif mode == WiserHeatingModeEnum.auto.value:
                 await self._send_command({"Mode": WiserHeatingModeEnum.auto.value})
@@ -385,6 +395,37 @@ class _WiserRoom(object):
         return self._data.get("PercentageDemand", 0)
 
     @property
+    def preset_mode(self) -> str:
+        """Get the current preset mode"""
+        if self.is_boosted:
+            return TEXT_BOOST
+        else:
+            return None
+
+    async def set_preset(self, preset: WiserPresetOptionsEnum | str):
+        """Set the preset mode"""
+        if type(preset) == WiserPresetOptionsEnum:
+            preset = preset.value
+
+        # Is it valid preset option?
+        if preset in self.available_presets:
+            if preset == WiserPresetOptionsEnum.cancel_overrides.value:
+                await self.cancel_overrides()
+            elif preset == WiserPresetOptionsEnum.advance_schedule.value:
+                await self.schedule_advance()
+            elif preset.lower().startswith(TEXT_BOOST.lower()):
+                # Lookup boost duration
+                duration = WISER_BOOST_DURATION[preset]
+                _LOGGER.info(
+                    f"Boosting by {self._boost_temperature_delta} for {duration}"
+                )
+                await self.boost(self._boost_temperature_delta, duration)
+        else:
+            raise ValueError(
+                f"{preset} is not a valid preset.  Valid presets are {self.available_presets}"
+            )
+
+    @property
     def roomstat_id(self) -> int:
         """Get the id of the roomstat"""
         return self._data.get("RoomStatId", None)
@@ -408,6 +449,19 @@ class _WiserRoom(object):
     def smartvalve_ids(self) -> list:
         """Get list of smartvalve ids associated with room"""
         return sorted(self._data.get("SmartValveIds", []))
+
+    @property
+    def stored_manual_target_temperature(self) -> float:
+        if self._extra_config and "manual_temp" in self._extra_config:
+            return self._extra_config["manual_temp"]
+        elif self.stored_manual_target_temperature_alt_source == "current":
+            return self.current_temperature
+        elif (
+            self.stored_manual_target_temperature_alt_source == "scheduled"
+            and self.schedule
+        ):
+            return self.scheduled_target_temperature
+        return TEMP_MINIMUM
 
     @property
     def target_temperature_origin(self) -> str:
@@ -485,6 +539,14 @@ class _WiserRoom(object):
         param temp: the temperature to set in C
         return: boolean
         """
+        # Set manual temp in stored config
+        if (
+            self.mode == WiserHeatingModeEnum.manual.value
+            and not self.is_passive_mode
+            and temp != TEMP_OFF
+        ):
+            await self._update_extra_config("manual_temp", temp)
+
         return await self._send_command(
             {
                 "RequestOverride": {
@@ -502,6 +564,10 @@ class _WiserRoom(object):
         param temp: the temperature to set in C
         return: boolean
         """
+        # Set manual temp in stored config
+        if self.mode == WiserHeatingModeEnum.manual.value and not self.is_passive_mode:
+            await self._update_extra_config("manual_temp", temp)
+
         return await self._send_command(
             {
                 "RequestOverride": {

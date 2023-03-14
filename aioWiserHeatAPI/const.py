@@ -3,6 +3,7 @@ import enum
 # Temperature Constants
 DEFAULT_AWAY_MODE_TEMP = 10.5
 DEFAULT_DEGRADED_TEMP = 18
+DEFAULT_BOOST_DELTA = 2
 MAX_BOOST_INCREASE = 5
 TEMP_ERROR = 2000
 TEMP_MINIMUM = 5
@@ -35,6 +36,7 @@ REST_TIMEOUT = 10
 
 # Text Values
 TEXT_AUTO = "Auto"
+TEXT_BOOST = "Boost"
 TEXT_CLOSE = "Close"
 TEXT_DEGREESC = "DegreesC"
 TEXT_HEATING = "Heating"
@@ -119,18 +121,29 @@ class WiserHeatingModeEnum(enum.Enum):
     manual = TEXT_MANUAL
 
 
+class WiserPresetOptionsEnum(enum.Enum):
+    advance_schedule = "Advance Schedule"
+    cancel_overrides = "Cancel Overrides"
+    boost30 = "Boost 30m"
+    boost60 = "Boost 1h"
+    boost120 = "Boost 2h"
+    boost180 = "Boost 3h"
+
+
+WISER_BOOST_DURATION = {
+    "Boost 30m": 30,
+    "Boost 1h": 60,
+    "Boost 2h": 120,
+    "Boost 3h": 180,
+}
+
+
 class WiserScheduleTypeEnum(enum.Enum):
     heating = TEXT_HEATING
     onoff = TEXT_ONOFF
     level = TEXT_LEVEL
     lighting = TEXT_LIGHTING
     shutters = TEXT_SHUTTERS
-
-
-class WiserPassiveModeEnum(enum.Enum):
-    disabled = "Disabled"
-    manual = "Passive Manual"
-    schedule = "Passive Follow Schedule"
 
 
 DEFAULT_LEVEL_SCHEDULE = {
