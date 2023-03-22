@@ -65,6 +65,7 @@ class _WiserRoom(object):
 
         self._boost_temperature_delta = DEFAULT_BOOST_DELTA
         self.stored_manual_target_temperature_alt_source = "current"
+        self.passive_temperature_increment = 0.5
 
         # Add device id to schedule
         if self._schedule:
@@ -110,6 +111,7 @@ class _WiserRoom(object):
             and self.passive_mode_enabled
             and self.mode != WiserHeatingModeEnum.off.value
             and not self.is_boosted
+            and not self.is_away_mode
             else False
         )
 
@@ -148,13 +150,14 @@ class _WiserRoom(object):
     async def set_passive_mode(self, enable: bool):
         await self._update_extra_config("passive_mode", enable)
 
-        # Set to min of temp range when initialised
-        if enable and self.mode != WiserHeatingModeEnum.off.value:
-            await self.set_target_temperature(self.passive_mode_lower_temp)
+        if not self.is_away_mode:
+            # Set to min of temp range when initialised
+            if enable and self.mode != WiserHeatingModeEnum.off.value:
+                await self.set_target_temperature(self.passive_mode_lower_temp)
 
-        # Set target temp back to last manual temp if in manual mode
-        if (not enable) and self.mode == WiserHeatingModeEnum.manual.value:
-            await self.set_target_temperature(self.stored_manual_target_temperature)
+            # Set target temp back to last manual temp if in manual mode
+            if (not enable) and self.mode == WiserHeatingModeEnum.manual.value:
+                await self.set_target_temperature(self.stored_manual_target_temperature)
 
     async def set_passive_mode_lower_temp(self, temp):
         await self._update_extra_config("min", temp)
