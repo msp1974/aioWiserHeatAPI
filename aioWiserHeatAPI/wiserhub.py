@@ -125,6 +125,14 @@ class WiserAPI(object):
             )
 
     async def read_hub_data(self):
+        await self._build_objects()
+
+        # Run automations
+        if self._enable_automations:
+            if await self._rooms.run_automations():
+                await self._build_objects()
+
+    async def _build_objects(self):
         """Read all data from hub and populate objects"""
 
         # Read data from hub
@@ -216,10 +224,6 @@ class WiserAPI(object):
                 self._moments = _WiserMomentCollection(
                     self._wiser_rest_controller, self._domain_data.get("Moment")
                 )
-
-            # Run automations
-            if self._enable_automations:
-                await self._rooms.run_automations()
 
             # If gets here with no exceptions then success and return true
             return True
