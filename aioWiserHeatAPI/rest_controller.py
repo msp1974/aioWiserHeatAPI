@@ -12,6 +12,7 @@ from .const import (
 )
 
 from .exceptions import (
+    WiserExtraConfigError,
     WiserHubAuthenticationError,
     WiserHubConnectionError,
     WiserHubRESTError,
@@ -176,10 +177,16 @@ class _WiserRestController(object):
         # Load extra config file
 
         if self._extra_config_file:
-            self._extra_config = _WiserExtraConfig(
-                self._extra_config_file, self._hub_name.lower()
-            )
-            await self._extra_config.async_load_config()
+            try:
+                self._extra_config = _WiserExtraConfig(
+                    self._extra_config_file, self._hub_name.lower()
+                )
+                await self._extra_config.async_load_config()
+            except WiserExtraConfigError as ex:
+                _LOGGER.error(
+                    "Your config file is corrupted and needs to be fixed to maintain all the functionality of this integration."
+                )
+                self._extra_config = None
 
     async def _send_command(
         self,

@@ -20,7 +20,13 @@ class _WiserExtraConfig:
                         self._config = json.loads(contents)
                     config_file.close()
 
-                except (OSError, EOFError, TypeError, AttributeError) as ex:
+                except (
+                    OSError,
+                    EOFError,
+                    TypeError,
+                    AttributeError,
+                    json.JSONDecodeError,
+                ) as ex:
                     raise WiserExtraConfigError("Error loading extra config file")
         else:
             await self.async_update_config("Info", "Version", "1.0.0")
@@ -52,7 +58,13 @@ class _WiserExtraConfig:
             try:
                 await config_file.write(json.dumps(self._config, indent=2))
                 config_file.close()
-            except (OSError, EOFError, TypeError, AttributeError) as ex:
+            except (
+                OSError,
+                EOFError,
+                TypeError,
+                AttributeError,
+                json.JSONDecodeError,
+            ) as ex:
                 raise WiserExtraConfigError("Error writing to extra config file")
 
     # @property

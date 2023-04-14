@@ -97,10 +97,16 @@ class _WiserRoom(object):
             return True
         return False
 
-    async def _update_extra_config(self, key: str, value):
-        await self._wiser_rest_controller._extra_config.async_update_config(
-            "Rooms", str(self.id), {key: value}
-        )
+    async def _update_extra_config(self, key: str, value) -> bool:
+        if self._wiser_rest_controller._extra_config:
+            try:
+                await self._wiser_rest_controller._extra_config.async_update_config(
+                    "Rooms", str(self.id), {key: value}
+                )
+                return True
+            except Exception:
+                return False
+        return False
 
     @property
     def is_passive_mode(self) -> bool:
@@ -147,22 +153,33 @@ class _WiserRoom(object):
             return self._default_extra_config["max"]
 
     async def set_passive_mode(self, enable: bool):
-        await self._update_extra_config("passive_mode", enable)
+        if await self._update_extra_config("passive_mode", enable):
+            if not self.is_away_mode:
+                # Set to min of temp range when initialised
+                if enable and self.mode != WiserHeatingModeEnum.off.value:
+                    await self.set_target_temperature(self.passive_mode_lower_temp)
 
-        if not self.is_away_mode:
-            # Set to min of temp range when initialised
-            if enable and self.mode != WiserHeatingModeEnum.off.value:
-                await self.set_target_temperature(self.passive_mode_lower_temp)
-
-            # Set target temp back to last manual temp if in manual mode
-            if (not enable) and self.mode == WiserHeatingModeEnum.manual.value:
-                await self.set_target_temperature(self.stored_manual_target_temperature)
+                # Set target temp back to last manual temp if in manual mode
+                if (not enable) and self.mode == WiserHeatingModeEnum.manual.value:
+                    await self.set_target_temperature(
+                        self.stored_manual_target_temperature
+                    )
+        else:
+            _LOGGER.error(
+                "Unable to set passive mode.  This maybe caused by an issue with your extra config file."
+            )
 
     async def set_passive_mode_lower_temp(self, temp):
-        await self._update_extra_config("min", temp)
+        if not await self._update_extra_config("min", temp):
+            _LOGGER.error(
+                "Unable to set passive lower temp.  This maybe caused by an issue with your extra config file."
+            )
 
     async def set_passive_mode_upper_temp(self, temp):
-        await self._update_extra_config("max", temp)
+        if not await self._update_extra_config("max", temp):
+            _LOGGER.error(
+                "Unable to set passive mode upper temp.  This maybe caused by an issue with your extra config file."
+            )
 
     @property
     def available_modes(self) -> list:
