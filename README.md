@@ -53,9 +53,13 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 ## Changelog
 
 ### v1.3.2
-* Fixed issue not maintaining some parameters after hub update
+
+* Fixed issue ot maintaining some parameters after hub update
+* Improved handling of extra config json errors
+* Amended current_target_temp to use DisplayedSetPoint instead of CurrentSetPoint as this displays incorrectly in Eco mode
 
 ### 1.3.1
+
 * Away mode overrides passive mode functions
 
 ### 1.3.0
