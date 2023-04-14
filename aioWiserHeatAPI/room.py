@@ -238,7 +238,7 @@ class _WiserRoom(object):
     @property
     def current_target_temperature(self) -> float:
         """Get current target temperature for the room"""
-        return tf._from_wiser_temp(self._data.get("CurrentSetPoint", TEMP_MINIMUM))
+        return tf._from_wiser_temp(self._data.get("DisplayedSetPoint", TEMP_MINIMUM))
 
     @property
     def current_temperature(self) -> float:
