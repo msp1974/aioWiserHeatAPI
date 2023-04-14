@@ -64,8 +64,7 @@ class _WiserRoom(object):
         }
 
         self._boost_temperature_delta = DEFAULT_BOOST_DELTA
-        self.stored_manual_target_temperature_alt_source = "current"
-        self.passive_temperature_increment = 0.5
+        # self.stored_manual_target_temperature_alt_source = "current"
 
         # Add device id to schedule
         if self._schedule:
@@ -457,10 +456,14 @@ class _WiserRoom(object):
     def stored_manual_target_temperature(self) -> float:
         if self._extra_config and "manual_temp" in self._extra_config:
             return self._extra_config["manual_temp"]
-        elif self.stored_manual_target_temperature_alt_source == "current":
+        elif (
+            self._wiser_rest_controller._api_parameters.stored_manual_target_temperature_alt_source.lower()
+            == "current"
+        ):
             return self.current_temperature
         elif (
-            self.stored_manual_target_temperature_alt_source == "scheduled"
+            self._wiser_rest_controller._api_parameters.stored_manual_target_temperature_alt_source.lower()
+            == "scheduled"
             and self.schedule
         ):
             return self.scheduled_target_temperature

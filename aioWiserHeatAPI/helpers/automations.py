@@ -30,7 +30,7 @@ class _WiserRoomAutomations:
                         round(
                             (
                                 room.current_temperature
-                                + room.passive_temperature_increment
+                                + self._wiser_rest_controller._api_parameters.passive_mode_increment
                             )
                             * 2
                         )

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import json
 
 from aioWiserHeatAPI.helpers.extra_config import _WiserExtraConfig
@@ -22,6 +23,13 @@ import enum
 import re
 
 from typing import Any, Optional, cast
+
+
+@dataclass
+class WiserAPIParams:
+    passive_mode_increment = 0.5
+    stored_manual_target_temperature_alt_source = "current"
+
 
 # Connection info class
 class _WiserConnectionInfo(object):
@@ -55,6 +63,7 @@ class _WiserRestController(object):
     ):
 
         self._wiser_connection_info = wiser_connection_info
+        self._api_parameters = WiserAPIParams()
 
         if not session:
             session = aiohttp.ClientSession()

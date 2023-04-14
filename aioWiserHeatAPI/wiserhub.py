@@ -15,6 +15,7 @@ This API allows you to get information from and control your wiserhub.
 # TODO: Keep objects and update instead of recreating on hub update
 # TODO: Update entity values after commend issued to get current values
 import asyncio
+from dataclasses import dataclass
 import aiohttp
 import pathlib
 from typing import Optional
@@ -234,6 +235,10 @@ class WiserAPI(object):
         await self._wiser_rest_controller._session.close()
 
     # API properties
+    @property
+    def api_parameters(self):
+        return self._wiser_rest_controller._api_parameters
+
     @property
     def devices(self):
         """List of device entities attached to the Wiser Hub"""
