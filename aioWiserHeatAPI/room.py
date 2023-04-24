@@ -7,7 +7,6 @@ from typing import Union
 from . import _LOGGER
 
 from .devices import _WiserDeviceCollection
-from .helpers.automations import _WiserRoomAutomations
 from .helpers.misc import is_value_in_list
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController, WiserRestActionEnum
@@ -627,7 +626,7 @@ class _WiserRoom(object):
         return await self._send_command({"RequestOverride": {"Type": "None"}})
 
 
-class _WiserRoomCollection(_WiserRoomAutomations):
+class _WiserRoomCollection:
     """Class holding all wiser room objects"""
 
     def __init__(

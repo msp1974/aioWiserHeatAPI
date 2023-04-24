@@ -20,6 +20,8 @@ import aiohttp
 import pathlib
 from typing import Optional
 
+from .helpers.automations import _WiserHeatingChannelAutomations
+
 
 from . import _LOGGER, __VERSION__
 
@@ -130,7 +132,10 @@ class WiserAPI(object):
 
         # Run automations
         if self._enable_automations:
-            if await self._rooms.run_automations():
+            automations = _WiserHeatingChannelAutomations(
+                self._wiser_rest_controller, self.heating_channels
+            )
+            if await automations.run_automations():
                 await self._build_objects()
 
     async def _build_objects(self):
