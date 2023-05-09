@@ -47,8 +47,9 @@ class _WiserTemperatureFunctions(object):
         return: Float
         """
         if temp is not None:
-            if temp >= TEMP_ERROR:  # Fix high value from hub when lost sight of iTRV
-                temp = TEMP_MINIMUM
+            if abs(temp) >= TEMP_ERROR:
+                # Fix high value from hub when lost sight of iTRV
+                return None
             else:
                 temp = _WiserTemperatureFunctions._validate_temperature(
                     round(temp / 10, 1), type
