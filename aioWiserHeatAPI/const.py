@@ -84,6 +84,7 @@ WISERUFHCONTROLLER = "UnderFloorHeating/{}"
 WISERSHUTTER = "Shutter/{}"
 WISERLIGHT = "Light/{}"
 
+
 # Enums
 class WiserUnitsEnum(enum.Enum):
     imperial = "imperial"
