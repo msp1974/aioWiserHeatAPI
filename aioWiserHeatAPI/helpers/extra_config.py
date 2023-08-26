@@ -1,7 +1,7 @@
-import asyncio
-import aiofiles
 import json
 from os.path import exists
+
+import aiofiles
 
 from ..exceptions import WiserExtraConfigError
 
@@ -18,8 +18,6 @@ class _WiserExtraConfig:
                     contents = await config_file.read()
                     if contents:
                         self._config = json.loads(contents)
-                    config_file.close()
-
                 except (
                     OSError,
                     EOFError,
@@ -27,7 +25,7 @@ class _WiserExtraConfig:
                     AttributeError,
                     json.JSONDecodeError,
                 ) as ex:
-                    raise WiserExtraConfigError("Error loading extra config file")
+                    raise WiserExtraConfigError("Error loading extra config file") from ex
         else:
             await self.async_update_config("Info", "Version", "1.0.0")
         return
@@ -57,7 +55,6 @@ class _WiserExtraConfig:
         async with aiofiles.open(self._config_file, mode="w") as config_file:
             try:
                 await config_file.write(json.dumps(self._config, indent=2))
-                config_file.close()
             except (
                 OSError,
                 EOFError,
@@ -65,7 +62,7 @@ class _WiserExtraConfig:
                 AttributeError,
                 json.JSONDecodeError,
             ) as ex:
-                raise WiserExtraConfigError("Error writing to extra config file")
+                raise WiserExtraConfigError("Error writing to extra config file") from ex
 
     # @property
     def config(self, section: str = None, key: str = None):
