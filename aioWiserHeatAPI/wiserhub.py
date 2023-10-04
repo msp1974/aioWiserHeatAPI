@@ -14,50 +14,45 @@ This API allows you to get information from and control your wiserhub.
 
 # TODO: Keep objects and update instead of recreating on hub update
 # TODO: Update entity values after commend issued to get current values
-import asyncio
-from dataclasses import dataclass
-import aiohttp
 import pathlib
 from typing import Optional
 
-from .helpers.automations import _WiserHeatingChannelAutomations
+import aiohttp
 
-
-from . import _LOGGER, __VERSION__
-
+from . import __VERSION__, _LOGGER
+from .cli import log_response_to_file
 from .const import (
     DEFAULT_AWAY_MODE_TEMP,
     DEFAULT_DEGRADED_TEMP,
     MAX_BOOST_INCREASE,
     TEMP_ERROR,
-    TEMP_HW_ON,
     TEMP_HW_OFF,
-    TEMP_MINIMUM,
+    TEMP_HW_ON,
     TEMP_MAXIMUM,
+    TEMP_MINIMUM,
     TEMP_OFF,
-    WiserUnitsEnum,
     WISERHUBDOMAIN,
     WISERHUBNETWORK,
-    WISERHUBSCHEDULES,
     WISERHUBOPENTHERM,
+    WISERHUBSCHEDULES,
+    WISERHUBSTATUS,
+    WiserUnitsEnum,
 )
-
+from .devices import _WiserDeviceCollection
 from .exceptions import (
-    WiserHubConnectionError,
     WiserHubAuthenticationError,
+    WiserHubConnectionError,
     WiserHubRESTError,
     WiserScheduleError,
 )
-
-from .cli import log_response_to_file
-from .devices import _WiserDeviceCollection
 from .heating import _WiserHeatingChannelCollection
-from .helpers.extra_config import _WiserExtraConfig
+from .helpers.automations import _WiserHeatingChannelAutomations
+from .helpers.status import WiserStatus
 from .hot_water import _WiserHotwater
 from .moments import _WiserMomentCollection
-from .rest_controller import _WiserRestController, _WiserConnectionInfo
+from .rest_controller import _WiserConnectionInfo, _WiserRestController
 from .room import _WiserRoomCollection
-from .schedule import _WiserScheduleCollection, WiserScheduleTypeEnum
+from .schedule import WiserScheduleTypeEnum, _WiserScheduleCollection
 from .system import _WiserSystem
 
 
@@ -76,7 +71,6 @@ class WiserAPI(object):
         extra_config_file: Optional[str] = None,
         enable_automations: Optional[bool] = True,
     ):
-
         # Connection variables
         self._session = session
         self._wiser_api_connection = _WiserConnectionInfo()
@@ -95,6 +89,7 @@ class WiserAPI(object):
         self._network_data = {}
         self._schedule_data = {}
         self._opentherm_data = {}
+        self._status_data = {}
 
         # Data stores for exposed properties
         self._devices = None
@@ -151,6 +146,9 @@ class WiserAPI(object):
         self._schedule_data = await self._wiser_rest_controller._get_hub_data(
             WISERHUBSCHEDULES
         )
+        self._status_data = await self._wiser_rest_controller._get_hub_data(
+            WISERHUBSTATUS
+        )
 
         # Set hub name on rest controller
         self._wiser_rest_controller._hub_name = (
@@ -173,7 +171,6 @@ class WiserAPI(object):
             )
 
         if self._domain_data != {} and self._network_data != {}:
-
             # System Object
             _device_data = self._domain_data.get("Device", [])
             self._system = _WiserSystem(
@@ -273,6 +270,11 @@ class WiserAPI(object):
     def schedules(self):
         """List of schedules"""
         return self._schedules
+
+    @property
+    def status(self):
+        """Hub status info"""
+        return WiserStatus(self._status_data)
 
     @property
     def system(self):
