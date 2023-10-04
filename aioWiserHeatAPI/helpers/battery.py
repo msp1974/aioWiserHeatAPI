@@ -1,6 +1,7 @@
 from ..const import (
     ROOMSTAT_MIN_BATTERY_LEVEL,
     ROOMSTAT_FULL_BATTERY_LEVEL,
+    TEXT_UNKNOWN,
     TRV_FULL_BATTERY_LEVEL,
     TRV_BATTERY_LEVEL_MAPPING,
 )
@@ -19,12 +20,12 @@ class _WiserBattery(object):
     @property
     def level(self) -> str:
         """Get the descritpion of the battery level"""
-        return self._data.get("BatteryLevel", "No Battery")
+        return self._data.get("BatteryLevel", TEXT_UNKNOWN)
 
     @property
     def percent(self) -> int:
         """Get the percent of battery remaining"""
-        if self._data.get("ProductType") == "RoomStat" and self.level != "No Battery":
+        if self._data.get("ProductType") == "RoomStat" and self.voltage:
             return percentage_clip(
                 round(
                     (
@@ -34,16 +35,20 @@ class _WiserBattery(object):
                     * 100
                 )
             )
-        elif self._data.get("ProductType") == "iTRV" and self.level != "No Battery":
+        elif self._data.get("ProductType") == "iTRV" and self.voltage:
             return (
                 TRV_BATTERY_LEVEL_MAPPING.get(self.voltage, 0)
                 if self.voltage < TRV_FULL_BATTERY_LEVEL
                 else 100
             )
         else:
-            return 0
+            return None
 
     @property
     def voltage(self) -> float:
         """Get the battery voltage"""
-        return self._data.get("BatteryVoltage", 0) / 10
+        return (
+            self._data.get("BatteryVoltage") / 10
+            if self._data.get("BatteryVoltage")
+            else None
+        )
