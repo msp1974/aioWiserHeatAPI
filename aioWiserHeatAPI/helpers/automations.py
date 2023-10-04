@@ -28,7 +28,9 @@ class _WiserHeatingChannelAutomations:
             passive_rooms = [
                 room
                 for room in self._rooms
-                if room.is_passive_mode and room.id in heating_channel.room_ids
+                if room.is_passive_mode
+                and room.id in heating_channel.room_ids
+                and room.current_temperature  # added to prevent error if trv offline
             ]
 
             # If no passive mode rooms
