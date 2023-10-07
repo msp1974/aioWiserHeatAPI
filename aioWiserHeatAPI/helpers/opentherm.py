@@ -100,7 +100,9 @@ class _WiserOpenThermOperationalData(object):
     @property
     def relative_modulation_level(self) -> int:
         """Get RelativeModulationLevel"""
-        return self._data.get("RelativeModulationLevel", None)
+        if self._data.get("RelativeModulationLevel"):
+            return int(self._data.get("RelativeModulationLevel", 0) / 10)
+        return None
 
     @property
     def slave_status(self) -> int:
