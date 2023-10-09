@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.3.8
+# Drayton Wiser Hub API Async v1.3.9
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
