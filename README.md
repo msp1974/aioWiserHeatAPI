@@ -52,6 +52,10 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
+### v1.3.9
+
+* Fix for hub firmware bug whereby Away Mode Affects HotWater is turned off when cancelling overrides if no overrides exist.
+
 ### v1.3.8
 
 * Correct relative modulation level opentherm parameter magnitude
