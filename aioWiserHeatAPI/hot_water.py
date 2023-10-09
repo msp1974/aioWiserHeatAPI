@@ -179,7 +179,8 @@ class _WiserHotwater(object):
         Cancel all overrides of the hot water
         return: boolean
         """
-        return await self._send_command({"RequestOverride": {"Type": "None"}})
+        if self.is_override:
+            return await self._send_command({"RequestOverride": {"Type": "None"}})
 
     async def override_state(self, state: str) -> bool:
         """
