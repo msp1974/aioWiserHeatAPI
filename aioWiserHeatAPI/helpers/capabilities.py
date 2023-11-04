@@ -1,5 +1,10 @@
+"""
+Handles hub capabilities
+"""
+
+
 class _WiserHubCapabilitiesInfo:
-    """Data structure for capabilities info for Wiser Hub"""
+    """Data structure for device capabilities info for Wiser Hub"""
 
     def __init__(self, data: dict):
         self._data = data
@@ -126,3 +131,55 @@ class _WiserHubCapabilitiesInfo:
     @property
     def iconic_devices(self) -> bool:
         return self._data.get("IconicDevices", False)
+
+
+class _WiserHubAutomationCapabilities:
+    """Data structure for automations features (v2 hub)"""
+
+    def __init__(self, data: dict):
+        self._data = data
+
+    @property
+    def max_actions(self) -> int:
+        return self._data.get("MaxActions", 0)
+
+    @property
+    def max_triggers(self) -> int:
+        return self._data.get("MaxTriggers", 0)
+
+    @property
+    def max_constraints(self) -> int:
+        return self._data.get("MaxTimeConstraints", 0)
+
+
+class _WiserHubPTECapabilities:
+    """Data structure for PTE features (v2 hub)"""
+
+    def __init__(self, data: dict):
+        self._data = data
+
+    @property
+    def energy_export(self) -> bool:
+        return self._data.get("EnergyExport", False)
+
+
+class _WiserHubFeatureCapabilitiesInfo:
+    """Data structure for feature capabilities info for Wiser Hub"""
+
+    def __init__(self, data: dict):
+        self._data = data
+
+    @property
+    def all(self) -> dict:
+        "Get the list of capabilities"
+        return dict(self._data)
+
+    @property
+    def automations(self) -> _WiserHubAutomationCapabilities:
+        """Get automation capabilities"""
+        return _WiserHubAutomationCapabilities(self._data.get("Automation", {}))
+
+    @property
+    def pte(self) -> _WiserHubPTECapabilities:
+        """Get PTE capabilities"""
+        return _WiserHubPTECapabilities(self._data.get("PTE", {}))
