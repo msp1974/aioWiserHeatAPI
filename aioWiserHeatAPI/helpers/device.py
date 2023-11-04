@@ -101,11 +101,18 @@ class _WiserDevice(object):
     def model(self) -> str:
         """Get model of device"""
         # Lights, shutters and power tags currently have model identifier as Unknowm
-        return (
-            self._data.get("ProductType", TEXT_UNKNOWN)
-            if self._data.get("ModelIdentifier") == TEXT_UNKNOWN
-            else self._data.get("ModelIdentifier", TEXT_UNKNOWN)
-        )
+        # return (
+        #    self._data.get("ProductType", TEXT_UNKNOWN)
+        #    if self._data.get("ModelIdentifier") == TEXT_UNKNOWN
+        #    else self._data.get("ModelIdentifier", TEXT_UNKNOWN)
+        # )
+
+        if self.product_model not in ["", TEXT_UNKNOWN]:
+            return self._data.get("ProductModel")
+        elif self._data.get("ModelIdentifier") != TEXT_UNKNOWN:
+            return self._data.get("ModelIdentifier")
+        else:
+            return self.product_identifier
 
     @property
     def name(self) -> str:
