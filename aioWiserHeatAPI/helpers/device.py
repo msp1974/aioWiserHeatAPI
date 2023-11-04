@@ -1,7 +1,7 @@
 import inspect
 from typing import Union
-from .. import _LOGGER
 
+from .. import _LOGGER
 from ..const import (
     TEXT_UNKNOWN,
     WISERDEVICE,
@@ -68,6 +68,11 @@ class _WiserDevice(object):
             return True
 
     @property
+    def device_type(self) -> str:
+        """Get the device types (hub v2 only)"""
+        return self._data.get("Type", TEXT_UNKNOWN)
+
+    @property
     def device_type_id(self) -> int:
         """Get the device id for the specific device type"""
         return self._data.get("id")
@@ -95,7 +100,7 @@ class _WiserDevice(object):
     @property
     def model(self) -> str:
         """Get model of device"""
-        # Lights and shutters currently have model identifier as Unknowm
+        # Lights, shutters and power tags currently have model identifier as Unknowm
         return (
             self._data.get("ProductType", TEXT_UNKNOWN)
             if self._data.get("ModelIdentifier") == TEXT_UNKNOWN
@@ -111,6 +116,16 @@ class _WiserDevice(object):
     def node_id(self) -> int:
         """Get zigbee node id of device"""
         return self._data.get("NodeId", 0)
+
+    @property
+    def ota_hardware_version(self) -> int:
+        """Get ota hardware version"""
+        return self._data.get("OtaHardwareVersion", 0)
+
+    @property
+    def ota_version(self) -> int:
+        """Get ota software version"""
+        return self._data.get("OtaVersion", 0)
 
     @property
     def product_identifier(self) -> str:
