@@ -146,9 +146,12 @@ class WiserAPI(object):
         self._schedule_data = await self._wiser_rest_controller._get_hub_data(
             WISERHUBSCHEDULES
         )
-        self._status_data = await self._wiser_rest_controller._get_hub_data(
-            WISERHUBSTATUS
-        )
+        try:
+            self._status_data = await self._wiser_rest_controller._get_hub_data(
+                WISERHUBSTATUS
+            )
+        except WiserHubRESTError:
+            self._status_data = {}
 
         # Set hub name on rest controller
         self._wiser_rest_controller._hub_name = (
