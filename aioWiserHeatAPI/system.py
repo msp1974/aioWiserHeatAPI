@@ -36,7 +36,6 @@ class _WiserSystem(object):
         device_data: dict,
         opentherm_data: dict,
     ):
-
         self._wiser_rest_controller = wiser_rest_controller
         self._data = domain_data
         self._system_data = self._data.get("System", {})
@@ -224,7 +223,7 @@ class _WiserSystem(object):
     @property
     def hardware_generation(self) -> int:
         """Get hardware generation version"""
-        return self._system_data.get("HardwareGeneration", 0)
+        return self._system_data.get("HardwareGeneration", 1)
 
     @property
     def heating_button_override_state(self) -> bool:
