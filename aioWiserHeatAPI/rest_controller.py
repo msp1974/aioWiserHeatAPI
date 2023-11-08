@@ -1,29 +1,22 @@
-from dataclasses import dataclass
+import asyncio
+import enum
 import json
+import re
+from dataclasses import dataclass
+from typing import Any, Optional, cast
+
+import aiohttp
 
 from aioWiserHeatAPI.helpers.extra_config import _WiserExtraConfig
+
 from . import _LOGGER
-
-from .const import (
-    REST_TIMEOUT,
-    WISERHUBDOMAIN,
-    WISERHUBSCHEDULES,
-    WiserUnitsEnum,
-)
-
+from .const import REST_TIMEOUT, WISERHUBDOMAIN, WISERHUBSCHEDULES, WiserUnitsEnum
 from .exceptions import (
     WiserExtraConfigError,
     WiserHubAuthenticationError,
     WiserHubConnectionError,
     WiserHubRESTError,
 )
-
-import asyncio
-import aiohttp
-import enum
-import re
-
-from typing import Any, Optional, cast
 
 
 @dataclass
@@ -62,7 +55,6 @@ class _WiserRestController(object):
         timeout: Optional[float] = REST_TIMEOUT,
         wiser_connection_info: Optional[_WiserConnectionInfo] = None,
     ):
-
         self._wiser_connection_info = wiser_connection_info
         self._api_parameters = WiserAPIParams()
 
@@ -122,7 +114,7 @@ class _WiserRestController(object):
             else:
                 content = await response.content.read()
                 if len(content) > 0:
-                    response = re.sub(rb"[^\x20-\x7F]+", b"", content)
+                    response = content.decode("utf-8", "ignore").encode("utf-8")
                     return json.loads(response)
                 else:
                     return {}
