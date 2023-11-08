@@ -4,6 +4,7 @@ Handles power tag energy devices
 
 from .const import TEXT_UNKNOWN
 from .helpers.device import _WiserDevice
+from .helpers.equipment import _WiserEquipment
 
 
 class _WiserPowerTagEnergy(_WiserDevice):
@@ -20,9 +21,18 @@ class _WiserPowerTagEnergy(_WiserDevice):
         return self._device_type_data.get("EquipmentId", 0)
 
     @property
-    def enery_export(self) -> str:
+    def energy_export(self) -> str:
         """Get energy export status"""
         return self._device_type_data.get("EnergyExport", TEXT_UNKNOWN)
+
+    @property
+    def equipment(self) -> str:
+        """Get equipment data"""
+        return (
+            _WiserEquipment(self._device_type_data.get("EquipmentData"))
+            if self._device_type_data.get("EquipmentData")
+            else None
+        )
 
     @property
     def fault_status(self) -> str:
@@ -57,6 +67,18 @@ class _WiserPowerTagEnergy(_WiserDevice):
     @property
     def raw_total_active_power(self) -> int:
         """Get raw total active power of device"""
+        return self._device_type_data.get("RawTotalActivePower", 0)
+
+    @property
+    def instantaneous_power(self) -> int:
+        """Get current power of device"""
+        # TODO: Change this!!!
+        return self._device_type_data.get("RawTotalActivePower", 0)
+
+    @property
+    def delivered_power(self) -> int:
+        """Get current power of device"""
+        # TODO: Change this!!!
         return self._device_type_data.get("RawTotalActivePower", 0)
 
     @property

@@ -36,7 +36,7 @@ class _WiserDeviceTypeEnum(enum.Enum):
     Shutter = "Shutter"
     OnOffLight = "Light"
     DimmableLight = "Light"
-    PowerTagE = "PowerTagEnergy"
+    PowerTagE = "PTE"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -57,6 +57,7 @@ PRODUCT_TYPE_CONFIG = {
         "collection": _WiserHeatingActuatorCollection,
         "endpoint": WISERHEATINGACTUATOR,
         "heating": True,
+        "has_v2_equipment": True,
     },
     "UnderFloorHeating": {
         "class": _WiserUFHController,
@@ -69,6 +70,7 @@ PRODUCT_TYPE_CONFIG = {
         "collection": _WiserSmartPlugCollection,
         "endpoint": WISERSMARTPLUG,
         "schedule_type": WiserScheduleTypeEnum.onoff,
+        "has_v2_equipment": True,
     },
     "Shutter": {
         "class": _WiserShutter,
@@ -91,11 +93,12 @@ PRODUCT_TYPE_CONFIG = {
         "device_id_field": "DeviceId",
         "schedule_type": WiserScheduleTypeEnum.level,
     },
-    "PowerTagEnergy": {
+    "PowerTagE": {
         "class": _WiserPowerTagEnergy,
         "collection": _WiserPowerTagEnergyCollection,
         "endpoint": WISERPOWERTAGENERGY,
-        "device_id_field": "DevideId",
+        "device_id_field": "DeviceId",
+        "has_v2_equipment": True,
     },
 }
 
@@ -112,10 +115,24 @@ class _WiserDeviceCollection(object):
         self._wiser_rest_controller = wiser_rest_controller
         self._device_data = domain_data.get("Device", {})
         self._domain_data = domain_data
+        self._equipment_data = domain_data.get("Equipment", {})  # Supported by v2 hub
         self._schedules = schedules
         self._device_collection = {}
 
         self._build()
+
+    def _get_equipment_data(self, equipment_id: int) -> dict:
+        """Get equipment data"""
+        # Available for certain devices on v2 hub
+        for equipment_data in self._equipment_data:
+            print(f"{equipment_data.get('id')} -- {equipment_id}")
+
+        equipment_data = [
+            equipment_data
+            for equipment_data in self._equipment_data
+            if equipment_data.get("id") == equipment_id
+        ]
+        return equipment_data[0] if equipment_data else None
 
     def _build(self):
         """Build collection of devices by type"""
@@ -136,7 +153,6 @@ class _WiserDeviceCollection(object):
                 device_type = device.get("ProductType", TEXT_UNKNOWN)
                 if device_type in PRODUCT_TYPE_CONFIG:
                     device_config = PRODUCT_TYPE_CONFIG[device_type]
-
                     device_info = [
                         device_info
                         for device_info in self._domain_data.get(
@@ -167,6 +183,13 @@ class _WiserDeviceCollection(object):
                     else:
                         device_schedule = None
 
+                    # If has equipment entry, add equipment to device info data
+
+                    if device_config.get("has_v2_equipment"):
+                        device_info[0]["EquipmentData"] = self._get_equipment_data(
+                            device_info[0].get("EquipmentId")
+                        )
+
                     # Add device to collection
                     self._device_collection[
                         _WiserDeviceTypeEnum[device_type].value
@@ -196,7 +219,7 @@ class _WiserDeviceCollection(object):
     def all(self):
         """Return all devices"""
         items = []
-        for key in self._device_collection.items():
+        for key in self._device_collection:
             items.extend(self._device_collection[key].all)
         return items
 
@@ -218,7 +241,7 @@ class _WiserDeviceCollection(object):
     @property
     def power_tags(self):
         """Return all power tags"""
-        return self._device_collection["PowerTagEnergy"]
+        return self._device_collection["PTE"]
 
     @property
     def roomstats(self):
