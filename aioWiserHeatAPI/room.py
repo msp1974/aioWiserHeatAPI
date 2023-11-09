@@ -3,15 +3,9 @@ import inspect
 from datetime import datetime
 from typing import Union
 
+from aioWiserHeatAPI.helpers.capabilities import _WiserClimateCapabilities
 
 from . import _LOGGER
-
-from .devices import _WiserDeviceCollection
-from .helpers.misc import is_value_in_list
-from .helpers.temp import _WiserTemperatureFunctions as tf
-from .rest_controller import _WiserRestController, WiserRestActionEnum
-from .schedule import _WiserSchedule, _WiserScheduleCollection
-
 from .const import (
     DEFAULT_BOOST_DELTA,
     TEMP_MINIMUM,
@@ -26,6 +20,11 @@ from .const import (
     WiserHeatingModeEnum,
     WiserPresetOptionsEnum,
 )
+from .devices import _WiserDeviceCollection
+from .helpers.misc import is_value_in_list
+from .helpers.temp import _WiserTemperatureFunctions as tf
+from .rest_controller import WiserRestActionEnum, _WiserRestController
+from .schedule import _WiserSchedule, _WiserScheduleCollection
 
 
 class _WiserRoom(object):
@@ -223,6 +222,12 @@ class _WiserRoom(object):
 
     def set_boost_temperature_delta(self, temperature_delta: float):
         self._boost_temperature_delta = temperature_delta
+
+    @property
+    def capabilities(self) -> _WiserClimateCapabilities:
+        """Get room climate capabilities"""
+        if capabilities := self._data.get("ClimateCapabilities"):
+            return _WiserClimateCapabilities(self, capabilities)
 
     @property
     def comfort_mode_score(self) -> int:

@@ -183,3 +183,75 @@ class _WiserHubFeatureCapabilitiesInfo:
     def pte(self) -> _WiserHubPTECapabilities:
         """Get PTE capabilities"""
         return _WiserHubPTECapabilities(self._data.get("PTE", {}))
+
+
+class _WiserClimateCapabilities(object):
+    """Data structure for climate capalbilities of a room"""
+
+    def __init__(self, room, data: dict):
+        self._data = data
+        self._room = room
+
+    @property
+    def heating_supported(self) -> bool:
+        """Get heating supported value"""
+        return self._data.get("HeatingSupported")
+
+    @property
+    def cooling_supported(self) -> bool:
+        """Get cooling supported value"""
+        return self._data.get("CoolingSupported")
+
+    @property
+    def minimum_heat_set_point(self) -> int:
+        """Get minimum heat setpoint value"""
+        return self._data.get("MinimumHeatSetpoint")
+
+    @property
+    def maximum_heat_set_point(self) -> int:
+        """Get maximum heat setpoint value"""
+        return self._data.get("MaximumHeatSetpoint")
+
+    @property
+    def minimum_cool_set_point(self) -> int:
+        """Get minimum cool setpoint value"""
+        return self._data.get("MinimumCoolSetpoint")
+
+    @property
+    def maximum_cool_set_point(self) -> int:
+        """Get maximum cool setpoint value"""
+        return self._data.get("MaximumCoolSetpoint")
+
+    @property
+    def setpoint_step(self) -> int:
+        """Get setpoint step value"""
+        return self._data.get("SetpointStep")
+
+    @property
+    def ambient_temperature(self) -> bool:
+        """Get ambient temperature value"""
+        return self._data.get("AmbientTemperature")
+
+    @property
+    def temperature_control(self) -> bool:
+        """Get temperature control value"""
+        return self._data.get("TemperatureControl")
+
+    @property
+    def open_window_detection(self) -> bool:
+        """Get open window detection value"""
+        return self._data.get("OpenWindowDetection")
+
+    @property
+    def hydronic_channel_selection(self) -> bool:
+        """Get hydronic channel selection value"""
+        if self._data:
+            return self._data.get("HydronicChannelSelection")
+        return None
+
+    @property
+    def on_off_supported(self) -> bool:
+        """Get on off supported value"""
+        if self._data:
+            return self._data.get("OnOffSupported")
+        return None
