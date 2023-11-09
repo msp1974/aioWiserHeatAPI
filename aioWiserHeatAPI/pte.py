@@ -72,14 +72,17 @@ class _WiserPowerTagEnergy(_WiserDevice):
     @property
     def instantaneous_power(self) -> int:
         """Get current power of device"""
-        # TODO: Change this!!!
-        return self._device_type_data.get("RawTotalActivePower", 0)
+        return self.equipment.power.total_active_power
 
     @property
     def delivered_power(self) -> int:
         """Get current power of device"""
-        # TODO: Change this!!!
-        return self._device_type_data.get("RawTotalActivePower", 0)
+        return self.equipment.power.current_summation_delivered
+
+    @property
+    def received_power(self) -> int:
+        """Get current power of device"""
+        return self.equipment.power.current_summation_received
 
     @property
     def rfid(self) -> int:
