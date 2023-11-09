@@ -103,7 +103,7 @@ PRODUCT_TYPE_CONFIG = {
 }
 
 
-class _WiserDeviceCollection(object):
+class _WiserDeviceCollection:
     """Class holding all wiser devices"""
 
     def __init__(
@@ -123,10 +123,6 @@ class _WiserDeviceCollection(object):
 
     def _get_equipment_data(self, equipment_id: int) -> dict:
         """Get equipment data"""
-        # Available for certain devices on v2 hub
-        for equipment_data in self._equipment_data:
-            print(f"{equipment_data.get('id')} -- {equipment_id}")
-
         equipment_data = [
             equipment_data
             for equipment_data in self._equipment_data
@@ -184,7 +180,6 @@ class _WiserDeviceCollection(object):
                         device_schedule = None
 
                     # If has equipment entry, add equipment to device info data
-
                     if device_config.get("has_v2_equipment"):
                         device_info[0]["EquipmentData"] = self._get_equipment_data(
                             device_info[0].get("EquipmentId")
