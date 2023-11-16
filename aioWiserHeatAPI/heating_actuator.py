@@ -1,5 +1,6 @@
 from .const import TEMP_OFF, TEXT_UNKNOWN, WISERHEATINGACTUATOR, WiserTempLimitsEnum
 from .helpers.device import _WiserDevice
+from .helpers.equipment import _WiserEquipment
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController
 
@@ -122,6 +123,20 @@ class _WiserHeatingActuator(_WiserDevice):
     def delivered_power(self) -> int:
         """Get the amount of power delivered over time"""
         return self._device_type_data.get("CurrentSummationDelivered", 0)
+
+    @property
+    def equipment_id(self) -> int:
+        """Get equipment id (v2 hub)"""
+        return self._device_type_data.get("EquipmentId", 0)
+
+    @property
+    def equipment(self) -> str:
+        """Get equipment data"""
+        return (
+            _WiserEquipment(self._device_type_data.get("EquipmentData"))
+            if self._device_type_data.get("EquipmentData")
+            else None
+        )
 
     @property
     def floor_temperature_sensor(self) -> _WiserTemperatureSensor:

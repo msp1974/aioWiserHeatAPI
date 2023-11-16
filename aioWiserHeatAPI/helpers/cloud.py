@@ -14,6 +14,11 @@ class _WiserCloud:
         return self._data.get("WiserApiHost", TEXT_UNKNOWN)
 
     @property
+    def block_publishing(self) -> dict:
+        """Get the list of block publishing values"""
+        return self._data.get("BlockPublishing", {})
+
+    @property
     def bootstrap_api_host(self) -> str:
         """Get the bootstrap host name of the wiser cloud"""
         return self._data.get("BootStrapApiHost", TEXT_UNKNOWN)
@@ -37,3 +42,13 @@ class _WiserCloud:
     def diagnostic_telemetry_enabled(self) -> bool:
         """Get if diagnostic telemetry is enabled"""
         return self._data.get("EnableDiagnosticTelemetry", False)
+
+    @property
+    def enable_full_schedule_telemetry(self) -> bool:
+        """Get if schedule telemetry enabled"""
+        return self._data.get("EnableFullScheduleTelemetry", False)
+
+    @property
+    def fio_is_registered(self) -> bool:
+        """Get if FIO is registered"""
+        return self._data.get("EnableFullScheduleTelemetry", False)

@@ -1,28 +1,29 @@
 import asyncio
-from . import _LOGGER
+import inspect
+from datetime import datetime
 
-from .helpers.temp import _WiserTemperatureFunctions as tf
+from . import _LOGGER
+from .const import (
+    MAX_BOOST_INCREASE,
+    TEXT_ON,
+    TEXT_UNKNOWN,
+    WISERHUBNETWORK,
+    WISERSYSTEM,
+)
+from .helpers.capabilities import (
+    _WiserHubCapabilitiesInfo,
+    _WiserHubFeatureCapabilitiesInfo,
+)
 from .helpers.cloud import _WiserCloud
 from .helpers.firmware import _WiserFirmareUpgradeInfo
 from .helpers.gps import _WiserGPS
-from .helpers.capabilities import _WiserHubCapabilitiesInfo
 from .helpers.network import _WiserNetwork
 from .helpers.opentherm import _WiserOpentherm
 from .helpers.signal import _WiserSignalStrength
 from .helpers.special_times import sunrise_times, sunset_times
+from .helpers.temp import _WiserTemperatureFunctions as tf
 from .helpers.zigbee import _WiserZigbee
 from .rest_controller import _WiserRestController
-
-from .const import (
-    TEXT_ON,
-    TEXT_UNKNOWN,
-    MAX_BOOST_INCREASE,
-    WISERHUBNETWORK,
-    WISERSYSTEM,
-)
-
-from datetime import datetime
-import inspect
 
 
 class _WiserSystem(object):
@@ -36,7 +37,6 @@ class _WiserSystem(object):
         device_data: dict,
         opentherm_data: dict,
     ):
-
         self._wiser_rest_controller = wiser_rest_controller
         self._data = domain_data
         self._system_data = self._data.get("System", {})
@@ -44,6 +44,9 @@ class _WiserSystem(object):
         # Sub classes for system setting values
         self._capability_data = _WiserHubCapabilitiesInfo(
             self._data.get("DeviceCapabilityMatrix", {})
+        )
+        self._feature_capability_data = _WiserHubFeatureCapabilitiesInfo(
+            self._data.get("FeatureCapability", {})
         )
         self._cloud_data = _WiserCloud(
             self._system_data.get("CloudConnectionStatus"), self._data.get("Cloud", {})
@@ -207,6 +210,11 @@ class _WiserSystem(object):
             return True
 
     @property
+    def feature_capabilities(self) -> _WiserHubFeatureCapabilitiesInfo:
+        """Get feature capability info"""
+        return self._feature_capability_data
+
+    @property
     def firmware_over_the_air_enabled(self) -> bool:
         """Whether firmware updates over the air are enabled on the hub"""
         return self._system_data.get("FotaEnabled")
@@ -224,7 +232,7 @@ class _WiserSystem(object):
     @property
     def hardware_generation(self) -> int:
         """Get hardware generation version"""
-        return self._system_data.get("HardwareGeneration", 0)
+        return self._system_data.get("HardwareGeneration", 1)
 
     @property
     def heating_button_override_state(self) -> bool:
