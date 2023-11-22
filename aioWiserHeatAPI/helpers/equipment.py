@@ -96,6 +96,16 @@ class _WiserEquipment:
     def equipment_family(self) -> str:
         """Get equipment family"""
         return self._data.get("EquipmentFamily", TEXT_UNKNOWN)
+    
+    @property
+    def equipment_name(self) -> str:
+        """Get equipment name"""
+        return self._data.get("EquipmentName", TEXT_UNKNOWN)
+
+    @property
+    def product_type(self) -> str:
+        """Get equipment name"""
+        return self._data.get("ProuctType", TEXT_UNKNOWN)
 
     @property
     def direction(self) -> str:
