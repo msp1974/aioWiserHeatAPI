@@ -1,7 +1,7 @@
 import inspect
 from typing import Union
-
 from .. import _LOGGER
+
 from ..const import (
     TEXT_UNKNOWN,
     WISERDEVICE,
@@ -72,10 +72,21 @@ class _WiserDevice(object):
         """Get the device types (hub v2 only)"""
         return self._data.get("Type", TEXT_UNKNOWN)
 
+
     @property
     def device_type_id(self) -> int:
         """Get the device id for the specific device type"""
         return self._data.get("id")
+    
+    @property
+    def ota_hardware_version(self) -> int:
+        """Get ota hardware version"""
+        return self._data.get("OtaHardwareVersion", 0)
+
+    @property
+    def ota_version(self) -> int:
+        """Get ota software version"""
+        return self._data.get("OtaVersion", 0)
 
     @property
     def identify(self) -> bool:
@@ -125,16 +136,6 @@ class _WiserDevice(object):
         return self._data.get("NodeId", 0)
 
     @property
-    def ota_hardware_version(self) -> int:
-        """Get ota hardware version"""
-        return self._data.get("OtaHardwareVersion", 0)
-
-    @property
-    def ota_version(self) -> int:
-        """Get ota software version"""
-        return self._data.get("OtaVersion", 0)
-
-    @property
     def product_identifier(self) -> str:
         """Get product identifier of device"""
         return self._data.get("ProductIdentifier", TEXT_UNKNOWN)
@@ -168,7 +169,24 @@ class _WiserDevice(object):
     def signal(self) -> _WiserSignalStrength:
         """Get zwave network information"""
         return _WiserSignalStrength(self._data)
-
+    
+#Added by LGO    
+# endpoint Zigbee
+    @property
+    def endpoint(self) -> int:
+#        """Get endpoint"""
+        return self._device_type_data.get("Endpoint", 0)
+# Device type Zigbee
+    @property
+    def type_comm(self) -> str:
+#        """Get type of zigbee device """
+        return self._data.get("Type", TEXT_UNKNOWN)    
+# UUID Zigbee
+    @property
+    def uuid(self) -> str:
+#        """Get UUID zigbee"""
+        return self._device_type_data.get("UUID", TEXT_UNKNOWN)
+# END Added by LGO  
 
 class _WiserElectricalDevice(_WiserDevice):
     """Class representing a wiser electrical device"""
