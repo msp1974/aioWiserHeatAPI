@@ -1,14 +1,14 @@
 import inspect
-
 from . import _LOGGER
+
+from .helpers.device import _WiserElectricalDevice
+from .helpers.misc import is_value_in_list
 from .const import (
     TEXT_UNKNOWN,
     WISERDEVICE,
-    WiserDeviceModeEnum,
     WiserShutterAwayActionEnum,
+    WiserDeviceModeEnum,
 )
-from .helpers.device import _WiserElectricalDevice
-from .helpers.misc import is_value_in_list
 
 
 class _WiserLiftMovementRange(object):
@@ -38,6 +38,14 @@ class _WiserLiftMovementRange(object):
             return self._data.get("LiftCloseTime")
         return None
 
+    async def set_close_time(self, time: int):
+        """Set close time"""
+        return await self._shutter_instance._send_command(
+            {"LiftOpenTime": self.open_time, "LiftCloseTime": time}
+        )
+    
+# added by LGO
+# Tilt feature
     @property
     def tilt_time(self) -> int:
         """Get tilt time value"""
@@ -47,30 +55,36 @@ class _WiserLiftMovementRange(object):
 
     async def set_tilt_time(self, time: int):
         """Set tilt time"""
-        return await self._shutter_instance._send_command({"TiltTime": time})
-
+        return await self._shutter_instance._send_command(
+            {"TiltTime": time }
+        )
+    
     @property
     def tilt_angle_closed(self) -> int:
         """Get tilt time value"""
         if self._data:
-            return self._data.get("TiltAngleClosed", 0)
+            return self._data.get("TiltAngleClosed",0)
         return None
 
     async def set_tilt_angle_closed(self, angle: int):
         """Set tilt angle closed"""
-        return await self._shutter_instance._send_command({"TiltAngleClosed": angle})
-
+        return await self._shutter_instance._send_command(
+            {"TiltAngleClosed": angle }
+        )
+    
     @property
     def tilt_angle_open(self) -> int:
         """Get tilt angle open"""
         if self._data:
-            return self._data.get("TiltAngleOpen", 0)
+            return self._data.get("TiltAngleOpen",0)
         return None
 
     async def set_tilt_angle_open(self, angle: int):
         """Set tilt angle open"""
-        return await self._shutter_instance._send_command({"TiltAngleOpen": angle})
-
+        return await self._shutter_instance._send_command(
+            {"TiltAngleOpen": angle }
+        )
+    
     @property
     def tilt_enabled(self) -> bool:
         """Get tilt enabled"""
@@ -80,13 +94,11 @@ class _WiserLiftMovementRange(object):
 
     async def set_tilt_enabled(self, en: bool):
         """Set tilt enable"""
-        return await self._shutter_instance._send_command({"TiltEnabled": en})
-
-    async def set_close_time(self, time: int):
-        """Set close time"""
         return await self._shutter_instance._send_command(
-            {"LiftOpenTime": self.open_time, "LiftCloseTime": time}
+            {"TiltEnabled": en }
         )
+#End Added by LGO
+
 
 
 class _WiserShutter(_WiserElectricalDevice):
@@ -112,7 +124,7 @@ class _WiserShutter(_WiserElectricalDevice):
                 self._device_type_data = result
         if result:
             _LOGGER.debug(
-                "Wiser smart plug - {} command successful".format(
+                "Wiser shutter- {} command successful".format(
                     inspect.stack()[1].function
                 )
             )
@@ -134,24 +146,9 @@ class _WiserShutter(_WiserElectricalDevice):
         return self._device_type_data.get("CurrentLift", 0)
 
     @property
-    def current_tilt(self) -> int:
-        """Get current tilt of shutter"""
-        return self._device_type_data.get("CurrentTilt", 0)
-
-    @property
     def drive_config(self) -> _WiserLiftMovementRange:
         """Get open and close time drive config"""
         return _WiserLiftMovementRange(self, self._device_type_data.get("DriveConfig"))
-
-    @property
-    def is_lift_position_supported(self) -> bool:
-        """Get if the shutter is open"""
-        return self._device_type_data.get("IsLiftPositionSupported", False)
-
-    @property
-    def is_tilt_supported(self) -> bool:
-        """Get if the shutter is open"""
-        return self._device_type_data.get("IsTiltSupported", False)
 
     @property
     def is_open(self) -> bool:
@@ -199,6 +196,19 @@ class _WiserShutter(_WiserElectricalDevice):
             else False
         )
 
+# Added by LGO
+# supported features
+    @property
+    def is_lift_position_supported(self) -> bool:
+        """Get if the shutter is open"""
+        return  self._device_type_data.get("IsLiftPositionSupported",False) 
+
+    @property
+    def is_tilt_supported(self) -> bool:
+        """Get if the shutter is open"""
+        return  self._device_type_data.get("IsTiltSupported",False) 
+#End Added by LGO
+
     @property
     def lift_movement(self) -> str:
         """Get if shutter is moving"""
@@ -208,11 +218,6 @@ class _WiserShutter(_WiserElectricalDevice):
     def manual_lift(self) -> int:
         """Get shutter manual lift value"""
         return self._device_type_data.get("ManualLift", 0)
-
-    @property
-    def manual_tilt(self) -> int:
-        """Get shutter manual tilt value"""
-        return self._device_type_data.get("ManualTilt", 0)
 
     @property
     def scheduled_lift(self) -> str:
@@ -228,16 +233,61 @@ class _WiserShutter(_WiserElectricalDevice):
     def target_lift(self) -> int:
         """Get target position of shutter"""
         return self._device_type_data.get("TargetLift", 0)
-
+    
+#Added by LGO
+# Tilt
     @property
-    def tilt_movement(self) -> str:
-        """Get if tilt shutter is moving"""
-        return self._device_type_data.get("TiltMovement", TEXT_UNKNOWN)
+    def current_tilt(self) -> int:
+        """Get current tilt of shutter"""
+        return self._device_type_data.get("CurrentTilt", 0)
 
     @property
     def target_tilt(self) -> int:
         """Get target tilt of shutter"""
         return self._device_type_data.get("TargetTilt", 0)
+
+    @property
+    def manual_tilt(self) -> int:
+        """Get shutter manual tilt value"""
+        return self._device_type_data.get("ManualTilt", 0)
+    
+    @property
+    def tilt_movement(self) -> str:
+        """Get if tilt shutter is moving"""
+        return self._device_type_data.get("TiltMovement", TEXT_UNKNOWN)
+
+# Summer confort
+    @property
+    def respect_summer_comfort(self) -> bool:
+        """Get if the shutter respect summer comfort"""
+        return  self._device_type_data.get("RespectSummerComfort",False) 
+    
+    async def set_respect_summer_comfort(self, en: bool):
+        """Set respect summer comfort"""
+        if await self._send_command({"RespectSummerComfort": en }):
+            return True
+    
+    @property
+    def summer_comfort_lift(self) -> int:
+        """Get the shutter summer comfort lift"""
+        return  self._device_type_data.get("SummerComfortLift") 
+
+    async def set_summer_comfort_lift(self, lift: int):
+        if await self._send_command({"SummerComfortLift": lift}):
+            self._summer_comfort_lift = lift
+            return True
+        
+    @property
+    def summer_comfort_tilt(self) -> int:
+        """Get the shutter summer comfort tilt """
+        return  self._device_type_data.get("SummerComfortTilt") 
+    
+    async def set_summer_comfort_tilt(self, tilt: int):
+        if await self._send_command({"SummerComfortTilt": tilt}):
+            self._summer_comfort_tilt = tilt
+            return True
+
+#End Added by LGO
 
     async def open(self, percentage: int = 100):
         """Fully open shutter"""
@@ -246,7 +296,7 @@ class _WiserShutter(_WiserElectricalDevice):
                 {"RequestAction": {"Action": "LiftTo", "Percentage": percentage}}
             )
         else:
-            raise ValueError("Shutter open percentage must be between 0 and 100")
+            raise ValueError(f"Shutter percentage must be between 0 and 100")
 
     async def close(self):
         """Fully close shutter"""
@@ -258,25 +308,28 @@ class _WiserShutter(_WiserElectricalDevice):
         """Stop shutter during movement"""
         return await self._send_command({"RequestAction": {"Action": "Stop"}})
 
+#Added by LGO
+
     async def open_tilt(self, percentage: int = 90):
-        """Open shutter tilt to percentage"""
+        """Fully open tilt shutter"""
         if percentage >= 0 and percentage <= 90:
             return await self._send_command(
                 {"RequestAction": {"Action": "TiltTo", "Percentage": percentage}}
             )
         else:
-            raise ValueError("Shutter tilt percentage must be between 0 and 100")
+            raise ValueError(f"Shutter percentage must be between 0 and 100")
 
     async def close_tilt(self):
-        """Fully close shutter tilt"""
+        """Fully close tilt shutter"""
         return await self._send_command(
             {"RequestAction": {"Action": "TiltTo", "Percentage": 0}}
         )
 
     async def stop_tilt(self):
-        """Stop shutter tilt during movement"""
+        """Stop shutter during tilt movement"""
         return await self._send_command({"RequestAction": {"Action": "StopTilt"}})
 
+#End Added by LGO
 
 class _WiserShutterCollection(object):
     """Class holding all wiser heating actuators"""
