@@ -228,6 +228,7 @@ class _WiserRoom(object):
         """Get room climate capabilities"""
         if capabilities := self._data.get("ClimateCapabilities"):
             return _WiserClimateCapabilities(self, capabilities)
+        #retun False with Hub V1
         return False
 
     @property
