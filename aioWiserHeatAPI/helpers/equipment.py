@@ -105,7 +105,7 @@ class _WiserEquipment:
     @property
     def product_type(self) -> str:
         """Get equipment name"""
-        return self._data.get("ProuctType", TEXT_UNKNOWN)
+        return self._data.get("ProductType", TEXT_UNKNOWN)
 
     @property
     def direction(self) -> str:
