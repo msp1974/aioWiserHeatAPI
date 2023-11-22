@@ -88,6 +88,22 @@ class _WiserPowerTagEnergy(_WiserDevice):
     def rfid(self) -> int:
         """Get rfid of device"""
         return self._data.get("RfId", 0)
+    
+    @property
+    def rms_current(self) -> int:
+        """Get rms current of device"""
+        return self.equipment.power.rms_current
+    
+    @property
+    def rms_voltage(self) -> int:
+        """Get rms current of device"""
+        return self.equipment.power.rms_voltage
+    
+    @property
+    def total_active_power(self) -> int:
+        """Get raw total active power of device"""
+        return self.equipment.power.total_active_power
+
 
 
 class _WiserPowerTagEnergyCollection:
