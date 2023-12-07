@@ -6,11 +6,17 @@ from dataclasses import dataclass
 from typing import Any, Optional, cast
 
 import aiohttp
+import httpx
 
 from aioWiserHeatAPI.helpers.extra_config import _WiserExtraConfig
 
 from . import _LOGGER
-from .const import REST_TIMEOUT, WISERHUBDOMAIN, WISERHUBSCHEDULES, WiserUnitsEnum
+from .const import (
+    REST_TIMEOUT,
+    WISERHUBDOMAIN,
+    WISERHUBSCHEDULES,
+    WiserUnitsEnum,
+)
 from .exceptions import (
     WiserExtraConfigError,
     WiserHubAuthenticationError,
@@ -58,10 +64,7 @@ class _WiserRestController(object):
         self._wiser_connection_info = wiser_connection_info
         self._api_parameters = WiserAPIParams()
 
-        if not session:
-            session = aiohttp.ClientSession()
-        self._session = session
-        self._timeout = aiohttp.ClientTimeout(total=timeout)
+        self._timeout = timeout  # aiohttp.ClientTimeout(total=timeout)
         self._hub_name = None
         self._extra_config_file = None
         self._extra_config: _WiserExtraConfig = None
@@ -89,6 +92,7 @@ class _WiserRestController(object):
             "headers": {
                 "SECRET": self._wiser_connection_info.secret,
                 "Content-Type": "application/json;charset=UTF-8",
+                "Connection": "close",
             }
         }
 
@@ -99,39 +103,35 @@ class _WiserRestController(object):
             kwargs["timeout"] = self._timeout
 
         try:
-            response = cast(
-                aiohttp.ClientResponse,
-                await getattr(self._session, action.value)(
+            async with httpx.AsyncClient() as client:
+                response = await getattr(client, action.value)(
                     url,
                     **kwargs,
-                ),
-            )
-
-            if not response.ok:
-                self._process_nok_response(
-                    response, url, data, raise_for_endpoint_error
                 )
-            else:
-                content = await response.content.read()
-                if len(content) > 0:
-                    response = content.decode("utf-8", "ignore").encode("utf-8")
-                    return json.loads(response)
-                else:
-                    return {}
-            return {}
 
-        except asyncio.TimeoutError as ex:
+                if response.status_code != 200:
+                    self._process_nok_response(
+                        response, url, data, raise_for_endpoint_error
+                    )
+                else:
+                    content = await response.aread()
+                    if len(content) > 0:
+                        response = content.decode("utf-8", "ignore").encode(
+                            "utf-8"
+                        )
+                        return json.loads(response)
+                    else:
+                        return {}
+                return {}
+
+        except httpx.TimeoutException as ex:
             raise WiserHubConnectionError(
-                f"Connection timeout trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}"
-            )
-        except aiohttp.ClientResponseError as ex:
+                f"Connection timeout trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}. Error is {ex}"
+            ) from ex
+        except httpx.NetworkError as ex:
             raise WiserHubConnectionError(
-                f"Response error trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
-            )
-        except aiohttp.ClientConnectorError as ex:
-            raise WiserHubConnectionError(
-                f"Connection error trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
-            )
+                f"Connection error trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}. Error is {ex}"
+            ) from ex
 
     def _process_nok_response(
         self,
@@ -140,24 +140,26 @@ class _WiserRestController(object):
         data: dict,
         raise_for_endpoint_error: bool = True,
     ):
-        if response.status == 401:
+        if response.status_code == 401:
             raise WiserHubAuthenticationError(
                 f"Error authenticating to Wiser Hub {self._wiser_connection_info.host}.  Check your secret key"
             )
-        elif response.status == 404 and raise_for_endpoint_error:
+        elif response.status_code == 404 and raise_for_endpoint_error:
             raise WiserHubRESTError(
                 f"Rest endpoint not found on Wiser Hub {self._wiser_connection_info.host} for url {url}"
             )
-        elif response.status == 408:
+        elif response.status_code == 408:
             raise WiserHubConnectionError(
                 f"Connection timed out trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}"
             )
         elif raise_for_endpoint_error:
             raise WiserHubRESTError(
-                f"Unknown error communicating with Wiser Hub {self._wiser_connection_info.host} for url {url} with data {data}.  Error code is: {response.status}"
+                f"Unknown error communicating with Wiser Hub {self._wiser_connection_info.host} for url {url} with data {data}.  Error code is: {response.status_code}"
             )
 
-    async def _get_hub_data(self, url: str, raise_for_endpoint_error: bool = True):
+    async def _get_hub_data(
+        self, url: str, raise_for_endpoint_error: bool = True
+    ):
         """Get data from hub"""
         return await self._do_hub_action(
             WiserRestActionEnum.GET,
@@ -194,7 +196,9 @@ class _WiserRestController(object):
         """
         url = WISERHUBDOMAIN + url
         _LOGGER.debug(
-            "Sending command to url: {} with parameters {}".format(url, command_data)
+            "Sending command to url: {} with parameters {}".format(
+                url, command_data
+            )
         )
 
         return await self._do_hub_action(method, url, command_data)
@@ -217,7 +221,11 @@ class _WiserRestController(object):
         return await self._do_hub_action(action, url, schedule_data)
 
     async def _send_schedule_command(
-        self, action: str, schedule_data: dict, id: int = 0, schedule_type: str = None
+        self,
+        action: str,
+        schedule_data: dict,
+        id: int = 0,
+        schedule_type: str = None,
     ) -> bool:
         """
         Send schedule data to Wiser Hub

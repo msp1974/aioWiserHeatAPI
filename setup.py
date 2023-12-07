@@ -1,6 +1,7 @@
-import setuptools
 import codecs
 import os.path
+
+import setuptools
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -43,6 +44,7 @@ setuptools.setup(
         "aiohttp>=3.8.1",
         "aiofiles>=0.8.0",
         "pyyaml>=6.0",
+        "httpx>=0.25.0",
     ],
     python_requires=">=3.10",
     entry_points={
