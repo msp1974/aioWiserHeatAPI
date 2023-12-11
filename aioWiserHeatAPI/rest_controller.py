@@ -109,7 +109,7 @@ class _WiserRestController(object):
                     **kwargs,
                 )
 
-                if response.status_code != 200:
+                if response.status_code >= 400:
                     self._process_nok_response(
                         response, url, data, raise_for_endpoint_error
                     )

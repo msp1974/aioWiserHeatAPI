@@ -1,18 +1,10 @@
-import aiofiles
 import json
 import time
 from datetime import datetime, timedelta
 
+import aiofiles
 import yaml
-from yaml import SafeLoader, SafeDumper
-
-from .exceptions import (
-    WiserScheduleError,
-    WiserScheduleInvalidSetting,
-    WiserScheduleInvalidTime,
-)
-
-from .helpers.misc import file_exists
+from yaml import SafeDumper, SafeLoader
 
 from .const import (
     DEFAULT_LEVEL_SCHEDULE,
@@ -38,7 +30,12 @@ from .const import (
     WEEKENDS,
     WiserScheduleTypeEnum,
 )
-from .helpers.misc import is_valid_level
+from .exceptions import (
+    WiserScheduleError,
+    WiserScheduleInvalidSetting,
+    WiserScheduleInvalidTime,
+)
+from .helpers.misc import file_exists, is_valid_level
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController
 
@@ -122,10 +119,14 @@ class _WiserSchedule(object):
                     schedule_set_points = self._convert_wiser_to_yaml_day(
                         day, sched, replace_special_times, generic_setpoint
                     )
-                    schedule_output.update({day.capitalize(): schedule_set_points})
+                    schedule_output.update(
+                        {day.capitalize(): schedule_set_points}
+                    )
             return schedule_output
         except Exception as ex:
-            raise WiserScheduleError(f"Error converting from Wiser schedule: {ex}")
+            raise WiserScheduleError(
+                f"Error converting from Wiser schedule: {ex}"
+            )
 
     def _convert_to_wiser_schedule(self, schedule_data: dict) -> dict:
         """
@@ -145,7 +146,9 @@ class _WiserSchedule(object):
                                 schedule_output.update({weekday: schedule_day})
                         elif day.title() == TEXT_WEEKENDS:
                             for weekend_day in WEEKENDS:
-                                schedule_output.update({weekend_day: schedule_day})
+                                schedule_output.update(
+                                    {weekend_day: schedule_day}
+                                )
                         elif day.title() == TEXT_ALL:
                             for day in WEEKDAYS + WEEKENDS:
                                 schedule_output.update({day: schedule_day})
@@ -155,7 +158,9 @@ class _WiserSchedule(object):
         except (WiserScheduleInvalidTime, WiserScheduleInvalidSetting) as ex:
             raise WiserScheduleError(ex)
         except Exception as ex:
-            raise WiserScheduleError(f"Error converting to Wiser schedule: {ex}")
+            raise WiserScheduleError(
+                f"Error converting to Wiser schedule: {ex}"
+            )
 
     async def _send_schedule_command(
         self, action: str, schedule_data: dict, id: int = 0
@@ -215,13 +220,17 @@ class _WiserSchedule(object):
 
     async def set_name(self, name: str):
         """Set name of schedule"""
-        return await self._send_schedule_command("UPDATE", {"Name": name}, self.id)
+        return await self._send_schedule_command(
+            "UPDATE", {"Name": name}, self.id
+        )
 
     @property
     def next(self):
         """Get details of next schedule entry"""
         if self._schedule_data.get("Next"):
-            return _WiserScheduleNext(self._type, self._schedule_data.get("Next"))
+            return _WiserScheduleNext(
+                self._type, self._schedule_data.get("Next")
+            )
 
     @property
     def schedule_data(self) -> str:
@@ -232,7 +241,9 @@ class _WiserSchedule(object):
     def ws_schedule_data(self) -> dict:
         """Get formatted schedule data for webservice support"""
         s = self._remove_schedule_elements(
-            self._convert_from_wiser_schedule(self.schedule_data, generic_setpoint=True)
+            self._convert_from_wiser_schedule(
+                self.schedule_data, generic_setpoint=True
+            )
         )
         return {
             "Id": self.id,
@@ -271,10 +282,12 @@ class _WiserSchedule(object):
         """
         try:
             if self.id != 1000:
-                await self._send_schedule_command("DELETE", {})
+                await self._send_schedule_command("DELETE", None)
                 return True
             else:
-                raise WiserScheduleError("You cannot delete the schedule for HotWater")
+                raise WiserScheduleError(
+                    "You cannot delete the schedule for HotWater"
+                )
         except Exception as ex:
             raise WiserScheduleError(f"Error deleting schedule - {ex}")
 
@@ -286,13 +299,17 @@ class _WiserSchedule(object):
         """
         try:
             async with aiofiles.open(schedule_file, "w") as file:
-                output = json.dumps(self._ensure_type(self._schedule_data), indent=4)
+                output = json.dumps(
+                    self._ensure_type(self._schedule_data), indent=4
+                )
                 await file.write(output)
             return True
         except Exception as ex:
             raise WiserScheduleError(f"Error saving schedule to file - {ex}")
 
-    async def save_schedule_to_yaml_file(self, schedule_yaml_file: str) -> bool:
+    async def save_schedule_to_yaml_file(
+        self, schedule_yaml_file: str
+    ) -> bool:
         """
         Save this schedule to a file as yaml.
         param scheduleFile: file to write schedule to
@@ -310,7 +327,9 @@ class _WiserSchedule(object):
                 await file.write(output)
             return True
         except Exception as ex:
-            raise WiserScheduleError(f"Error saving schedule to yaml file - {ex}")
+            raise WiserScheduleError(
+                f"Error saving schedule to yaml file - {ex}"
+            )
 
     async def set_schedule(self, schedule_data: dict) -> bool:
         """
@@ -351,7 +370,9 @@ class _WiserSchedule(object):
                     f"Error setting schedule from file. {schedule_file} does not exist"
                 )
         except Exception as ex:
-            raise WiserScheduleError(f"Error setting schedule from file - {ex}")
+            raise WiserScheduleError(
+                f"Error setting schedule from file - {ex}"
+            )
 
     async def set_schedule_from_yaml_data(self, schedule_data: str) -> bool:
         """
@@ -370,9 +391,13 @@ class _WiserSchedule(object):
                     f"This is an incorrect schedule type for this device.  It should be a {self.schedule_type} schedule."
                 )
         except Exception as ex:
-            raise WiserScheduleError(f"Error setting schedule from yaml data - {ex}")
+            raise WiserScheduleError(
+                f"Error setting schedule from yaml data - {ex}"
+            )
 
-    async def set_schedule_from_yaml_file(self, schedule_yaml_file: str) -> bool:
+    async def set_schedule_from_yaml_file(
+        self, schedule_yaml_file: str
+    ) -> bool:
         """
         Set schedule from file.
         param schedule_file: file of yaml data respresenting a schedule
@@ -391,7 +416,9 @@ class _WiserSchedule(object):
                         f"This is an incorrect schedule type for this device.  It should be a {self.schedule_type} schedule."
                     )
         except Exception as ex:
-            raise WiserScheduleError(f"Error setting schedule from yaml file - {ex}")
+            raise WiserScheduleError(
+                f"Error setting schedule from yaml file - {ex}"
+            )
 
     async def set_schedule_from_ws_data(self, schedule_data: dict) -> bool:
         """
@@ -403,7 +430,9 @@ class _WiserSchedule(object):
             if self._validate_schedule_type(schedule_data):
                 schedule_json = {}
                 for entry in schedule_data.get("ScheduleData"):
-                    schedule_json.update({entry.get("day"): entry.get("slots")})
+                    schedule_json.update(
+                        {entry.get("day"): entry.get("slots")}
+                    )
                 schedule = self._convert_to_wiser_schedule(schedule_json)
                 await self.set_schedule(schedule)
                 return True
@@ -429,7 +458,11 @@ class _WiserHeatingSchedule(_WiserSchedule):
         sunsets,
     ):
         super().__init__(
-            wiser_rest_controller, schedule_type, schedule_data, sunrises, sunsets
+            wiser_rest_controller,
+            schedule_type,
+            schedule_data,
+            sunrises,
+            sunsets,
         )
 
     async def assign_schedule(
@@ -452,7 +485,9 @@ class _WiserHeatingSchedule(_WiserSchedule):
         try:
             await self._send_schedule_command("ASSIGN", schedule_data)
         except Exception as ex:
-            raise WiserScheduleError(f"Error assigning/unassigning schedule: {ex}")
+            raise WiserScheduleError(
+                f"Error assigning/unassigning schedule: {ex}"
+            )
 
     async def unassign_schedule(self, room_ids: list):
         if not isinstance(room_ids, list):
@@ -461,7 +496,9 @@ class _WiserHeatingSchedule(_WiserSchedule):
         remaining_rooms_ids = []
         if room_ids and self.assignment_ids:
             remaining_rooms_ids = [
-                room_id for room_id in self.assignment_ids if room_id not in room_ids
+                room_id
+                for room_id in self.assignment_ids
+                if room_id not in room_ids
             ]
         return await self.assign_schedule(remaining_rooms_ids, False)
 
@@ -509,11 +546,15 @@ class _WiserHeatingSchedule(_WiserSchedule):
                         time = str(value).replace(":", "")
                         times.append(time)
                     else:
-                        raise WiserScheduleInvalidTime(f"Invalid time value - {value}")
+                        raise WiserScheduleInvalidTime(
+                            f"Invalid time value - {value}"
+                        )
                 if key.title() in [TEXT_TEMP, TEXT_SETPOINT]:
                     if tf._is_valid_temp(value):
                         temp = tf._to_wiser_temp(
-                            float(value) if str(value).title() != TEXT_OFF else TEMP_OFF
+                            float(value)
+                            if str(value).title() != TEXT_OFF
+                            else TEMP_OFF
                         )
                         temps.append(temp)
                     else:
@@ -535,7 +576,11 @@ class _WiserOnOffSchedule(_WiserSchedule):
         sunsets,
     ):
         super().__init__(
-            wiser_rest_controller, schedule_type, schedule_data, sunrises, sunsets
+            wiser_rest_controller,
+            schedule_type,
+            schedule_data,
+            sunrises,
+            sunsets,
         )
         self._device_type_ids = []
 
@@ -568,7 +613,9 @@ class _WiserOnOffSchedule(_WiserSchedule):
         try:
             return await self._send_schedule_command("ASSIGN", schedule_data)
         except Exception as ex:
-            raise WiserScheduleError(f"Error assigning/unassigning schedule: {ex}")
+            raise WiserScheduleError(
+                f"Error assigning/unassigning schedule: {ex}"
+            )
 
     async def unassign_schedule(self, device_ids: list):
         if not isinstance(device_ids, list):
@@ -612,7 +659,9 @@ class _WiserOnOffSchedule(_WiserSchedule):
                             "%H%M",
                         )
                     ).strftime("%H:%M"),
-                    (TEXT_SETPOINT if generic_setpoint else TEXT_STATE): TEXT_ON
+                    (
+                        TEXT_SETPOINT if generic_setpoint else TEXT_STATE
+                    ): TEXT_ON
                     if day_schedule[i] == abs(day_schedule[i])
                     else TEXT_OFF,
                 }
@@ -634,7 +683,9 @@ class _WiserOnOffSchedule(_WiserSchedule):
                     if self._is_valid_time(value):
                         time = int(str(value).replace(":", ""))
                     else:
-                        raise WiserScheduleInvalidTime(f"Invalid time value - {value}")
+                        raise WiserScheduleInvalidTime(
+                            f"Invalid time value - {value}"
+                        )
                 if key.title() in [TEXT_STATE, TEXT_SETPOINT]:
                     if value.title() in [TEXT_ON, TEXT_OFF]:
                         if value.title() == TEXT_OFF:
@@ -662,7 +713,11 @@ class _WiserLevelSchedule(_WiserSchedule):
         sunsets,
     ):
         super().__init__(
-            wiser_rest_controller, schedule_type, schedule_data, sunrises, sunsets
+            wiser_rest_controller,
+            schedule_type,
+            schedule_data,
+            sunrises,
+            sunsets,
         )
 
     @property
@@ -673,7 +728,9 @@ class _WiserLevelSchedule(_WiserSchedule):
     @property
     def level_type_id(self) -> int:
         """Get the schedule level type id"""
-        return 2 if self.level_type == WiserScheduleTypeEnum.shutters.value else 1
+        return (
+            2 if self.level_type == WiserScheduleTypeEnum.shutters.value else 1
+        )
 
     @property
     def next(self):
@@ -681,14 +738,18 @@ class _WiserLevelSchedule(_WiserSchedule):
         if self._schedule_data.get("Next"):
             return _WiserScheduleNext(
                 self._type,
-                self._schedule_data.get("Next", {"Day": "", "Time": 0, "Level": 0}),
+                self._schedule_data.get(
+                    "Next", {"Day": "", "Time": 0, "Level": 0}
+                ),
             )
 
     @property
     def schedule_data(self) -> str:
         """Get json output of schedule data"""
         """ Fix for issue of level scheudle can be empty"""
-        schedule_data = self._remove_schedule_elements(self._schedule_data.copy())
+        schedule_data = self._remove_schedule_elements(
+            self._schedule_data.copy()
+        )
         if schedule_data:
             return schedule_data
         return DEFAULT_LEVEL_SCHEDULE
@@ -717,12 +778,17 @@ class _WiserLevelSchedule(_WiserSchedule):
             "Type": self.level_type_id,
         }
         type_data.update(self.schedule_data)
-        schedule_data = {"Assignments": list(set(device_ids)), self._type: type_data}
+        schedule_data = {
+            "Assignments": list(set(device_ids)),
+            self._type: type_data,
+        }
 
         try:
             return await self._send_schedule_command("ASSIGN", schedule_data)
         except Exception as ex:
-            raise WiserScheduleError(f"Error assigning/unassigning schedule: {ex}")
+            raise WiserScheduleError(
+                f"Error assigning/unassigning schedule: {ex}"
+            )
 
     async def unassign_schedule(self, device_ids: list):
         if not isinstance(device_ids, list):
@@ -761,7 +827,9 @@ class _WiserLevelSchedule(_WiserSchedule):
                                 else self._sunsets.get(day)
                             ),
                             (
-                                TEXT_SETPOINT if generic_setpoint else TEXT_LEVEL
+                                TEXT_SETPOINT
+                                if generic_setpoint
+                                else TEXT_LEVEL
                             ): day_schedule[TEXT_LEVEL][i],
                         }
                     )
@@ -776,7 +844,9 @@ class _WiserLevelSchedule(_WiserSchedule):
                                 ][0]
                             ),
                             (
-                                TEXT_SETPOINT if generic_setpoint else TEXT_LEVEL
+                                TEXT_SETPOINT
+                                if generic_setpoint
+                                else TEXT_LEVEL
                             ): day_schedule[TEXT_LEVEL][i],
                         }
                     )
@@ -785,7 +855,8 @@ class _WiserLevelSchedule(_WiserSchedule):
                     {
                         TEXT_TIME: (
                             datetime.strptime(
-                                format(day_schedule[TEXT_TIME][i], "04d"), "%H%M"
+                                format(day_schedule[TEXT_TIME][i], "04d"),
+                                "%H%M",
                             )
                         ).strftime("%H:%M"),
                         (
@@ -865,7 +936,10 @@ class _WiserScheduleNext:
             )
             next_date = datetime.today() + timedelta(days=days_diff)
             return next_date.replace(
-                hour=self.time.hour, minute=self.time.minute, second=0, microsecond=0
+                hour=self.time.hour,
+                minute=self.time.minute,
+                second=0,
+                microsecond=0,
             )
         except:
             return None
@@ -994,12 +1068,14 @@ class _WiserScheduleCollection(object):
                 return [
                     schedule
                     for schedule in self.all
-                    if schedule._type == schedule_type.value and schedule.id == id
+                    if schedule._type == schedule_type.value
+                    and schedule.id == id
                 ][0]
             return [
                 schedule
                 for schedule in self.all
-                if schedule.schedule_type == schedule_type.value and schedule.id == id
+                if schedule.schedule_type == schedule_type.value
+                and schedule.id == id
             ][0]
         except IndexError:
             return None
@@ -1041,7 +1117,8 @@ class _WiserScheduleCollection(object):
                 return [
                     schedule
                     for schedule in self.all
-                    if schedule._type == schedule_type.value and schedule.name == name
+                    if schedule._type == schedule_type.value
+                    and schedule.name == name
                 ][0]
             return [
                 schedule
@@ -1066,7 +1143,9 @@ class _WiserScheduleCollection(object):
             return self._level_schedules
 
         return [
-            schedule for schedule in self.all if schedule.schedule_type == schedule_type
+            schedule
+            for schedule in self.all
+            if schedule.schedule_type == schedule_type
         ]
 
     async def copy_schedule(
@@ -1095,7 +1174,10 @@ class _WiserScheduleCollection(object):
         return False
 
     async def create_schedule(
-        self, schedule_type: WiserScheduleTypeEnum, name: str, assignments: list = []
+        self,
+        schedule_type: WiserScheduleTypeEnum,
+        name: str,
+        assignments: list = [],
     ):
         """
         Create a new schedule entry
@@ -1117,6 +1199,9 @@ class _WiserScheduleCollection(object):
             type_data.update(DEFAULT_LEVEL_SCHEDULE)
             schedule_type = WiserScheduleTypeEnum.level
 
-        schedule_data = {"Assignments": assignments, schedule_type.value: type_data}
+        schedule_data = {
+            "Assignments": assignments,
+            schedule_type.value: type_data,
+        }
 
         return await self._send_schedule_command("CREATE", schedule_data)
