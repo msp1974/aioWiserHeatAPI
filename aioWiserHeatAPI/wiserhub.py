@@ -115,7 +115,7 @@ class WiserAPI(object):
         ):
             # Create an instance of the rest controller
             self._wiser_rest_controller = _WiserRestController(
-                self._session, wiser_connection_info=self._wiser_api_connection
+                wiser_connection_info=self._wiser_api_connection
             )
         else:
             raise WiserHubConnectionError(
@@ -147,8 +147,8 @@ class WiserAPI(object):
             WISERHUBSCHEDULES
         )
         try:
-            self._status_data = await self._wiser_rest_controller._get_hub_data(
-                WISERHUBSTATUS
+            self._status_data = (
+                await self._wiser_rest_controller._get_hub_data(WISERHUBSTATUS)
             )
         except WiserHubRESTError:
             self._status_data = {}
@@ -161,16 +161,22 @@ class WiserAPI(object):
         )
 
         # load extra data
-        self._wiser_rest_controller._extra_config_file = self._extra_config_file
+        self._wiser_rest_controller._extra_config_file = (
+            self._extra_config_file
+        )
         await self._wiser_rest_controller._get_extra_config_data()
 
         # Only get opentherm data if connected
         if (
-            self._domain_data.get("System", {}).get("OpenThermConnectionStatus", "")
+            self._domain_data.get("System", {}).get(
+                "OpenThermConnectionStatus", ""
+            )
             == "Connected"
         ):
-            self._opentherm_data = await self._wiser_rest_controller._get_hub_data(
-                WISERHUBOPENTHERM, False
+            self._opentherm_data = (
+                await self._wiser_rest_controller._get_hub_data(
+                    WISERHUBOPENTHERM, False
+                )
             )
 
         if self._domain_data != {} and self._network_data != {}:
@@ -228,7 +234,8 @@ class WiserAPI(object):
             # Moments
             if self._domain_data.get("Moment"):
                 self._moments = _WiserMomentCollection(
-                    self._wiser_rest_controller, self._domain_data.get("Moment")
+                    self._wiser_rest_controller,
+                    self._domain_data.get("Moment"),
                 )
 
             # If gets here with no exceptions then success and return true
@@ -326,7 +333,9 @@ class WiserAPI(object):
             try:
                 if data:
                     # Write out to file
-                    log_response_to_file(data, filename, False, pathlib.Path(file_path))
+                    log_response_to_file(
+                        data, filename, False, pathlib.Path(file_path)
+                    )
                     return True
             except Exception as ex:
                 _LOGGER.error(ex)
