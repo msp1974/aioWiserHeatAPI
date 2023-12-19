@@ -1,3 +1,4 @@
+"""Module to manage rest commands of Wiser hub"""
 import asyncio
 import enum
 import json
@@ -25,6 +26,8 @@ from .exceptions import (
 
 @dataclass
 class WiserAPIParams:
+    """Class to hold default values"""
+
     passive_mode_increment = 0.5
     stored_manual_target_temperature_alt_source = "current"
 
@@ -42,6 +45,8 @@ class _WiserConnectionInfo(object):
 
 # Enums
 class WiserRestActionEnum(enum.Enum):
+    """Enumeration of http methods"""
+
     GET = "get"
     POST = "post"
     PATCH = "patch"
@@ -122,16 +127,19 @@ class _WiserRestController(object):
 
         except asyncio.TimeoutError as ex:
             raise WiserHubConnectionError(
-                f"Connection timeout trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}"
-            )
+                f"Connection timeout trying to communicate with Wiser Hub "
+                f"{self._wiser_connection_info.host} for url {url}"
+            ) from ex
         except aiohttp.ClientResponseError as ex:
             raise WiserHubConnectionError(
-                f"Response error trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
-            )
+                f"Response error trying to communicate with Wiser Hub "
+                f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
+            ) from ex
         except aiohttp.ClientConnectorError as ex:
             raise WiserHubConnectionError(
-                f"Connection error trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}.  Error is {ex}"
-            )
+                f"Connection error trying to communicate with Wiser Hub "
+                f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
+            ) from ex
 
     def _process_nok_response(
         self,
@@ -142,19 +150,24 @@ class _WiserRestController(object):
     ):
         if response.status == 401:
             raise WiserHubAuthenticationError(
-                f"Error authenticating to Wiser Hub {self._wiser_connection_info.host}.  Check your secret key"
+                f"Error authenticating to Wiser Hub "
+                f"{self._wiser_connection_info.host}. Check your secret key"
             )
         elif response.status == 404 and raise_for_endpoint_error:
             raise WiserHubRESTError(
-                f"Rest endpoint not found on Wiser Hub {self._wiser_connection_info.host} for url {url}"
+                f"Rest endpoint not found on Wiser Hub "
+                f"{self._wiser_connection_info.host} for url {url}"
             )
         elif response.status == 408:
             raise WiserHubConnectionError(
-                f"Connection timed out trying to communicate with Wiser Hub {self._wiser_connection_info.host} for url {url}"
+                f"Connection timed out trying to communicate with Wiser Hub "
+                f"{self._wiser_connection_info.host} for url {url}"
             )
         elif raise_for_endpoint_error:
             raise WiserHubRESTError(
-                f"Unknown error communicating with Wiser Hub {self._wiser_connection_info.host} for url {url} with data {data}.  Error code is: {response.status}"
+                f"Unknown error communicating with Wiser Hub "
+                f"{self._wiser_connection_info.host} for url {url} with data {data}. "
+                f"Error code is: {response.status}"
             )
 
     async def _get_hub_data(
@@ -176,9 +189,10 @@ class _WiserRestController(object):
                     self._extra_config_file, self._hub_name.lower()
                 )
                 await self._extra_config.async_load_config()
-            except WiserExtraConfigError as ex:
+            except WiserExtraConfigError:
                 _LOGGER.error(
-                    "Your config file is corrupted and needs to be fixed to maintain all the functionality of this integration."
+                    "Your config file is corrupted and needs to be fixed "
+                    "to maintain all the functionality of this integration."
                 )
                 self._extra_config = None
 
@@ -196,9 +210,7 @@ class _WiserRestController(object):
         """
         url = WISERHUBDOMAIN + url
         _LOGGER.debug(
-            "Sending command to url: {} with parameters {}".format(
-                url, command_data
-            )
+            "Sending command to url: %s with parameters %s", url, command_data
         )
 
         return await self._do_hub_action(method, url, command_data)
@@ -214,17 +226,19 @@ class _WiserRestController(object):
         """
         url = WISERHUBSCHEDULES + url
         _LOGGER.debug(
-            "Actioning schedule to url: {} with action {} and data {}".format(
-                url, action.value, schedule_data
-            )
+            "Actioning schedule to url: %s with action %s and data %s",
+            url,
+            action.value,
+            schedule_data,
         )
+
         return await self._do_hub_action(action, url, schedule_data)
 
     async def _send_schedule_command(
         self,
         action: str,
         schedule_data: dict,
-        id: int = 0,
+        schedule_id: int = 0,
         schedule_type: str = None,
     ) -> bool:
         """
@@ -236,7 +250,7 @@ class _WiserRestController(object):
         if action == "UPDATE":
             result = await self._do_schedule_action(
                 WiserRestActionEnum.PATCH,
-                "{}/{}".format(schedule_type, id),
+                f"{schedule_type}/{schedule_id}",
                 schedule_data,
             )
 
@@ -257,7 +271,7 @@ class _WiserRestController(object):
         elif action == "DELETE":
             result = await self._do_schedule_action(
                 WiserRestActionEnum.DELETE,
-                "{}/{}".format(schedule_type, id),
+                f"{schedule_type}/{schedule_id}",
                 schedule_data,
             )
         return result
