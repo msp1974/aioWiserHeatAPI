@@ -66,13 +66,11 @@ class WiserAPI(object):
         host: str,
         secret: str,
         port: Optional[int] = 80,
-        session: Optional[aiohttp.ClientSession] = None,
         units: Optional[WiserUnitsEnum] = WiserUnitsEnum.metric,
         extra_config_file: Optional[str] = None,
         enable_automations: Optional[bool] = True,
     ):
         # Connection variables
-        self._session = session
         self._wiser_api_connection = _WiserConnectionInfo()
         self._wiser_rest_controller = None
 
@@ -242,9 +240,6 @@ class WiserAPI(object):
             return True
 
         return False
-
-    async def close_session(self):
-        await self._wiser_rest_controller._session.close()
 
     # API properties
     @property
