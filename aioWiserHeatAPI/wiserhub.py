@@ -67,10 +67,12 @@ class WiserAPI(object):
         secret: str,
         port: Optional[int] = 80,
         units: Optional[WiserUnitsEnum] = WiserUnitsEnum.metric,
+        session: Optional[aiohttp.ClientSession] = None,
         extra_config_file: Optional[str] = None,
         enable_automations: Optional[bool] = True,
     ):
         # Connection variables
+        self._session = session
         self._wiser_api_connection = _WiserConnectionInfo()
         self._wiser_rest_controller = None
 
