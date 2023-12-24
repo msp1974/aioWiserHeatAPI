@@ -2,6 +2,7 @@
 import asyncio
 import enum
 import json
+import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -70,6 +71,10 @@ class _WiserRestController(object):
         self._extra_config_file = None
         self._extra_config: _WiserExtraConfig = None
 
+    def remove_control_characters(self, data: str):
+        """Remove control charactwers from string."""
+        return re.sub(r"[\x00-\x1f]", "", data)
+
     async def _do_hub_action(
         self,
         action: WiserRestActionEnum,
@@ -117,10 +122,10 @@ class _WiserRestController(object):
                     else:
                         content = await response.read()
                         if len(content) > 0:
-                            response = content.decode(
-                                "utf-8", "ignore"
-                            ).encode("utf-8")
-                            return json.loads(response)
+                            response = content.decode("utf-8", "ignore")
+                            return json.loads(
+                                self.remove_control_characters(response),
+                            )
                         else:
                             return {}
                     return {}
@@ -129,6 +134,11 @@ class _WiserRestController(object):
             raise WiserHubConnectionError(
                 f"Connection timeout trying to communicate with Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url}"
+            ) from ex
+        except ConnectionResetError as ex:
+            raise WiserHubConnectionError(
+                f"Connection was reset by the hub during communication "
+                f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             ) from ex
         except aiohttp.ClientResponseError as ex:
             raise WiserHubConnectionError(
