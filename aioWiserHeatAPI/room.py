@@ -468,8 +468,8 @@ class _WiserRoom(object):
             elif preset.lower().startswith(TEXT_BOOST.lower()):
                 # Lookup boost duration
                 duration = WISER_BOOST_DURATION[preset]
-                _LOGGER.info(
-                    f"Boosting by {self._boost_temperature_delta} for {duration}"
+                _LOGGER.debug(
+                    f"Boosting by {self._boost_temperature_delta}C for {duration} mins"
                 )
                 await self.boost(self._boost_temperature_delta, duration)
         else:
