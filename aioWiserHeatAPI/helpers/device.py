@@ -25,6 +25,7 @@ class _WiserDevice(object):
         device_type_data: dict,
         schedule: dict = None,
     ):
+        self._away_action = None
         self._data = data
         self._device_type_data = device_type_data
         self._wiser_rest_controller = wiser_rest_controller
@@ -169,6 +170,26 @@ class _WiserDevice(object):
         """Get zwave network information"""
         return _WiserSignalStrength(self._data)
 
+    # Added by LGO
+    @property
+    def endpoint(self) -> int:
+        """Get endpoint"""
+        return self._device_type_data.get("Endpoint", 0)
+
+    # Device type Zigbee
+    @property
+    def type_comm(self) -> str:
+        """Get type of zigbee device"""
+        return self._data.get("Type", TEXT_UNKNOWN)
+
+    # UUID Zigbee
+    @property
+    def uuid(self) -> str:
+        """Get UUID zigbee"""
+        return self._device_type_data.get("UUID", TEXT_UNKNOWN)
+
+    # END Added by LGO
+
 
 class _WiserElectricalDevice(_WiserDevice):
     """Class representing a wiser electrical device"""
@@ -209,11 +230,11 @@ class _WiserElectricalDevice(_WiserDevice):
         return self._device_type_data.get("AwayAction", TEXT_UNKNOWN)
 
     async def set_away_mode_action(
-        self, action: Union[WiserAwayActionEnum, WiserShutterAwayActionEnum, str]
+        self,
+        action: Union[WiserAwayActionEnum, WiserShutterAwayActionEnum, str],
     ) -> bool:
-        if (
-            type(action) == WiserAwayActionEnum
-            or type(action) == WiserShutterAwayActionEnum
+        if isinstance(action, WiserAwayActionEnum) or isinstance(
+            action, WiserShutterAwayActionEnum
         ):
             action = action.value
 
@@ -223,7 +244,8 @@ class _WiserElectricalDevice(_WiserDevice):
                 return True
         else:
             raise ValueError(
-                f"{action} is not a valid away mode action.  Valid modes are {self.available_away_mode_actions}"
+                f"{action} is not a valid away mode action.  "
+                f"Valid modes are {self.available_away_mode_actions}"
             )
 
     @property
@@ -237,7 +259,7 @@ class _WiserElectricalDevice(_WiserDevice):
         return self._device_type_data.get("Mode", TEXT_UNKNOWN)
 
     async def set_mode(self, mode: Union[WiserDeviceModeEnum, str]) -> bool:
-        if type(mode) == WiserDeviceModeEnum:
+        if isinstance(mode, WiserDeviceModeEnum):
             mode = mode.value
         if is_value_in_list(mode, self.available_modes):
             return await self._send_command({"Mode": mode.title()})

@@ -1,4 +1,9 @@
-from .const import TEMP_OFF, TEXT_UNKNOWN, WISERHEATINGACTUATOR, WiserTempLimitsEnum
+from .const import (
+    TEMP_OFF,
+    TEXT_UNKNOWN,
+    WISERHEATINGACTUATOR,
+    WiserTempLimitsEnum,
+)
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
 from .helpers.temp import _WiserTemperatureFunctions as tf
@@ -8,7 +13,9 @@ from .rest_controller import _WiserRestController
 class _WiserTemperatureSensor:
     """Data structure for plug in temp sensor"""
 
-    def __init__(self, data: dict, wiser_rest_controller: _WiserRestController, id):
+    def __init__(
+        self, data: dict, wiser_rest_controller: _WiserRestController, id
+    ):
         self._data = data
         self._id = id
         self._wiser_rest_controller = wiser_rest_controller
@@ -45,7 +52,9 @@ class _WiserTemperatureSensor:
             return await self._send_command(
                 {
                     "FloorTemperatureSensor": {
-                        "MaximumTemperature": tf._to_wiser_temp(temp, "floorHeatingMax")
+                        "MaximumTemperature": tf._to_wiser_temp(
+                            temp, "floorHeatingMax"
+                        )
                     }
                 }
             )
@@ -66,7 +75,9 @@ class _WiserTemperatureSensor:
             return await self._send_command(
                 {
                     "FloorTemperatureSensor": {
-                        "MinimumTemperature": tf._to_wiser_temp(temp, "floorHeatingMin")
+                        "MinimumTemperature": tf._to_wiser_temp(
+                            temp, "floorHeatingMin"
+                        )
                     }
                 }
             )
@@ -85,7 +96,9 @@ class _WiserTemperatureSensor:
     @property
     def temperature_offset(self) -> float:
         """Get the temperature offset"""
-        return tf._from_wiser_temp(self._data.get("Offset", None), "floorHeatingOffset")
+        return tf._from_wiser_temp(
+            self._data.get("Offset", None), "floorHeatingOffset"
+        )
 
     async def set_temperature_offset(self, temp: float):
         """Set the temperature offset"""
@@ -116,7 +129,8 @@ class _WiserHeatingActuator(_WiserDevice):
     def current_temperature(self) -> float:
         """Get the current measured temperature"""
         return tf._from_wiser_temp(
-            self._device_type_data.get("MeasuredTemperature", TEMP_OFF), "current"
+            self._device_type_data.get("MeasuredTemperature", TEMP_OFF),
+            "current",
         )
 
     @property
@@ -157,6 +171,51 @@ class _WiserHeatingActuator(_WiserDevice):
     def output_type(self) -> str:
         """Get output type"""
         return self._device_type_data.get("OutputType", TEXT_UNKNOWN)
+
+    # added by LGO
+    @property
+    def active_power(self) -> int:
+        """Get active power"""
+        return self._device_type_data.get("ActivePower", 0)
+
+    @property
+    def total_active_power(self) -> int:
+        """Get total active power"""
+        return self._device_type_data.get("TotalActivePower", 0)
+
+    @property
+    def operation_status(self) -> str:
+        """Get Operation status"""
+        return self._device_type_data.get("OperationStatus", TEXT_UNKNOWN)
+
+    @property
+    def fault_status(self) -> str:
+        """Get Fault status"""
+        return self._device_type_data.get("FaultStatus", TEXT_UNKNOWN)
+
+    # equipment for energy management
+    @property
+    def equipment_type(self) -> str:
+        """Get Equipment type"""
+        return self._device_type_data.get("EquipmentType", TEXT_UNKNOWN)
+
+    @property
+    def equipment_family(self) -> str:
+        """Get Equipment family"""
+        return self._device_type_data.get("EquipmentFamily", TEXT_UNKNOWN)
+
+    @property
+    def installation_type(self) -> str:
+        """Get Installation type"""
+        return self._device_type_data.get("InstallationType", TEXT_UNKNOWN)
+
+    @property
+    def number_of_phases(self) -> int:
+        """Get Installation type"""
+        return self._device_type_data.get("NumberOfPhases", 0)
+
+
+# End added by LGO
 
 
 class _WiserHeatingActuatorCollection(object):
