@@ -1,7 +1,13 @@
 import inspect
-from . import _LOGGER
 
-from .const import TEXT_ON, TEXT_OFF, TEXT_UNKNOWN, WISERDEVICE, WiserDeviceModeEnum
+from . import _LOGGER
+from .const import (
+    TEXT_OFF,
+    TEXT_ON,
+    TEXT_UNKNOWN,
+    WISERDEVICE,
+    WiserDeviceModeEnum,
+)
 from .helpers.device import _WiserElectricalDevice
 
 
@@ -49,7 +55,7 @@ class _WiserLight(_WiserElectricalDevice):
                 self._device_type_data = result
         if result:
             _LOGGER.debug(
-                "Wiser smart plug - {} command successful".format(
+                "Wiser light - {} command successful".format(
                     inspect.stack()[1].function
                 )
             )
@@ -69,7 +75,9 @@ class _WiserLight(_WiserElectricalDevice):
     @property
     def is_dimmable(self) -> bool:
         """Get if the light is dimmable"""
-        return True if self._device_type_data.get("IsDimmable", False) else False
+        return (
+            True if self._device_type_data.get("IsDimmable", False) else False
+        )
 
     @property
     def is_on(self) -> bool:
@@ -91,14 +99,18 @@ class _WiserLight(_WiserElectricalDevice):
         Turn on the light at current brightness level
         return: boolean
         """
-        return await self._send_command({"RequestOverride": {"State": TEXT_ON}})
+        return await self._send_command(
+            {"RequestOverride": {"State": TEXT_ON}}
+        )
 
     async def turn_off(self) -> bool:
         """
         Turn off the light
         return: boolean
         """
-        return await self._send_command({"RequestOverride": {"State": TEXT_OFF}})
+        return await self._send_command(
+            {"RequestOverride": {"State": TEXT_OFF}}
+        )
 
 
 class _WiserDimmableLight(_WiserLight):
@@ -118,10 +130,17 @@ class _WiserDimmableLight(_WiserLight):
         """Set current brightness percentage"""
         if percentage >= 0 and percentage <= 100:
             return await self._send_command(
-                {"RequestOverride": {"State": TEXT_ON, "Percentage": percentage}}
+                {
+                    "RequestOverride": {
+                        "State": TEXT_ON,
+                        "Percentage": percentage,
+                    }
+                }
             )
         else:
-            raise ValueError(f"Brightness level percentage must be between 0 and 100")
+            raise ValueError(
+                f"Brightness level percentage must be between 0 and 100"
+            )
 
     @property
     def manual_level(self) -> int:
@@ -137,7 +156,9 @@ class _WiserDimmableLight(_WiserLight):
     def output_range(self) -> _WiserOutputRange:
         """Get output range min/max."""
         # TODO: Add setter for min max values
-        return _WiserOutputRange(self._device_type_data.get("OutputRange", None))
+        return _WiserOutputRange(
+            self._device_type_data.get("OutputRange", None)
+        )
 
     @property
     def scheduled_percentage(self) -> int:
@@ -179,7 +200,9 @@ class _WiserLightCollection(object):
     @property
     def onoff_lights(self) -> list:
         return list(
-            onoff_lights for onoff_lights in self.all if not onoff_lights.is_dimmable
+            onoff_lights
+            for onoff_lights in self.all
+            if not onoff_lights.is_dimmable
         )
 
     def get_by_id(self, id: int) -> _WiserLight:
@@ -200,7 +223,9 @@ class _WiserLightCollection(object):
         return: _WiserLight object
         """
         try:
-            return [light for light in self.all if light.light_id == light_id][0]
+            return [light for light in self.all if light.light_id == light_id][
+                0
+            ]
         except IndexError:
             return None
 

@@ -105,6 +105,8 @@ class _WiserSmartPlugCollection(object):
         return: _WiserSmartPlug object
         """
         try:
-            return [smartplug for smartplug in self.all if smartplug.id == id][0]
+            return [smartplug for smartplug in self.all if smartplug.id == id][
+                0
+            ]
         except IndexError:
             return None

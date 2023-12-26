@@ -177,7 +177,9 @@ class _WiserHubFeatureCapabilitiesInfo:
     @property
     def automations(self) -> _WiserHubAutomationCapabilities:
         """Get automation capabilities"""
-        return _WiserHubAutomationCapabilities(self._data.get("Automation", {}))
+        return _WiserHubAutomationCapabilities(
+            self._data.get("Automation", {})
+        )
 
     @property
     def pte(self) -> _WiserHubPTECapabilities:
@@ -195,12 +197,12 @@ class _WiserClimateCapabilities(object):
     @property
     def heating_supported(self) -> bool:
         """Get heating supported value"""
-        return self._data.get("HeatingSupported")
+        return self._data.get("HeatingSupported", False)
 
     @property
     def cooling_supported(self) -> bool:
         """Get cooling supported value"""
-        return self._data.get("CoolingSupported")
+        return self._data.get("CoolingSupported", False)
 
     @property
     def minimum_heat_set_point(self) -> int:
@@ -240,18 +242,18 @@ class _WiserClimateCapabilities(object):
     @property
     def open_window_detection(self) -> bool:
         """Get open window detection value"""
-        return self._data.get("OpenWindowDetection")
+        return self._data.get("OpenWindowDetection", False)
 
     @property
     def hydronic_channel_selection(self) -> bool:
         """Get hydronic channel selection value"""
         if self._data:
-            return self._data.get("HydronicChannelSelection")
+            return self._data.get("HydronicChannelSelection", False)
         return None
 
     @property
     def on_off_supported(self) -> bool:
         """Get on off supported value"""
         if self._data:
-            return self._data.get("OnOffSupported")
+            return self._data.get("OnOffSupported", False)
         return None
