@@ -6,6 +6,7 @@ from .const import (
 )
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
+from .helpers.capabilities import _WiserClimateCapabilities
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController
 
@@ -171,52 +172,6 @@ class _WiserHeatingActuator(_WiserDevice):
     def output_type(self) -> str:
         """Get output type"""
         return self._device_type_data.get("OutputType", TEXT_UNKNOWN)
-
-    # added by LGO
-    @property
-    def active_power(self) -> int:
-        """Get active power"""
-        return self._device_type_data.get("ActivePower", 0)
-
-    @property
-    def total_active_power(self) -> int:
-        """Get total active power"""
-        return self._device_type_data.get("TotalActivePower", 0)
-
-    @property
-    def operation_status(self) -> str:
-        """Get Operation status"""
-        return self._device_type_data.get("OperationStatus", TEXT_UNKNOWN)
-
-    @property
-    def fault_status(self) -> str:
-        """Get Fault status"""
-        return self._device_type_data.get("FaultStatus", TEXT_UNKNOWN)
-
-    # equipment for energy management
-    @property
-    def equipment_type(self) -> str:
-        """Get Equipment type"""
-        return self._device_type_data.get("EquipmentType", TEXT_UNKNOWN)
-
-    @property
-    def equipment_family(self) -> str:
-        """Get Equipment family"""
-        return self._device_type_data.get("EquipmentFamily", TEXT_UNKNOWN)
-
-    @property
-    def installation_type(self) -> str:
-        """Get Installation type"""
-        return self._device_type_data.get("InstallationType", TEXT_UNKNOWN)
-
-    @property
-    def number_of_phases(self) -> int:
-        """Get Installation type"""
-        return self._device_type_data.get("NumberOfPhases", 0)
-
-
-# End added by LGO
-
 
 class _WiserHeatingActuatorCollection(object):
     """Class holding all wiser heating actuators"""
