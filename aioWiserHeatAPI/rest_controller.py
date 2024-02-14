@@ -1,4 +1,5 @@
 """Module to manage rest commands of Wiser hub"""
+
 import asyncio
 import enum
 import json
@@ -95,14 +96,12 @@ class _WiserRestController(object):
         )
 
         kwargs = {}
-
         kwargs["headers"] = {
             "SECRET": self._wiser_connection_info.secret,
             "Content-Type": "application/json;charset=UTF-8",
         }
 
         if data is not None:
-            # print(data)
             kwargs["json"] = data
         if self._timeout is not None:
             kwargs["timeout"] = self._timeout
@@ -123,9 +122,15 @@ class _WiserRestController(object):
                         content = await response.read()
                         if len(content) > 0:
                             response = content.decode("utf-8", "ignore")
-                            return json.loads(
-                                self.remove_control_characters(response),
-                            )
+                            try:
+                                return json.loads(
+                                    self.remove_control_characters(response),
+                                )
+                            except json.decoder.JSONDecodeError as ex:
+                                raise WiserHubRESTError(
+                                    f"""JSON decoding error from {url}. Error is - {ex}.
+                                    Data is - {content}""",
+                                ) from ex
                         else:
                             return {}
                     return {}
