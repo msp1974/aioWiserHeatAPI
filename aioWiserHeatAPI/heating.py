@@ -39,7 +39,7 @@ class _WiserHeatingChannel(object):
         return self._data.get("PercentageDemand", 0)
 
     @property
-    def room_ids(self) -> list:
+    def room_ids(self) -> list | None:
         """Get a list of the room ids attached to this heating channel"""
         return self._data.get("RoomIds", None)
 
@@ -47,7 +47,9 @@ class _WiserHeatingChannel(object):
 class _WiserHeatingChannelCollection(object):
     """Class holding all wiser heating channel objects"""
 
-    def __init__(self, heating_channel_data: dict, rooms: _WiserRoomCollection):
+    def __init__(
+        self, heating_channel_data: dict, rooms: _WiserRoomCollection
+    ):
         self._heating_channels = []
         self._heating_channel_data = heating_channel_data
         self._rooms = rooms

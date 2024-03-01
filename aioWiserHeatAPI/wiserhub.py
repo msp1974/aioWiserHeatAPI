@@ -249,42 +249,42 @@ class WiserAPI(object):
         return self._wiser_rest_controller._api_parameters
 
     @property
-    def devices(self):
+    def devices(self) -> _WiserDeviceCollection:
         """List of device entities attached to the Wiser Hub"""
         return self._devices
 
     @property
-    def heating_channels(self):
+    def heating_channels(self) -> _WiserHeatingChannelCollection:
         """List of heating channel entities on the Wiser Hub"""
         return self._heating_channels
 
     @property
-    def hotwater(self):
+    def hotwater(self) -> _WiserHotwater:
         """List of hot water entities on the Wiser Hub"""
         return self._hotwater
 
     @property
-    def moments(self):
+    def moments(self) -> _WiserMomentCollection:
         """List of moment entities on the Wiser Hub"""
         return self._moments
 
     @property
-    def rooms(self):
+    def rooms(self) -> _WiserRoomCollection:
         """List of room entities configured on the Wiser Hub"""
         return self._rooms
 
     @property
-    def schedules(self):
+    def schedules(self) -> _WiserScheduleCollection:
         """List of schedules"""
         return self._schedules
 
     @property
-    def status(self):
+    def status(self) -> WiserStatus:
         """Hub status info"""
         return WiserStatus(self._status_data)
 
     @property
-    def system(self):
+    def system(self) -> _WiserSystem:
         """Entity of the Wiser Hub"""
         return self._system
 
@@ -299,15 +299,18 @@ class WiserAPI(object):
 
     @property
     def version(self):
+        """Return api version."""
         return __VERSION__
 
     @property
-    def _raw_hub_data(self):
+    def raw_hub_data(self):
+        """Return raw hub data."""
         return {
             "Domain": self._domain_data,
             "Network": self._network_data,
             "Schedule": self._schedule_data,
             "OpenTherm": self._opentherm_data,
+            "Status": self._status_data,
         }
 
     def output_raw_hub_data(
