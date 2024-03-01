@@ -270,6 +270,8 @@ class _WiserElectricalDevice(_WiserDevice):
 
     @property
     def name(self) -> str:
+        if self._data.get("Name"):
+            return self._data.get("Name")
         return self._device_type_data.get("Name", TEXT_UNKNOWN)
 
     async def set_name(self, name: str) -> bool:
