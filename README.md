@@ -52,6 +52,10 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
+### v1.5.9
+
+* Force schedules endpoint to use http/1.0
+
 ### v1.5.8
 
 * Handle chunked encoding if sent by the hub
