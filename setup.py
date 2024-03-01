@@ -40,8 +40,8 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        "zeroconf>=0.127.0",
-        "aiohttp>=3.9.1",
+        "zeroconf>=0.131.0",
+        "aiohttp>=3.9.3",
         "aiofiles>=23.2.1",
         "pyyaml>=6.0.1",
     ],
