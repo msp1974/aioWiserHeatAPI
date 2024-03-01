@@ -88,7 +88,7 @@ class _WiserRestController(object):
         param patchData: json object containing command and values to set
         return: boolean
         """
-        if url in [WISERHUBDOMAIN, WISERHUBSCHEDULES]:
+        if url in [WISERHUBDOMAIN]:
             http_version = aiohttp.HttpVersion11
         else:
             http_version = aiohttp.HttpVersion10
