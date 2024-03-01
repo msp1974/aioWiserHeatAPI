@@ -9,8 +9,6 @@ from typing import Optional
 
 import aiohttp
 
-from aioWiserHeatAPI.helpers.extra_config import _WiserExtraConfig
-
 from . import _LOGGER
 from .const import (
     REST_TIMEOUT,
@@ -24,6 +22,7 @@ from .exceptions import (
     WiserHubConnectionError,
     WiserHubRESTError,
 )
+from .helpers.extra_config import _WiserExtraConfig
 
 
 @dataclass
@@ -89,6 +88,10 @@ class _WiserRestController(object):
         param patchData: json object containing command and values to set
         return: boolean
         """
+        if url in [WISERHUBDOMAIN, WISERHUBSCHEDULES]:
+            http_version = aiohttp.HttpVersion11
+        else:
+            http_version = aiohttp.HttpVersion10
 
         url = url.format(
             self._wiser_connection_info.host,
@@ -108,7 +111,7 @@ class _WiserRestController(object):
 
         try:
             async with aiohttp.ClientSession(
-                version=aiohttp.HttpVersion10,
+                version=http_version,
             ) as session:
                 async with getattr(session, action.value)(
                     url,
