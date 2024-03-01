@@ -85,6 +85,7 @@ WISERUFHCONTROLLER = "UnderFloorHeating/{}"
 WISERSHUTTER = "Shutter/{}"
 WISERLIGHT = "Light/{}"
 WISERPOWERTAGENERGY = "PTE/{}"
+WISERSMOKEALARM = "SmokeAlarmDevice/{}"
 
 
 # Enums
