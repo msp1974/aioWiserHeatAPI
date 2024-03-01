@@ -1,8 +1,8 @@
 import logging
 
-from ..rest_controller import _WiserRestController
 from ..const import WiserHeatingModeEnum
 from ..heating import _WiserHeatingChannelCollection
+from ..rest_controller import _WiserRestController
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +22,9 @@ class _WiserHeatingChannelAutomations:
 
     async def passive_mode_control(self) -> bool:
         hub_updated: bool = False
-
+        passive_mode_increment = (
+            self._wiser_rest_controller._api_parameters.passive_mode_increment
+        )
         # iterate each heating channel
         for heating_channel in self._heating_channels:
             passive_rooms = [
@@ -55,12 +57,13 @@ class _WiserHeatingChannelAutomations:
                 for room in passive_rooms:
                     # If room is boosted do not override
                     if not room.is_boosted:
-                        # Set target temp to heat passive room in increments of passive_temperature_increment (default 0.5)
+                        # Set target temp to heat passive room in
+                        # increments of passive_temperature_increment (default 0.5)
                         target_temp = min(
                             round(
                                 (
                                     room.current_temperature
-                                    + self._wiser_rest_controller._api_parameters.passive_mode_increment
+                                    + passive_mode_increment
                                 )
                                 * 2
                             )
@@ -72,6 +75,10 @@ class _WiserHeatingChannelAutomations:
                                 else room.passive_mode_upper_temp
                             ),
                         )
+
+                        if target_temp < room.passive_mode_lower_temp:
+                            target_temp = room.passive_mode_lower_temp
+
                         if target_temp != room.current_target_temperature:
                             _LOGGER.debug(
                                 f"Setting {room.name} to {target_temp}C caused by active rooms on heating channel {heating_channel.id}"
@@ -82,12 +89,15 @@ class _WiserHeatingChannelAutomations:
                 # Stop any passive rooms heating by setting to min temp
                 for room in passive_rooms:
                     if (
-                        room.current_target_temperature > room.passive_mode_lower_temp
+                        room.current_target_temperature
+                        != room.passive_mode_lower_temp
                     ) and not room.is_boosted:
                         _LOGGER.debug(
                             f"Setting {room.name} to {room.passive_mode_lower_temp}C caused by no active rooms on heating channel {heating_channel.id}"
                         )
-                        await room.set_target_temperature(room.passive_mode_lower_temp)
+                        await room.set_target_temperature(
+                            room.passive_mode_lower_temp
+                        )
                         hub_updated = True
 
         return hub_updated
