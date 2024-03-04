@@ -20,6 +20,7 @@ from .exceptions import (
     WiserExtraConfigError,
     WiserHubAuthenticationError,
     WiserHubConnectionError,
+    WiserHubResponseError,
     WiserHubRESTError,
 )
 from .helpers.extra_config import _WiserExtraConfig
@@ -82,16 +83,48 @@ class _WiserRestController(object):
         data: dict = None,
         raise_for_endpoint_error: bool = True,
     ):
+        """Function to retry on response errors due to inconsistant isues reading from the hub."""
+        backoff = [1, 2, 3, 5, 10]
+        http_version = aiohttp.HttpVersion11
+        for i in range(0, 5):
+            if i > 2:
+                http_version = aiohttp.HttpVersion10
+            try:
+                response = await self._execute_request(
+                    action,
+                    url,
+                    data,
+                    raise_for_endpoint_error,
+                    http_version,
+                    i + 1,
+                )
+                return response
+            except WiserHubResponseError as ex:
+                # Last 2 attempts try http 1.0
+                _LOGGER.debug("%s. Retrying in %is", ex, backoff[i])
+                # Backing off pause
+                await asyncio.sleep(backoff[i])
+
+        raise WiserHubConnectionError(
+            f"Unable to get a valid response from the Wiser hub. "
+            f"{self._wiser_connection_info.host} for url {url}"
+        )
+
+    async def _execute_request(  # noqa
+        self,
+        action: WiserRestActionEnum,
+        url: str,
+        data: dict = None,
+        raise_for_endpoint_error: bool = True,
+        http_version=aiohttp.HttpVersion11,
+        attempt: int = 1,
+    ):
         """
-        Send patch update to hub and raise errors if fails
+        Send request to hub and raise errors if fails
         param url: url of hub rest api endpoint
         param patchData: json object containing command and values to set
         return: boolean
         """
-        if url in [WISERHUBDOMAIN]:
-            http_version = aiohttp.HttpVersion11
-        else:
-            http_version = aiohttp.HttpVersion10
 
         url = url.format(
             self._wiser_connection_info.host,
@@ -101,22 +134,31 @@ class _WiserRestController(object):
         kwargs = {}
         kwargs["headers"] = {
             "SECRET": self._wiser_connection_info.secret,
-            "Content-Type": "application/json;charset=UTF-8",
+            "Connection": "close",
         }
 
-        if data is not None:
+        # if data is not None:
+        if data:
             kwargs["json"] = data
+            kwargs["headers"].update(
+                {
+                    "Content-Type": "application/json;charset=UTF-8",
+                }
+            )
         if self._timeout is not None:
             kwargs["timeout"] = self._timeout
 
         try:
+            _LOGGER.debug(
+                "URL: %s, Attempt: %i, Http: %s", url, attempt, http_version
+            )
             async with aiohttp.ClientSession(
                 version=http_version,
             ) as session:
-                async with getattr(session, action.value)(
-                    url,
-                    **kwargs,
+                async with session.request(
+                    action.value, url, **kwargs
                 ) as response:
+                    # await asyncio.sleep(1)
                     if not response.ok:
                         self._process_nok_response(
                             response, url, data, raise_for_endpoint_error
@@ -149,7 +191,7 @@ class _WiserRestController(object):
                 f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             ) from ex
         except aiohttp.ClientResponseError as ex:
-            raise WiserHubConnectionError(
+            raise WiserHubResponseError(
                 f"Response error trying to communicate with Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             ) from ex
@@ -166,6 +208,8 @@ class _WiserRestController(object):
         data: dict,
         raise_for_endpoint_error: bool = True,
     ):
+        if response.status == 400:
+            _LOGGER.debug("400 error")
         if response.status == 401:
             raise WiserHubAuthenticationError(
                 f"Error authenticating to Wiser Hub "

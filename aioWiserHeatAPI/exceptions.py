@@ -3,6 +3,10 @@ class WiserHubConnectionError(Exception):
     pass
 
 
+class WiserHubResponseError(Exception):
+    """Response error mainly for bad request"""
+
+
 class WiserHubAuthenticationError(Exception):
     pass
 
