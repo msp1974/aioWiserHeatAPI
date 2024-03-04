@@ -5,12 +5,14 @@ import enum
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 import aiohttp
 
 from . import _LOGGER
 from .const import (
+    REST_RETRY_BACKOFF,
     REST_TIMEOUT,
     WISERHUBDOMAIN,
     WISERHUBSCHEDULES,
@@ -84,7 +86,6 @@ class _WiserRestController(object):
         raise_for_endpoint_error: bool = True,
     ):
         """Function to retry on response errors due to inconsistant isues reading from the hub."""
-        backoff = [1, 2, 3, 5, 10]
         http_version = aiohttp.HttpVersion11
         for i in range(0, 5):
             if i > 2:
@@ -101,9 +102,11 @@ class _WiserRestController(object):
                 return response
             except WiserHubResponseError as ex:
                 # Last 2 attempts try http 1.0
-                _LOGGER.debug("%s. Retrying in %is", ex, backoff[i])
+                _LOGGER.debug(
+                    "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
+                )
                 # Backing off pause
-                await asyncio.sleep(backoff[i])
+                await asyncio.sleep(REST_RETRY_BACKOFF[i])
 
         raise WiserHubConnectionError(
             f"Unable to get a valid response from the Wiser hub. "
@@ -134,7 +137,6 @@ class _WiserRestController(object):
         kwargs = {}
         kwargs["headers"] = {
             "SECRET": self._wiser_connection_info.secret,
-            "Connection": "close",
         }
 
         # if data is not None:
@@ -232,7 +234,7 @@ class _WiserRestController(object):
                 f"Error code is: {response.status}"
             )
 
-    async def _get_hub_data(
+    async def get_hub_data(
         self, url: str, raise_for_endpoint_error: bool = True
     ):
         """Get data from hub"""
@@ -242,7 +244,7 @@ class _WiserRestController(object):
             raise_for_endpoint_error=raise_for_endpoint_error,
         )
 
-    async def _get_extra_config_data(self):
+    async def get_extra_config_data(self):
         # Load extra config file
 
         if self._extra_config_file:
