@@ -12,12 +12,9 @@ https://github.com/asantaga/wiserheatingapi
 This API allows you to get information from and control your wiserhub.
 """
 
-# TODO: Keep objects and update instead of recreating on hub update
-# TODO: Update entity values after commend issued to get current values
 import pathlib
+from datetime import datetime
 from typing import Optional
-
-import aiohttp
 
 from . import __VERSION__, _LOGGER
 from .cli import log_response_to_file
@@ -121,6 +118,7 @@ class WiserAPI:
             )
 
     async def read_hub_data(self):
+        """Update data objects form the hub."""
         await self._build_objects()
 
         # Run automations
@@ -131,119 +129,150 @@ class WiserAPI:
             if await automations.run_automations():
                 await self._build_objects()
 
+    async def _get_hub_data(self) -> bool:
+        try:
+            start_time = datetime.now()
+            self._domain_data = await self._wiser_rest_controller.get_hub_data(
+                WISERHUBDOMAIN
+            )
+            self._network_data = (
+                await self._wiser_rest_controller.get_hub_data(WISERHUBNETWORK)
+            )
+            self._schedule_data = (
+                await self._wiser_rest_controller.get_hub_data(
+                    WISERHUBSCHEDULES
+                )
+            )
+            try:
+                self._status_data = (
+                    await self._wiser_rest_controller.get_hub_data(
+                        WISERHUBSTATUS
+                    )
+                )
+            except WiserHubRESTError:
+                self._status_data = {}
+
+            # Only get opentherm data if connected
+            opentherm = self._domain_data.get("System", {}).get(
+                "OpenThermConnectionStatus", ""
+            )
+            if opentherm and opentherm == "Connected":
+                self._opentherm_data = (
+                    await self._wiser_rest_controller.get_hub_data(
+                        WISERHUBOPENTHERM, False
+                    )
+                )
+        except (
+            WiserHubConnectionError,
+            WiserHubAuthenticationError,
+            WiserHubRESTError,
+        ) as ex:
+            _LOGGER.debug("Update from Wiser hub failed. %s", ex)
+            raise ex
+        else:
+            # Set hub name on rest controller
+            self._wiser_rest_controller._hub_name = (
+                self._network_data.get("Station", {})
+                .get("NetworkInterface", {})
+                .get("HostName", "")
+            )
+
+            _LOGGER.debug(
+                "Update from %s successful and took %ss",
+                self._wiser_rest_controller._hub_name,
+                (datetime.now() - start_time).total_seconds(),
+            )
+            return True
+
     async def _build_objects(self):
         """Read all data from hub and populate objects"""
 
         # Read data from hub
-        self._domain_data = await self._wiser_rest_controller._get_hub_data(
-            WISERHUBDOMAIN
-        )
-        self._network_data = await self._wiser_rest_controller._get_hub_data(
-            WISERHUBNETWORK
-        )
-        self._schedule_data = await self._wiser_rest_controller._get_hub_data(
-            WISERHUBSCHEDULES
-        )
         try:
-            self._status_data = (
-                await self._wiser_rest_controller._get_hub_data(WISERHUBSTATUS)
+            await self._get_hub_data()
+
+            # load extra data
+            self._wiser_rest_controller._extra_config_file = (
+                self._extra_config_file
             )
-        except WiserHubRESTError:
-            self._status_data = {}
+            await self._wiser_rest_controller.get_extra_config_data()
 
-        # Set hub name on rest controller
-        self._wiser_rest_controller._hub_name = (
-            self._network_data.get("Station", {})
-            .get("NetworkInterface", {})
-            .get("HostName", "")
-        )
-
-        # load extra data
-        self._wiser_rest_controller._extra_config_file = (
-            self._extra_config_file
-        )
-        await self._wiser_rest_controller._get_extra_config_data()
-
-        # Only get opentherm data if connected
-        if (
-            self._domain_data.get("System", {}).get(
-                "OpenThermConnectionStatus", ""
-            )
-            == "Connected"
-        ):
-            self._opentherm_data = (
-                await self._wiser_rest_controller._get_hub_data(
-                    WISERHUBOPENTHERM, False
-                )
-            )
-
-        if self._domain_data != {} and self._network_data != {}:
-            # System Object
-            _device_data = self._domain_data.get("Device", [])
-            self._system = _WiserSystem(
-                self._wiser_rest_controller,
-                self._domain_data,
-                self._network_data,
-                _device_data,
-                self._opentherm_data,
-            )
-
-            # Schedules Collection
-            self._schedules = _WiserScheduleCollection(
-                self._wiser_rest_controller,
-                self._schedule_data,
-                self._system.sunrise_times,
-                self._system.sunset_times,
-            )
-
-            # Devices Collection
-            self._devices = _WiserDeviceCollection(
-                self._wiser_rest_controller, self._domain_data, self._schedules
-            )
-
-            # Rooms Collection
-            room_data = self._domain_data.get("Room", [])
-            self._rooms = _WiserRoomCollection(
-                self._wiser_rest_controller,
-                room_data,
-                self._schedules.get_by_type(WiserScheduleTypeEnum.heating),
-                self._devices,
-                self._enable_automations,
-            )
-
-            # Hot Water
-            if self._domain_data.get("HotWater"):
-                schedule = self._schedules.get_by_id(
-                    WiserScheduleTypeEnum.onoff,
-                    self._domain_data.get("HotWater")[0].get("ScheduleId", 0),
-                )
-                self._hotwater = _WiserHotwater(
+            if self._domain_data != {} and self._network_data != {}:
+                # System Object
+                _device_data = self._domain_data.get("Device", [])
+                self._system = _WiserSystem(
                     self._wiser_rest_controller,
-                    self._domain_data.get("HotWater", {})[0],
-                    schedule,
+                    self._domain_data,
+                    self._network_data,
+                    _device_data,
+                    self._opentherm_data,
                 )
 
-            # Heating Channels
-            if self._domain_data.get("HeatingChannel"):
-                self._heating_channels = _WiserHeatingChannelCollection(
-                    self._domain_data.get("HeatingChannel"), self._rooms
-                )
-
-            # Moments
-            if self._domain_data.get("Moment"):
-                self._moments = _WiserMomentCollection(
+                # Schedules Collection
+                self._schedules = _WiserScheduleCollection(
                     self._wiser_rest_controller,
-                    self._domain_data.get("Moment"),
+                    self._schedule_data,
+                    self._system.sunrise_times,
+                    self._system.sunset_times,
                 )
 
-            # If gets here with no exceptions then success and return true
-            return True
+                # Devices Collection
+                self._devices = _WiserDeviceCollection(
+                    self._wiser_rest_controller,
+                    self._domain_data,
+                    self._schedules,
+                )
 
-        return False
+                # Rooms Collection
+                room_data = self._domain_data.get("Room", [])
+                self._rooms = _WiserRoomCollection(
+                    self._wiser_rest_controller,
+                    room_data,
+                    self._schedules.get_by_type(WiserScheduleTypeEnum.heating),
+                    self._devices,
+                    self._enable_automations,
+                )
+
+                # Hot Water
+                if self._domain_data.get("HotWater"):
+                    schedule = self._schedules.get_by_id(
+                        WiserScheduleTypeEnum.onoff,
+                        self._domain_data.get("HotWater")[0].get(
+                            "ScheduleId", 0
+                        ),
+                    )
+                    self._hotwater = _WiserHotwater(
+                        self._wiser_rest_controller,
+                        self._domain_data.get("HotWater", {})[0],
+                        schedule,
+                    )
+
+                # Heating Channels
+                if self._domain_data.get("HeatingChannel"):
+                    self._heating_channels = _WiserHeatingChannelCollection(
+                        self._domain_data.get("HeatingChannel"), self._rooms
+                    )
+
+                # Moments
+                if self._domain_data.get("Moment"):
+                    self._moments = _WiserMomentCollection(
+                        self._wiser_rest_controller,
+                        self._domain_data.get("Moment"),
+                    )
+
+                # If gets here with no exceptions then success and return true
+                return True
+        except (
+            WiserHubConnectionError,
+            WiserHubAuthenticationError,
+            WiserHubRESTError,
+        ) as ex:
+            raise ex
 
     # API properties
     @property
     def api_parameters(self):
+        """Rest control api parameters."""
         return self._wiser_rest_controller._api_parameters
 
     @property
@@ -327,7 +356,7 @@ class WiserAPI:
 
         # Get raw json data
         if endpoint:
-            data = self._wiser_rest_controller._get_hub_data(endpoint)
+            data = self._wiser_rest_controller.get_hub_data(endpoint)
             try:
                 if data:
                     # Write out to file
