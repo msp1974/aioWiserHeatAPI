@@ -2,7 +2,6 @@
 Handles equipment data
 """
 
-
 from ..const import TEXT_UNKNOWN
 
 
@@ -96,7 +95,7 @@ class _WiserEquipment:
     def equipment_family(self) -> str:
         """Get equipment family"""
         return self._data.get("EquipmentFamily", TEXT_UNKNOWN)
- 
+
     @property
     def equipment_name(self) -> str:
         """Get equipment name"""
