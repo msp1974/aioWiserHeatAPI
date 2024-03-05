@@ -59,6 +59,7 @@ TEXT_UNKNOWN = "Unknown"
 TEXT_WEEKDAYS = "Weekdays"
 TEXT_WEEKENDS = "Weekends"
 TEXT_ALL = "All"
+TEXT_UNABLE = "Unable"
 
 # Day Value Lists
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
