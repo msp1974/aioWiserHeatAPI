@@ -11,14 +11,14 @@ class _WiserPowerTagEnergy(_WiserDevice):
     """Class representing a Wiser Power Tag Energy device"""
 
     @property
+    def delivered_power(self) -> int:
+        """Get current power of device"""
+        return self.equipment.power.current_summation_delivered
+
+    @property
     def energy_export(self) -> str:
         """Get energy export status"""
         return self._device_type_data.get("EnergyExport", TEXT_UNABLE)
-
-    @property
-    def self_consumption(self) -> bool:
-        """Get self consumption"""
-        return self._device_type_data.get("SelfConsumption", False)
 
     @property
     def equipment(self) -> str:
@@ -40,24 +40,14 @@ class _WiserPowerTagEnergy(_WiserDevice):
         return self._device_type_data.get("GridLimitUom", TEXT_UNKNOWN)
 
     @property
-    def rfid(self) -> int:
-        """Get rfid of device"""
-        return self._data.get("RfId", 0)
-
-    @property
-    def raw_total_active_power(self) -> int:
-        """Get raw total active power of device"""
-        return self._device_type_data.get("RawTotalActivePower", 0)
-
-    @property
     def instantaneous_power(self) -> int:
         """Get current power of device"""
         return self.equipment.power.total_active_power
 
     @property
-    def delivered_power(self) -> int:
-        """Get current power of device"""
-        return self.equipment.power.current_summation_delivered
+    def raw_total_active_power(self) -> int:
+        """Get raw total active power of device"""
+        return self._device_type_data.get("RawTotalActivePower", 0)
 
     @property
     def received_power(self) -> int:
@@ -65,9 +55,14 @@ class _WiserPowerTagEnergy(_WiserDevice):
         return self.equipment.power.current_summation_received
 
     @property
-    def raw_total_active_power(self) -> int:
-        """Get raw total active power of device"""
-        return self._device_type_data.get("RawTotalActivePower", 0)
+    def rfid(self) -> int:
+        """Get rfid of device"""
+        return self._data.get("RfId", 0)
+
+    @property
+    def self_consumption(self) -> bool:
+        """Get self consumption"""
+        return self._device_type_data.get("SelfConsumption", False)
 
 
 class _WiserPowerTagEnergyCollection:
