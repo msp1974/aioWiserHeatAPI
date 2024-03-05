@@ -86,10 +86,11 @@ class _WiserRestController(object):
         raise_for_endpoint_error: bool = True,
     ):
         """Function to retry on response errors due to inconsistant isues reading from the hub."""
-        http_version = aiohttp.HttpVersion11
+        http_version = aiohttp.HttpVersion10
+
         for i in range(0, 5):
-            if i > 2:
-                http_version = aiohttp.HttpVersion10
+            if i > 0:
+                await asyncio.sleep(REST_RETRY_BACKOFF[i])
             try:
                 response = await self._execute_request(
                     action,
@@ -100,13 +101,18 @@ class _WiserRestController(object):
                     i + 1,
                 )
                 return response
-            except WiserHubResponseError as ex:
-                # Last 2 attempts try http 1.0
+            except WiserHubRESTError as ex:
+                # if json error try http1.1
                 _LOGGER.debug(
                     "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
                 )
-                # Backing off pause
-                await asyncio.sleep(REST_RETRY_BACKOFF[i])
+                http_version = aiohttp.HttpVersion11
+            except WiserHubResponseError as ex:
+                # If response error try http1.0
+                _LOGGER.debug(
+                    "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
+                )
+                http_version = aiohttp.HttpVersion10
 
         raise WiserHubConnectionError(
             f"Unable to get a valid response from the Wiser hub. "
