@@ -2,7 +2,7 @@
 Handles power tag energy devices
 """
 
-from .const import TEXT_UNKNOWN
+from .const import TEXT_UNABLE, TEXT_UNKNOWN
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
 
@@ -11,19 +11,14 @@ class _WiserPowerTagEnergy(_WiserDevice):
     """Class representing a Wiser Power Tag Energy device"""
 
     @property
-    def direction(self) -> str:
-        """Get flow direction"""
-        return self._device_type_data.get("Direction", TEXT_UNKNOWN)
-
-    @property
-    def equipment_id(self) -> int:
-        """Get equipment id"""
-        return self._device_type_data.get("EquipmentId", 0)
+    def delivered_power(self) -> int:
+        """Get current power of device"""
+        return self.equipment.power.current_summation_delivered
 
     @property
     def energy_export(self) -> str:
         """Get energy export status"""
-        return self._device_type_data.get("EnergyExport", TEXT_UNKNOWN)
+        return self._device_type_data.get("EnergyExport", TEXT_UNABLE)
 
     @property
     def equipment(self) -> str:
@@ -33,11 +28,6 @@ class _WiserPowerTagEnergy(_WiserDevice):
             if self._device_type_data.get("EquipmentData")
             else None
         )
-
-    @property
-    def fault_status(self) -> str:
-        """Get fault status"""
-        return self._device_type_data.get("FaultStatus", TEXT_UNKNOWN)
 
     @property
     def grid_limit(self) -> int:
@@ -50,34 +40,14 @@ class _WiserPowerTagEnergy(_WiserDevice):
         return self._device_type_data.get("GridLimitUom", TEXT_UNKNOWN)
 
     @property
-    def installation_type(self) -> str:
-        """Get installation type"""
-        return self._device_type_data.get("InstallationType", TEXT_UNKNOWN)
-
-    @property
-    def number_of_phases(self) -> int:
-        """Get number of phases"""
-        return self._device_type_data.get("NumberOfPhases", 0)
-
-    @property
-    def operating_status(self) -> str:
-        """Get operating status"""
-        return self._device_type_data.get("OperatingStatus", TEXT_UNKNOWN)
-
-    @property
-    def raw_total_active_power(self) -> int:
-        """Get raw total active power of device"""
-        return self._device_type_data.get("RawTotalActivePower", 0)
-
-    @property
     def instantaneous_power(self) -> int:
         """Get current power of device"""
         return self.equipment.power.total_active_power
 
     @property
-    def delivered_power(self) -> int:
-        """Get current power of device"""
-        return self.equipment.power.current_summation_delivered
+    def raw_total_active_power(self) -> int:
+        """Get raw total active power of device"""
+        return self._device_type_data.get("RawTotalActivePower", 0)
 
     @property
     def received_power(self) -> int:
@@ -88,6 +58,11 @@ class _WiserPowerTagEnergy(_WiserDevice):
     def rfid(self) -> int:
         """Get rfid of device"""
         return self._data.get("RfId", 0)
+
+    @property
+    def self_consumption(self) -> bool:
+        """Get self consumption"""
+        return self._device_type_data.get("SelfConsumption", False)
 
 
 class _WiserPowerTagEnergyCollection:
@@ -113,7 +88,11 @@ class _WiserPowerTagEnergyCollection:
         return: _WiserPowerTagEnergy object
         """
         try:
-            return [power_tag for power_tag in self.all if power_tag.id == device_id][0]
+            return [
+                power_tag
+                for power_tag in self.all
+                if power_tag.id == device_id
+            ][0]
         except IndexError:
             return None
 
@@ -125,7 +104,9 @@ class _WiserPowerTagEnergyCollection:
         """
         try:
             return [
-                power_tag for power_tag in self.all if power_tag.id == equipment_id
+                power_tag
+                for power_tag in self.all
+                if power_tag.id == equipment_id
             ][0]
         except IndexError:
             return None
