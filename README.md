@@ -55,6 +55,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 ### v1.5.12
 
 * Improve performance of hub read and retries
+* Fix error is no status endpoint
 
 ### v1.5.11
 
