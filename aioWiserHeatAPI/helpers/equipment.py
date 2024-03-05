@@ -2,7 +2,6 @@
 Handles equipment data
 """
 
-
 from ..const import TEXT_UNKNOWN
 
 
@@ -96,6 +95,26 @@ class _WiserEquipment:
     def equipment_family(self) -> str:
         """Get equipment family"""
         return self._data.get("EquipmentFamily", TEXT_UNKNOWN)
+
+    @property
+    def equipment_name(self) -> str:
+        """Get equipment name"""
+        return self._data.get("EquipmentName", TEXT_UNKNOWN)
+
+    @property
+    def product_type(self) -> str:
+        """Get equipment name"""
+        return self._data.get("ProductType", TEXT_UNKNOWN)
+
+    @property
+    def functional_control_mode(self) -> str:
+        """Get functional control mode"""
+        return self._data.get("FunctionalControlMode", TEXT_UNKNOWN)
+
+    @property
+    def pcm_mode(self) -> bool:
+        """Get Pcm Mode"""
+        return self._data.get("PcmMode", False)
 
     @property
     def direction(self) -> str:

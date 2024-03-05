@@ -403,6 +403,17 @@ class _WiserSystem(object):
             self._summer_discomfort_prevention = enabled
             return True
 
+    @property
+    def type_comm(self) -> str:
+        """Get type of zigbee device """
+        return self._device_data.get("Type", TEXT_UNKNOWN)  
+
+    @property
+    def uuid(self) -> str:
+        """Get UUID zigbee"""
+        return self._device_data.get("UUID", TEXT_UNKNOWN)
+    
+
     # End Added LGO
 
     @property
