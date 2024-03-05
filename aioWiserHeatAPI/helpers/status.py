@@ -7,7 +7,7 @@ class WiserStatus:
     """Class to hold status object"""
 
     def __init__(self, data: dict):
-        self._data = data
+        self._data = data if data else {}
 
     @property
     def uptime(self):
