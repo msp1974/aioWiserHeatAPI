@@ -74,6 +74,8 @@ class _WiserRestController(object):
         self._extra_config_file = None
         self._extra_config: _WiserExtraConfig = None
 
+        self._last_exception = None
+
     def remove_control_characters(self, data: str):
         """Remove control charactwers from string."""
         return re.sub(r"[\x00-\x1f]", "", data)
@@ -87,18 +89,32 @@ class _WiserRestController(object):
     ):
         """Function to retry on response errors due to inconsistant isues reading from the hub."""
         http_version = aiohttp.HttpVersion10
+        self._last_exception = None
 
         for i in range(0, 5):
             if i > 0:
                 await asyncio.sleep(REST_RETRY_BACKOFF[i])
             try:
+                start_time = datetime.now()
+                _LOGGER.debug(
+                    "URL: %s, Attempt: %i, Http: %s",
+                    url.format(
+                        self._wiser_connection_info.host,
+                        self._wiser_connection_info.port,
+                    ),
+                    i + 1,
+                    http_version,
+                )
                 response = await self._execute_request(
                     action,
                     url,
                     data,
                     raise_for_endpoint_error,
                     http_version,
-                    i + 1,
+                )
+                _LOGGER.debug(
+                    "Request successful and took %ss",
+                    (datetime.now() - start_time).total_seconds(),
                 )
                 return response
             except WiserHubRESTError as ex:
@@ -106,18 +122,23 @@ class _WiserRestController(object):
                 _LOGGER.debug(
                     "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
                 )
+                self._last_exception = ex
                 http_version = aiohttp.HttpVersion11
             except WiserHubResponseError as ex:
                 # If response error try http1.0
                 _LOGGER.debug(
                     "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
                 )
+                self._last_exception = ex
                 http_version = aiohttp.HttpVersion10
+            except WiserHubConnectionError as ex:
+                # Connection timed out or failed.  Try it again
+                _LOGGER.debug(
+                    "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
+                )
+                self._last_exception = ex
 
-        raise WiserHubConnectionError(
-            f"Unable to get a valid response from the Wiser hub. "
-            f"{self._wiser_connection_info.host} for url {url}"
-        )
+        raise WiserHubConnectionError(self._last_exception)
 
     async def _execute_request(  # noqa
         self,
@@ -126,7 +147,6 @@ class _WiserRestController(object):
         data: dict = None,
         raise_for_endpoint_error: bool = True,
         http_version=aiohttp.HttpVersion11,
-        attempt: int = 1,
     ):
         """
         Send request to hub and raise errors if fails
@@ -157,9 +177,6 @@ class _WiserRestController(object):
             kwargs["timeout"] = self._timeout
 
         try:
-            _LOGGER.debug(
-                "URL: %s, Attempt: %i, Http: %s", url, attempt, http_version
-            )
             async with aiohttp.ClientSession(
                 version=http_version,
             ) as session:
