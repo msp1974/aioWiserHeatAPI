@@ -55,6 +55,8 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 ### v1.5.13
 
 * Updates to support v2 hub functions - @LGO44
+* Add connection timeout to new retry function
+* Increase http timeout from 10s to 20s
 
 ### v1.5.12
 
