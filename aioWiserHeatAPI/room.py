@@ -68,9 +68,6 @@ class _WiserRoom(object):
             "max": 18,
         }
 
-        self._boost_temperature_delta = DEFAULT_BOOST_DELTA
-        # self.stored_manual_target_temperature_alt_source = "current"
-
         # Add device id to schedule
         if self._schedule:
             self.schedule._assignments.append(
@@ -237,10 +234,7 @@ class _WiserRoom(object):
 
     @property
     def boost_temperature_delta(self) -> float:
-        return self._boost_temperature_delta
-
-    def set_boost_temperature_delta(self, temperature_delta: float):
-        self._boost_temperature_delta = temperature_delta
+        return self._wiser_rest_controller._api_parameters.boost_temp_delta
 
     @property
     def capabilities(self) -> _WiserClimateCapabilities:

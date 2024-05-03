@@ -12,6 +12,7 @@ import aiohttp
 
 from . import _LOGGER
 from .const import (
+    DEFAULT_BOOST_DELTA,
     REST_RETRY_BACKOFF,
     REST_TIMEOUT,
     WISERHUBDOMAIN,
@@ -34,6 +35,7 @@ class WiserAPIParams:
 
     passive_mode_increment = 0.5
     stored_manual_target_temperature_alt_source = "current"
+    boost_temp_delta = DEFAULT_BOOST_DELTA
 
 
 # Connection info class
@@ -88,7 +90,7 @@ class _WiserRestController(object):
         raise_for_endpoint_error: bool = True,
     ):
         """Function to retry on response errors due to inconsistant isues reading from the hub."""
-        http_version = aiohttp.HttpVersion10
+        http_version = aiohttp.HttpVersion11
         self._last_exception = None
 
         for i in range(0, 5):
