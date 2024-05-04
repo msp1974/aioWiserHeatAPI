@@ -47,7 +47,7 @@ class _WiserPowerTagEnergy(_WiserDevice):
     @property
     def raw_total_active_power(self) -> int:
         """Get raw total active power of device"""
-        return self._device_type_data.get("RawTotalActivePower", 0)
+        return self._device_type_data.get("RawTotalActivePower", None)
 
     @property
     def received_power(self) -> int:

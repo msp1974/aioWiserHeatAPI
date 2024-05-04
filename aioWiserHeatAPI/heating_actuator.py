@@ -4,9 +4,9 @@ from .const import (
     WISERHEATINGACTUATOR,
     WiserTempLimitsEnum,
 )
+from .helpers.capabilities import _WiserClimateCapabilities
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
-from .helpers.capabilities import _WiserClimateCapabilities
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController
 
@@ -137,7 +137,7 @@ class _WiserHeatingActuator(_WiserDevice):
     @property
     def delivered_power(self) -> int:
         """Get the amount of power delivered over time"""
-        return self._device_type_data.get("CurrentSummationDelivered", 0)
+        return self._device_type_data.get("CurrentSummationDelivered", None)
 
     @property
     def equipment_id(self) -> int:
@@ -166,12 +166,13 @@ class _WiserHeatingActuator(_WiserDevice):
     @property
     def instantaneous_power(self) -> int:
         """Get the amount of current passing through the device now"""
-        return self._device_type_data.get("InstantaneousDemand", 0)
+        return self._device_type_data.get("InstantaneousDemand", None)
 
     @property
     def output_type(self) -> str:
         """Get output type"""
         return self._device_type_data.get("OutputType", TEXT_UNKNOWN)
+
 
 class _WiserHeatingActuatorCollection(object):
     """Class holding all wiser heating actuators"""

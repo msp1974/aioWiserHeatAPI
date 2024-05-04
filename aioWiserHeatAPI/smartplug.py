@@ -17,7 +17,7 @@ class _WiserSmartPlug(_WiserElectricalDevice):
     @property
     def delivered_power(self) -> int:
         """Get the amount of current throught the plug over time"""
-        return self._device_type_data.get("CurrentSummationDelivered", -1)
+        return self._device_type_data.get("CurrentSummationDelivered", None)
 
     @property
     def equipment_id(self) -> int:
@@ -36,7 +36,7 @@ class _WiserSmartPlug(_WiserElectricalDevice):
     @property
     def instantaneous_power(self) -> int:
         """Get the amount of current throught the plug now"""
-        return self._device_type_data.get("InstantaneousDemand", -1)
+        return self._device_type_data.get("InstantaneousDemand", None)
 
     @property
     def manual_state(self) -> str:
