@@ -165,6 +165,9 @@ class _WiserRestController(object):
         kwargs = {}
         kwargs["headers"] = {
             "SECRET": self._wiser_connection_info.secret,
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept": "*/*",
+            "User-Agent": "HomeAssistant",
         }
 
         # if data is not None:
@@ -185,7 +188,6 @@ class _WiserRestController(object):
                 async with session.request(
                     action.value, url, **kwargs
                 ) as response:
-                    # await asyncio.sleep(1)
                     if not response.ok:
                         self._process_nok_response(
                             response, url, data, raise_for_endpoint_error
