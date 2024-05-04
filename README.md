@@ -55,6 +55,8 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 ### v1.5.14
 
 * Fix presets not using defined boost temp
+* Set return value of energy sensors to None if not provided by hub
+* Updated headers for hub query
 
 ### v1.5.13
 
