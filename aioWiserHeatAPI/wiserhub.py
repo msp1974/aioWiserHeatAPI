@@ -166,6 +166,7 @@ class WiserAPI:
             WiserHubConnectionError,
             WiserHubAuthenticationError,
             WiserHubRESTError,
+            Exception,
         ) as ex:
             _LOGGER.debug("Update from Wiser hub failed. %s", ex)
             raise ex
@@ -266,6 +267,7 @@ class WiserAPI:
             WiserHubConnectionError,
             WiserHubAuthenticationError,
             WiserHubRESTError,
+            Exception,
         ) as ex:
             raise ex
 
