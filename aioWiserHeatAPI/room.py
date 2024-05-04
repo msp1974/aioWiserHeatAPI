@@ -450,7 +450,7 @@ class _WiserRoom(object):
 
     async def set_preset(self, preset: WiserPresetOptionsEnum | str):
         """Set the preset mode"""
-        if type(preset) == WiserPresetOptionsEnum:
+        if isinstance(preset, WiserPresetOptionsEnum):
             preset = preset.value
 
         # Is it valid preset option?
@@ -463,9 +463,9 @@ class _WiserRoom(object):
                 # Lookup boost duration
                 duration = WISER_BOOST_DURATION[preset]
                 _LOGGER.debug(
-                    f"Boosting by {self._boost_temperature_delta}C for {duration} mins"
+                    f"Boosting by {self.boost_temperature_delta}C for {duration} mins"
                 )
-                await self.boost(self._boost_temperature_delta, duration)
+                await self.boost(self.boost_temperature_delta, duration)
         else:
             raise ValueError(
                 f"{preset} is not a valid preset.  Valid presets are {self.available_presets}"
