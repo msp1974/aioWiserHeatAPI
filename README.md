@@ -52,6 +52,10 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
+### v1.5.15
+
+* Updates to support v2 hub functions for lights , equipments
+
 ### v1.5.14
 
 * Fix presets not using defined boost temp
