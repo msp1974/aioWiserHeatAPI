@@ -413,6 +413,27 @@ class _WiserSystem(object):
         """Get UUID zigbee"""
         return self._device_data.get("UUID", TEXT_UNKNOWN)
     
+    # PCM features
+    @property
+    def pcm_version(self) -> str:
+        """Get PCM version"""
+        return self._system_data.get("PCMVersion", TEXT_UNKNOWN)
+
+    @property
+    def pcm_status(self) -> str:
+        """Get PCM Status"""
+        return self._system_data.get("PCMStatus", TEXT_UNKNOWN)
+
+    @property
+    def pcm_device_limit_reached(self) -> bool:
+        """Get PCM device limit reached"""
+        return self._system_data.get("PCMDeviceLimitReached", False)
+       
+    @property
+    def can_activate_pcm(self) -> bool:
+        """Get Can activate PCM"""
+        return self._system_data.get("CanActivatePCM", False)
+       
 
     # End Added LGO
 
