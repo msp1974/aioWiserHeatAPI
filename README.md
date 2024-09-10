@@ -51,10 +51,13 @@ To help understand the api simply look at the test sample code ```tests/test_api
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+### v1.5.16
+
+* Updates to try to add WindowDoorSensors
 
 ### v1.5.15
 
-* Updates to support v2 hub functions for lights , equipments
+* Updates to support v2 hub functions for lights , equipments...
 
 ### v1.5.14
 
