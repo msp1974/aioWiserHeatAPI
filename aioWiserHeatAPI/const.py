@@ -99,7 +99,8 @@ WISERSHUTTER = "Shutter/{}"
 WISERLIGHT = "Light/{}"
 WISERPOWERTAGENERGY = "PTE/{}"
 WISERSMOKEALARM = "SmokeAlarmDevice/{}"
-
+WISERBINARYSENSOR="BinarySensor/{}"
+WISERWINDOWDOOR="BinarySensor/{}"
 
 # Enums
 class WiserUnitsEnum(enum.Enum):

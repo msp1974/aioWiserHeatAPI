@@ -15,6 +15,8 @@ from .const import (
     WISERSMARTVALVE,
     WISERSMOKEALARM,
     WISERUFHCONTROLLER,
+    WISERBINARYSENSOR,
+    WISERWINDOWDOOR,
 )
 from .heating_actuator import (
     _WiserHeatingActuator,
@@ -30,6 +32,8 @@ from .smartplug import _WiserSmartPlug, _WiserSmartPlugCollection
 from .smartvalve import _WiserSmartValve, _WiserSmartValveCollection
 from .smokealarm import _WiserSmokeAlarm, _WiserSmokeAlarmCollection
 from .ufh import _WiserUFHController, _WiserUFHControllerCollection
+from .binary_sensor import _WiserBinarySensor, _WiserBinarySensorCollection
+from .window_door import _WiserWindowDoor, _WiserWindowDoorCollection
 
 
 class _WiserDeviceTypeEnum(enum.Enum):
@@ -43,6 +47,8 @@ class _WiserDeviceTypeEnum(enum.Enum):
     DimmableLight = "Light"
     PowerTagE = "PTE"
     SmokeAlarmDevice = "SmokeAlarmDevice"
+    BinarySensor= "BinarySensor"
+    WindowDoorSensor= "WindowDoorSensor"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -112,6 +118,18 @@ PRODUCT_TYPE_CONFIG = {
         "endpoint": WISERSMOKEALARM,
         "device_id_field": "DeviceId",
     },
+    "WindowDoor": {
+        "class": _WiserWindowDoor,
+        "collection": _WiserWindowDoorCollection,
+        "endpoint": WISERWINDOWDOOR,
+        "device_id_field": "DeviceId",
+    }, 
+    "BinarySensor": {
+        "class": _WiserBinarySensor,
+        "collection": _WiserBinarySensorCollection,
+        "endpoint": WISERBINARYSENSOR,
+        "device_id_field": "DeviceId",
+    },     
 }
 
 
@@ -292,6 +310,17 @@ class _WiserDeviceCollection:
         """Return all UFH controllers"""
         return self._device_collection["UnderFloorHeating"]
 
+    @property
+    def binarysensors(self):
+        """Return all binary sensors"""
+        return self._device_collection["BinarySensor"]
+
+    @property
+    def windowdoors(self):
+        """Return all binary sensors"""
+        return self._device_collection["WindowDoorSensor"]
+
+ 
     def get_by_id(self, device_id: int):
         """
         Gets a device object from the devices id
