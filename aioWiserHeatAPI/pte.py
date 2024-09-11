@@ -21,7 +21,7 @@ class _WiserPowerTagEnergy(_WiserDevice):
         return self._device_type_data.get("EnergyExport", TEXT_UNABLE)
 
     @property
-    def equipment(self) -> str:
+    def equipment(self) -> _WiserEquipment | None:
         """Get equipment data"""
         return (
             _WiserEquipment(self._device_type_data.get("EquipmentData"))
@@ -72,7 +72,7 @@ class _WiserPowerTagEnergyCollection:
         self._items = []
 
     @property
-    def all(self) -> dict:
+    def all(self) -> list[_WiserPowerTagEnergy]:
         """Return all power tags"""
         return list(self._items)
 

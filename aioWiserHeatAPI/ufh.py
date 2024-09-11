@@ -1,18 +1,16 @@
+import inspect
+
 from . import _LOGGER
-
-from .helpers.device import _WiserDevice
-from .helpers.temp import _WiserTemperatureFunctions as tf
-from .rest_controller import _WiserRestController
-
 from .const import (
     TEMP_MAXIMUM,
     TEMP_OFF,
     TEXT_UNKNOWN,
-    WISERUFHCONTROLLER,
     WISERDEVICE,
+    WISERUFHCONTROLLER,
 )
-
-import inspect
+from .helpers.device import _WiserDevice
+from .helpers.temp import _WiserTemperatureFunctions as tf
+from .rest_controller import _WiserRestController
 
 
 class _WiserUFHRelay(object):
@@ -33,7 +31,9 @@ class _WiserUFHController(_WiserDevice):
         device_type_data: dict,
         schedule: dict = None,
     ):
-        super().__init__(wiser_rest_controller, endpoint, data, device_type_data)
+        super().__init__(
+            wiser_rest_controller, endpoint, data, device_type_data
+        )
         self._relays = []
         self.build_relay_collection(self._device_type_data.get("Relays", []))
 
@@ -89,7 +89,9 @@ class _WiserUFHController(_WiserDevice):
     @property
     def max_floor_temperature(self) -> int:
         """Get the max heat floor temperature"""
-        return self._device_type_data.get("MaxHeatFloorTemperature", TEMP_MAXIMUM)
+        return self._device_type_data.get(
+            "MaxHeatFloorTemperature", TEMP_MAXIMUM
+        )
 
     @property
     def min_floor_temperature(self) -> int:
@@ -118,14 +120,14 @@ class _WiserUFHControllerCollection(object):
         self._items = []
 
     @property
-    def all(self) -> dict:
+    def all(self) -> list[_WiserUFHController]:
         return list(self._items)
 
     @property
     def count(self) -> int:
         return len(self.all)
 
-    def get_by_id(self, id: int) -> _WiserUFHController:
+    def get_by_id(self, ufh_controller_id: int) -> _WiserUFHController:
         """
         Gets a Heating Actuator object from the Heating Actuators id
         param id: id of smart valve
@@ -133,7 +135,9 @@ class _WiserUFHControllerCollection(object):
         """
         try:
             return [
-                ufh_controller for ufh_controller in self.all if ufh_controller.id == id
+                ufh_controller
+                for ufh_controller in self.all
+                if ufh_controller.id == ufh_controller_id
             ][0]
         except IndexError:
             return None

@@ -1,15 +1,8 @@
-import asyncio
 import inspect
 from datetime import datetime
 
 from . import _LOGGER
-from .const import (
-    MAX_BOOST_INCREASE,
-    TEXT_ON,
-    TEXT_UNKNOWN,
-    WISERHUBNETWORK,
-    WISERSYSTEM,
-)
+from .const import TEXT_ON, TEXT_UNKNOWN, WISERSYSTEM
 from .helpers.capabilities import (
     _WiserHubCapabilitiesInfo,
     _WiserHubFeatureCapabilitiesInfo,
@@ -62,9 +55,7 @@ class _WiserSystem(object):
             self._system_data.get("OpenThermConnectionStatus", TEXT_UNKNOWN),
         )
         self._signal = _WiserSignalStrength(self._device_data)
-        self._upgrade_data = _WiserFirmareUpgradeInfo(
-            self._data.get("UpgradeInfo", {})
-        )
+        self._upgrade_data = _WiserFirmareUpgradeInfo(self._data.get("UpgradeInfo", {}))
         self._zigbee_data = _WiserZigbee(self._data.get("Zigbee", {}))
 
         # Variables to hold values for settabel values
@@ -77,36 +68,26 @@ class _WiserSystem(object):
         self._away_mode_target_temperature = self._system_data.get(
             "AwayModeSetPointLimit"
         )
-        self._comfort_mode_enabled = self._system_data.get(
-            "ComfortModeEnabled"
-        )
+        self._comfort_mode_enabled = self._system_data.get("ComfortModeEnabled")
         self._degraded_mode_target_temperature = self._system_data.get(
             "DegradedModeSetpointThreshold"
         )
         self._eco_mode_enabled = self._system_data.get("EcoModeEnabled")
-        self._hub_time = datetime.fromtimestamp(
-            self._system_data.get("UnixTime")
-        )
+        self._hub_time = datetime.fromtimestamp(self._system_data.get("UnixTime"))
         self._override_type = self._system_data.get("OverrideType", "")
         self._timezone_offset = self._system_data.get("TimeZoneOffset")
-        self._valve_protection_enabled = self._system_data.get(
-            "ValveProtectionEnabled"
-        )
+        self._valve_protection_enabled = self._system_data.get("ValveProtectionEnabled")
 
         # Added by LGO
         # Summer comfort
-        self._summer_comfort_enabled = self._system_data.get(
-            "SummerComfortEnabled"
-        )
+        self._summer_comfort_enabled = self._system_data.get("SummerComfortEnabled")
         self._indoor_discomfort_temperature = self._system_data.get(
             "IndoorDiscomfortTemperature"
         )
         self._outdoor_discomfort_temperature = self._system_data.get(
             "OutdoorDiscomfortTemperature"
         )
-        self._summer_comfort_available = self._system_data.get(
-            "SummerComfortAvailable"
-        )
+        self._summer_comfort_available = self._system_data.get("SummerComfortAvailable")
         self._summer_discomfort_prevention = self._system_data.get(
             "SummerDiscomfortPrevention"
         )
@@ -130,14 +111,10 @@ class _WiserSystem(object):
                 f"{WISERSYSTEM}/{path}", cmd
             )
         else:
-            result = await self._wiser_rest_controller._send_command(
-                WISERSYSTEM, cmd
-            )
+            result = await self._wiser_rest_controller._send_command(WISERSYSTEM, cmd)
         if result:
             _LOGGER.debug(
-                "Wiser hub - {} command successful".format(
-                    inspect.stack()[1].function
-                )
+                "Wiser hub - {} command successful".format(inspect.stack()[1].function)
             )
             return True
         return False
@@ -153,9 +130,7 @@ class _WiserSystem(object):
         return self._automatic_daylight_saving
 
     async def set_automatic_daylight_saving_enabled(self, enabled: bool):
-        if await self._send_command(
-            {"AutomaticDaylightSaving": str(enabled).lower()}
-        ):
+        if await self._send_command({"AutomaticDaylightSaving": str(enabled).lower()}):
             self._automatic_daylight_saving = enabled
             return True
 
@@ -165,9 +140,7 @@ class _WiserSystem(object):
         return True if self._override_type == "Away" else False
 
     async def set_away_mode_enabled(self, enabled: bool):
-        if await self._send_command(
-            {"RequestOverride": {"Type": 2 if enabled else 0}}
-        ):
+        if await self._send_command({"RequestOverride": {"Type": 2 if enabled else 0}}):
             self._override_type = "Away" if enabled else ""
             return True
 
@@ -177,9 +150,7 @@ class _WiserSystem(object):
         return self._away_mode_affects_hotwater
 
     async def set_away_mode_affects_hotwater(self, enabled: bool = False):
-        if await self._send_command(
-            {"AwayModeAffectsHotWater": str(enabled).lower()}
-        ):
+        if await self._send_command({"AwayModeAffectsHotWater": str(enabled).lower()}):
             self._away_mode_affects_hotwater = enabled
             return True
 
@@ -198,9 +169,9 @@ class _WiserSystem(object):
     def boiler_fuel_type(self) -> str:
         """Get boiler fuel type setting"""
         # TODO: Add ability to set to 1 of 3 types
-        return self._system_data.get(
-            "BoilerSettings", {"FuelType": TEXT_UNKNOWN}
-        ).get("FuelType")
+        return self._system_data.get("BoilerSettings", {"FuelType": TEXT_UNKNOWN}).get(
+            "FuelType"
+        )
 
     @property
     def brand_name(self) -> str:
@@ -405,14 +376,14 @@ class _WiserSystem(object):
 
     @property
     def type_comm(self) -> str:
-        """Get type of zigbee device """
-        return self._device_data.get("Type", TEXT_UNKNOWN)  
+        """Get type of zigbee device"""
+        return self._device_data.get("Type", TEXT_UNKNOWN)
 
     @property
     def uuid(self) -> str:
         """Get UUID zigbee"""
         return self._device_data.get("UUID", TEXT_UNKNOWN)
-    
+
     # PCM features
     @property
     def pcm_version(self) -> str:
@@ -428,22 +399,21 @@ class _WiserSystem(object):
     def pcm_device_limit_reached(self) -> bool:
         """Get PCM device limit reached"""
         return self._system_data.get("PCMDeviceLimitReached", False)
-       
+
     @property
     def can_activate_pcm(self) -> bool:
         """Get Can activate PCM"""
         return self._system_data.get("CanActivatePCM", False)
-       
 
     # End Added LGO
 
     @property
-    def sunrise_times(self) -> list:
+    def sunrise_times(self) -> dict[str, str]:
         """Get sunrise times"""
         return sunrise_times(self._system_data.get("SunriseTimes", []))
 
     @property
-    def sunset_times(self) -> list:
+    def sunset_times(self) -> dict[str, str]:
         """Get sunset times"""
         return sunset_times(self._system_data.get("SunsetTimes", []))
 
@@ -502,9 +472,7 @@ class _WiserSystem(object):
                 "RequestOverride": {
                     "Type": "Boost",
                     "DurationMinutes": duration,
-                    "IncreaseSetPointBy": tf._to_wiser_temp(
-                        inc_temp, "boostDelta"
-                    ),
+                    "IncreaseSetPointBy": tf._to_wiser_temp(inc_temp, "boostDelta"),
                 }
             }
         )

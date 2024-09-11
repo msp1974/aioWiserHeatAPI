@@ -1,5 +1,5 @@
 from ..const import WISERHUBOPENTHERM
-from ..rest_controller import _WiserRestController, WiserRestActionEnum
+from ..rest_controller import WiserRestActionEnum, _WiserRestController
 from .temp import _WiserTemperatureFunctions as tf
 
 
@@ -19,7 +19,9 @@ class _WiserOpenThermBoilerParameters(object):
 
     @property
     def ch_setpoint(self) -> bool:
-        return tf._from_wiser_temp(self._data.get("maxChSetpoint", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("maxChSetpoint", None), "current"
+        )
 
     @property
     def ch_setpoint_lower_bound(self) -> bool:
@@ -43,7 +45,9 @@ class _WiserOpenThermBoilerParameters(object):
 
     @property
     def hw_setpoint(self) -> bool:
-        return tf._from_wiser_temp(self._data.get("dhwSetpoint", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("dhwSetpoint", None), "current"
+        )
 
     @property
     def hw_setpoint_lower_bound(self) -> bool:
@@ -95,7 +99,9 @@ class _WiserOpenThermOperationalData(object):
     @property
     def hw_temperature(self) -> str:
         """Get Dhw1Temperature"""
-        return tf._from_wiser_temp(self._data.get("Dhw1Temperature", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("Dhw1Temperature", None), "current"
+        )
 
     @property
     def relative_modulation_level(self) -> int:
@@ -128,6 +134,11 @@ class _WiserOpentherm(object):
         self._wiser_rest_controller = wiser_rest_controller
 
     @property
+    def id(self) -> int:
+        """Return system id."""
+        return 0
+
+    @property
     def ch_flow_active_lower_setpoint(self) -> float:
         """Get chFlowActiveLowerSetpoint"""
         return tf._from_wiser_temp(
@@ -149,7 +160,9 @@ class _WiserOpentherm(object):
     @property
     def ch1_flow_setpoint(self) -> float:
         """Get ch1FlowSetpoint"""
-        return tf._from_wiser_temp(self._data.get("ch1FlowSetpoint", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("ch1FlowSetpoint", None), "current"
+        )
 
     @property
     def ch2_flow_enabled(self) -> bool:
@@ -159,7 +172,9 @@ class _WiserOpentherm(object):
     @property
     def ch2_flow_setpoint(self) -> float:
         """Get ch2FlowSetpoint"""
-        return tf._from_wiser_temp(self._data.get("ch2FlowSetpoint", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("ch2FlowSetpoint", None), "current"
+        )
 
     @property
     def connection_status(self) -> str:
@@ -179,7 +194,9 @@ class _WiserOpentherm(object):
     @property
     def hw_flow_setpoint(self) -> float:
         """Get dhwFlowSetpoint"""
-        return tf._from_wiser_temp(self._data.get("dhwFlowSetpoint", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("dhwFlowSetpoint", None), "current"
+        )
 
     @property
     def operating_mode(self) -> str:
@@ -188,7 +205,9 @@ class _WiserOpentherm(object):
 
     @property
     def operational_data(self) -> _WiserOpenThermOperationalData:
-        return _WiserOpenThermOperationalData(self._data.get("operationalData", {}))
+        return _WiserOpenThermOperationalData(
+            self._data.get("operationalData", {})
+        )
 
     @property
     def boiler_parameters(self) -> _WiserOpenThermBoilerParameters:
@@ -199,12 +218,16 @@ class _WiserOpentherm(object):
     @property
     def room_setpoint(self) -> float:
         """Get roomTemperature"""
-        return tf._from_wiser_temp(self._data.get("roomSetpoint", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("roomSetpoint", None), "current"
+        )
 
     @property
     def room_temperature(self) -> float:
         """Get roomTemperature"""
-        return tf._from_wiser_temp(self._data.get("roomTemperature", None), "current")
+        return tf._from_wiser_temp(
+            self._data.get("roomTemperature", None), "current"
+        )
 
     @property
     def tracked_room_id(self) -> int:
@@ -215,8 +238,12 @@ class _WiserOpentherm(object):
     def json_data(self) -> dict:
         return self._data
 
-    async def set_opentherm_parameter(self, endpoint: str, cmd_data: str) -> bool:
+    async def set_opentherm_parameter(
+        self, endpoint: str, cmd_data: str
+    ) -> bool:
         """Allow settign of opentherm param"""
         return await self._wiser_rest_controller._do_hub_action(
-            WiserRestActionEnum.PATCH, f"{WISERHUBOPENTHERM}{endpoint}", cmd_data
+            WiserRestActionEnum.PATCH,
+            f"{WISERHUBOPENTHERM}{endpoint}",
+            cmd_data,
         )

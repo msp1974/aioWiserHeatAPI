@@ -145,6 +145,12 @@ class WiserDeviceModeEnum(enum.Enum):
     manual = TEXT_MANUAL
 
 
+class WiserHotWaterClimateModeEnum(enum.Enum):
+    auto = TEXT_AUTO
+    manual = TEXT_MANUAL
+    off = TEXT_OFF
+
+
 class WiserHeatingModeEnum(enum.Enum):
     off = TEXT_OFF
     auto = TEXT_AUTO

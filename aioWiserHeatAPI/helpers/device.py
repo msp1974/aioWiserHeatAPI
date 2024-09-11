@@ -286,4 +286,4 @@ class _WiserElectricalDevice(_WiserDevice):
     @property
     def schedule_id(self) -> int:
         """Get the schedule id for the light"""
-        return self._device_type_data.get("ScheduleId")
+        return self._device_type_data.get("ScheduleId", 0)

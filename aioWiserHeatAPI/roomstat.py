@@ -1,7 +1,5 @@
-from . import _LOGGER
-
-from .helpers.device import _WiserDevice
 from .helpers.battery import _WiserBattery
+from .helpers.device import _WiserDevice
 from .helpers.temp import _WiserTemperatureFunctions as tf
 
 
@@ -31,14 +29,14 @@ class _WiserRoomStat(_WiserDevice):
         )
 
 
-class _WiserRoomStatCollection(object):
+class _WiserRoomStatCollection:
     """Class holding all wiser room stats"""
 
     def __init__(self):
         self._items = []
 
     @property
-    def all(self) -> list:
+    def all(self) -> list[_WiserRoomStat]:
         return list(self._items)
 
     @property
@@ -46,13 +44,13 @@ class _WiserRoomStatCollection(object):
         return len(self.all)
 
     # Roomstats
-    def get_by_id(self, id: int) -> _WiserRoomStat:
+    def get_by_id(self, roomstat_id: int) -> _WiserRoomStat:
         """
         Gets a RoomStat object from the RoomStats id
         param id: id of room stat
         return: _WiserRoomStat object
         """
         for roomstat in self.all:
-            if roomstat.id == id:
+            if roomstat.id == roomstat_id:
                 return roomstat
         return None

@@ -1,6 +1,3 @@
-import inspect
-
-from . import _LOGGER
 from .const import TEXT_OFF, TEXT_ON, TEXT_UNKNOWN, WiserDeviceModeEnum
 from .helpers.device import _WiserElectricalDevice
 from .helpers.equipment import _WiserEquipment
@@ -25,7 +22,7 @@ class _WiserSmartPlug(_WiserElectricalDevice):
         return self._device_type_data.get("EquipmentId", 0)
 
     @property
-    def equipment(self) -> str:
+    def equipment(self) -> _WiserEquipment | None:
         """Get equipment data"""
         return (
             _WiserEquipment(self._device_type_data.get("EquipmentData"))
@@ -86,11 +83,11 @@ class _WiserSmartPlugCollection(object):
         self._items = []
 
     @property
-    def all(self) -> dict:
+    def all(self) -> list[_WiserSmartPlug]:
         return list(self._items)
 
     @property
-    def available_modes(self) -> list:
+    def available_modes(self) -> list[str]:
         return [mode.value for mode in WiserDeviceModeEnum]
 
     @property
@@ -98,15 +95,17 @@ class _WiserSmartPlugCollection(object):
         return len(self.all)
 
     # Smartplugs
-    def get_by_id(self, id: int) -> _WiserSmartPlug:
+    def get_by_id(self, smartplug_id: int) -> _WiserSmartPlug:
         """
         Gets a SmartPlug object from the SmartPlugs id
         param id: id of smart plug
         return: _WiserSmartPlug object
         """
         try:
-            return [smartplug for smartplug in self.all if smartplug.id == id][
-                0
-            ]
+            return [
+                smartplug
+                for smartplug in self.all
+                if smartplug.id == smartplug_id
+            ][0]
         except IndexError:
             return None
