@@ -60,7 +60,7 @@ TEXT_WEEKDAYS = "Weekdays"
 TEXT_WEEKENDS = "Weekends"
 TEXT_ALL = "All"
 TEXT_UNABLE = "Unable"
-#added by Lgo44
+# added by Lgo44
 
 TEXT_REVERSE = "ReverseWithLoad"
 TEXT_CONSISTENT = "ConsistentWithLoad"
@@ -69,8 +69,8 @@ TEXT_ALWAYSOFF = "AlwaysOff"
 
 TEXT_LASTON = "LastOnBrightness"
 TEXT_LEVELPERCENT = "LevelPercent"
-    
-#End added by Lgo44
+
+# End added by Lgo44
 
 # Day Value Lists
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -99,8 +99,8 @@ WISERSHUTTER = "Shutter/{}"
 WISERLIGHT = "Light/{}"
 WISERPOWERTAGENERGY = "PTE/{}"
 WISERSMOKEALARM = "SmokeAlarmDevice/{}"
-WISERBINARYSENSOR="BinarySensor/{}"
-WISERWINDOWDOOR="BinarySensor/{}"
+WISERBINARYSENSOR = "BinarySensor/{}"
+
 
 # Enums
 class WiserUnitsEnum(enum.Enum):
@@ -127,18 +127,22 @@ class WiserShutterAwayActionEnum(enum.Enum):
     close = TEXT_CLOSE
     nochange = TEXT_NO_CHANGE
 
-#added by Lgo44
+
+# added by Lgo44
 class WiserLightLedIndicatorEnum(enum.Enum):
     reverse = TEXT_REVERSE
     consistent = TEXT_CONSISTENT
     allwayson = TEXT_ALWAYSON
     allwaysoff = TEXT_ALWAYSOFF
-  
+
+
 class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
- 
-#End added by Lgo44
+
+
+# End added by Lgo44
+
 
 class WiserDeviceModeEnum(enum.Enum):
     auto = TEXT_AUTO

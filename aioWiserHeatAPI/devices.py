@@ -4,7 +4,10 @@ Module to manage all devices
 
 import enum
 
-from .binary_sensor import _WiserBinarySensor, _WiserBinarySensorCollection
+from .binary_sensor import (
+    _WiserBinarySensorCollection,
+    _WiserWindowDoorSensor,
+)
 from .const import (
     TEXT_UNKNOWN,
     WISERBINARYSENSOR,
@@ -17,7 +20,6 @@ from .const import (
     WISERSMARTVALVE,
     WISERSMOKEALARM,
     WISERUFHCONTROLLER,
-    WISERWINDOWDOOR,
 )
 from .heating_actuator import (
     _WiserHeatingActuator,
@@ -34,7 +36,6 @@ from .smartplug import _WiserSmartPlug, _WiserSmartPlugCollection
 from .smartvalve import _WiserSmartValve, _WiserSmartValveCollection
 from .smokealarm import _WiserSmokeAlarm, _WiserSmokeAlarmCollection
 from .ufh import _WiserUFHController, _WiserUFHControllerCollection
-from .window_door import _WiserWindowDoor, _WiserWindowDoorCollection
 
 
 class _WiserDeviceTypeEnum(enum.Enum):
@@ -48,8 +49,7 @@ class _WiserDeviceTypeEnum(enum.Enum):
     DimmableLight = "Light"
     PowerTagE = "PTE"
     SmokeAlarmDevice = "SmokeAlarmDevice"
-    BinarySensor = "BinarySensor"
-    WindowDoorSensor = "WindowDoorSensor"
+    WindowDoorSensor = "BinarySensor"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -119,14 +119,8 @@ PRODUCT_TYPE_CONFIG = {
         "endpoint": WISERSMOKEALARM,
         "device_id_field": "DeviceId",
     },
-    "WindowDoor": {
-        "class": _WiserWindowDoor,
-        "collection": _WiserWindowDoorCollection,
-        "endpoint": WISERWINDOWDOOR,
-        "device_id_field": "DeviceId",
-    },
-    "BinarySensor": {
-        "class": _WiserBinarySensor,
+    "WindowDoorSensor": {
+        "class": _WiserWindowDoorSensor,
         "collection": _WiserBinarySensorCollection,
         "endpoint": WISERBINARYSENSOR,
         "device_id_field": "DeviceId",
@@ -300,14 +294,9 @@ class _WiserDeviceCollection:
         return self._device_collection["UnderFloorHeating"]
 
     @property
-    def binarysensors(self):
+    def binary_sensor(self):
         """Return all binary sensors"""
         return self._device_collection["BinarySensor"]
-
-    @property
-    def windowdoors(self):
-        """Return all binary sensors"""
-        return self._device_collection["WindowDoorSensor"]
 
     def get_by_id(self, device_id: int) -> _WiserDevice:
         """

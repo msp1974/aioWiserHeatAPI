@@ -287,3 +287,18 @@ class _WiserElectricalDevice(_WiserDevice):
     def schedule_id(self) -> int:
         """Get the schedule id for the light"""
         return self._device_type_data.get("ScheduleId", 0)
+
+
+class _WiserBinarySensorDevice(_WiserDevice):
+    """Class representing a wiser binary sensor device"""
+
+    @property
+    def name(self) -> str:
+        if self._data.get("Name"):
+            return self._data.get("Name")
+        return self._device_type_data.get("Name", TEXT_UNKNOWN)
+
+    @property
+    def room_id(self) -> int:
+        """Get heating actuator room id"""
+        return self._data.get("RoomId", 0)

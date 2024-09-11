@@ -2,12 +2,10 @@
 Handles binary_sensor devices
 """
 
-from .helpers.device import _WiserDevice
+from .helpers.device import _WiserBinarySensorDevice
 
-class _WiserBinarySensor(_WiserDevice):
-    """Class representing a Wiser Binary Sensor"""
 
-class _WiserBinarySensor1(_WiserDevice):
+class _WiserBinarySensor(_WiserBinarySensorDevice):
     """Class representing a Wiser Binary Sensor"""
 
     @property
@@ -31,6 +29,10 @@ class _WiserBinarySensor1(_WiserDevice):
         return self._device_type_data.get("EnableNotification")
 
 
+class _WiserWindowDoorSensor(_WiserBinarySensor):
+    """Class representing a Wiser WindowDoor Sensor"""
+
+
 class _WiserBinarySensorCollection(object):
     """Class holding all Wiser Binary Sensors"""
 
@@ -52,8 +54,8 @@ class _WiserBinarySensorCollection(object):
         return: _WiserBinarySensor object
         """
         try:
-            return [
-                binarysensor for binarysensor in self.all if binarysensor.id == id
-            ][0]
+            return [binarysensor for binarysensor in self.all if binarysensor.id == id][
+                0
+            ]
         except IndexError:
             return None
