@@ -106,14 +106,6 @@ class _WiserEquipment:
         """Get if OnOff cost schedule supported"""
         return self._data.get("OnOffCostScheduleSupported", False)
 
-
-    @property
-    def cloud_managed(self) -> bool:
-        """Get if cloud managed"""
-        return self._data.get("CloudManaged", False)
-
-
-
     @property
     def number_of_phases(self) -> str:
         """Get number of phases"""
@@ -183,12 +175,12 @@ class _WiserEquipment:
     def pcm_mode(self) -> bool:
         """Get Pcm Mode"""
         return self._data.get("PcmMode", False)
-    
+
     @property
     def pcm_supported(self) -> bool:
         """Get Pcm supported"""
         return self._data.get("PcmSupported", False)
-    
+
     @property
     def pcm_priority(self) -> int:
         """Get Pcm priority"""
