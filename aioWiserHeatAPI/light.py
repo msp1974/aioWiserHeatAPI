@@ -139,7 +139,7 @@ class _WiserDimmableLight(_WiserLight):
             )
         else:
             raise ValueError(
-                f"Brightness level percentage must be between 0 and 100"
+                "Brightness level percentage must be between 0 and 100"
             )
 
     @property
@@ -178,11 +178,11 @@ class _WiserLightCollection(object):
         self._items = []
 
     @property
-    def all(self) -> list:
+    def all(self) -> list[_WiserLight]:
         return list(self._items)
 
     @property
-    def available_modes(self):
+    def available_modes(self) -> list[str]:
         return [mode.value for mode in WiserDeviceModeEnum]
 
     @property
@@ -190,7 +190,7 @@ class _WiserLightCollection(object):
         return len(self.all)
 
     @property
-    def dimmable_lights(self) -> list:
+    def dimmable_lights(self) -> list[_WiserDimmableLight]:
         return list(
             dimmable_lights
             for dimmable_lights in self.all
@@ -198,21 +198,21 @@ class _WiserLightCollection(object):
         )
 
     @property
-    def onoff_lights(self) -> list:
+    def onoff_lights(self) -> list[_WiserLight]:
         return list(
             onoff_lights
             for onoff_lights in self.all
             if not onoff_lights.is_dimmable
         )
 
-    def get_by_id(self, id: int) -> _WiserLight:
+    def get_by_id(self, light_id: int) -> _WiserLight:
         """
         Gets a Light object from the Lights device id
         param id: device id of shutter
         return: _WiserShutter object
         """
         try:
-            return [light for light in self.all if light.id == id][0]
+            return [light for light in self.all if light.id == light_id][0]
         except IndexError:
             return None
 
@@ -229,7 +229,7 @@ class _WiserLightCollection(object):
         except IndexError:
             return None
 
-    def get_by_room_id(self, room_id: int) -> list:
+    def get_by_room_id(self, room_id: int) -> list[_WiserLight]:
         """
         Gets a Light object from the Lights room_id
         param id: room_id of light

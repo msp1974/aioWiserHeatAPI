@@ -135,19 +135,15 @@ class WiserAPI:
             self._domain_data = await self._wiser_rest_controller.get_hub_data(
                 WISERHUBDOMAIN
             )
-            self._network_data = (
-                await self._wiser_rest_controller.get_hub_data(WISERHUBNETWORK)
+            self._network_data = await self._wiser_rest_controller.get_hub_data(
+                WISERHUBNETWORK
             )
-            self._schedule_data = (
-                await self._wiser_rest_controller.get_hub_data(
-                    WISERHUBSCHEDULES
-                )
+            self._schedule_data = await self._wiser_rest_controller.get_hub_data(
+                WISERHUBSCHEDULES
             )
             try:
-                self._status_data = (
-                    await self._wiser_rest_controller.get_hub_data(
-                        WISERHUBSTATUS
-                    )
+                self._status_data = await self._wiser_rest_controller.get_hub_data(
+                    WISERHUBSTATUS
                 )
             except WiserHubRESTError:
                 self._status_data = {}
@@ -157,10 +153,8 @@ class WiserAPI:
                 "OpenThermConnectionStatus", ""
             )
             if opentherm and opentherm == "Connected":
-                self._opentherm_data = (
-                    await self._wiser_rest_controller.get_hub_data(
-                        WISERHUBOPENTHERM, False
-                    )
+                self._opentherm_data = await self._wiser_rest_controller.get_hub_data(
+                    WISERHUBOPENTHERM, False
                 )
         except (
             WiserHubConnectionError,
@@ -193,9 +187,7 @@ class WiserAPI:
             await self._get_hub_data()
 
             # load extra data
-            self._wiser_rest_controller._extra_config_file = (
-                self._extra_config_file
-            )
+            self._wiser_rest_controller._extra_config_file = self._extra_config_file
             await self._wiser_rest_controller.get_extra_config_data()
 
             if self._domain_data != {} and self._network_data != {}:
@@ -238,9 +230,7 @@ class WiserAPI:
                 if self._domain_data.get("HotWater"):
                     schedule = self._schedules.get_by_id(
                         WiserScheduleTypeEnum.onoff,
-                        self._domain_data.get("HotWater")[0].get(
-                            "ScheduleId", 0
-                        ),
+                        self._domain_data.get("HotWater")[0].get("ScheduleId", 0),
                     )
                     self._hotwater = _WiserHotwater(
                         self._wiser_rest_controller,
@@ -362,9 +352,7 @@ class WiserAPI:
             try:
                 if data:
                     # Write out to file
-                    log_response_to_file(
-                        data, filename, False, pathlib.Path(file_path)
-                    )
+                    log_response_to_file(data, filename, False, pathlib.Path(file_path))
                     return True
             except Exception as ex:
                 _LOGGER.error(ex)

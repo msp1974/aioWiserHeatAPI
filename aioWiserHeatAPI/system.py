@@ -1,15 +1,8 @@
-import asyncio
 import inspect
 from datetime import datetime
 
 from . import _LOGGER
-from .const import (
-    MAX_BOOST_INCREASE,
-    TEXT_ON,
-    TEXT_UNKNOWN,
-    WISERHUBNETWORK,
-    WISERSYSTEM,
-)
+from .const import TEXT_ON, TEXT_UNKNOWN, WISERSYSTEM
 from .helpers.capabilities import (
     _WiserHubCapabilitiesInfo,
     _WiserHubFeatureCapabilitiesInfo,
@@ -405,24 +398,23 @@ class _WiserSystem(object):
 
     @property
     def type_comm(self) -> str:
-        """Get type of zigbee device """
-        return self._device_data.get("Type", TEXT_UNKNOWN)  
+        """Get type of zigbee device"""
+        return self._device_data.get("Type", TEXT_UNKNOWN)
 
     @property
     def uuid(self) -> str:
         """Get UUID zigbee"""
         return self._device_data.get("UUID", TEXT_UNKNOWN)
-    
 
     # End Added LGO
 
     @property
-    def sunrise_times(self) -> list:
+    def sunrise_times(self) -> dict[str, str]:
         """Get sunrise times"""
         return sunrise_times(self._system_data.get("SunriseTimes", []))
 
     @property
-    def sunset_times(self) -> list:
+    def sunset_times(self) -> dict[str, str]:
         """Get sunset times"""
         return sunset_times(self._system_data.get("SunsetTimes", []))
 

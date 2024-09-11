@@ -20,6 +20,7 @@ from .heating_actuator import (
     _WiserHeatingActuator,
     _WiserHeatingActuatorCollection,
 )
+from .helpers.device import _WiserDevice
 from .light import _WiserDimmableLight, _WiserLight, _WiserLightCollection
 from .pte import _WiserPowerTagEnergy, _WiserPowerTagEnergyCollection
 from .rest_controller import _WiserRestController
@@ -153,9 +154,9 @@ class _WiserDeviceCollection:
                 device_type.value not in self._device_collection
                 and device_type.name in PRODUCT_TYPE_CONFIG
             ):
-                self._device_collection[
-                    device_type.value
-                ] = PRODUCT_TYPE_CONFIG[device_type.name].get("collection")()
+                self._device_collection[device_type.value] = (
+                    PRODUCT_TYPE_CONFIG[device_type.name].get("collection")()
+                )
 
         # Iterate device data for all known device types
         if self._device_data:
@@ -181,10 +182,10 @@ class _WiserDeviceCollection:
 
                     # If heating device add room id
                     if device_config.get("heating"):
-                        device_info[0][
-                            "RoomId"
-                        ] = self._get_temp_device_room_id(
-                            self._domain_data, device.get("id")
+                        device_info[0]["RoomId"] = (
+                            self._get_temp_device_room_id(
+                                self._domain_data, device.get("id")
+                            )
                         )
 
                     # If schedule device add schedule
@@ -201,10 +202,10 @@ class _WiserDeviceCollection:
 
                     # If has equipment entry, add equipment to device info data
                     if device_config.get("has_v2_equipment"):
-                        device_info[0][
-                            "EquipmentData"
-                        ] = self._get_equipment_data(
-                            device_info[0].get("EquipmentId")
+                        device_info[0]["EquipmentData"] = (
+                            self._get_equipment_data(
+                                device_info[0].get("EquipmentId")
+                            )
                         )
 
                     # Add device to collection
@@ -235,7 +236,7 @@ class _WiserDeviceCollection:
         return 0
 
     @property
-    def all(self):
+    def all(self) -> list[_WiserDevice]:
         """Return all devices"""
         items = []
         for key in self._device_collection:
@@ -248,51 +249,51 @@ class _WiserDeviceCollection:
         return len(self.all)
 
     @property
-    def heating_actuators(self):
+    def heating_actuators(self) -> _WiserHeatingActuatorCollection:
         """Return all heating actuators"""
         return self._device_collection["HeatingActuator"]
 
     @property
-    def lights(self):
+    def lights(self) -> _WiserLightCollection:
         """Return all lights"""
         return self._device_collection["Light"]
 
     @property
-    def power_tags(self):
+    def power_tags(self) -> _WiserPowerTagEnergyCollection:
         """Return all power tags"""
         return self._device_collection["PTE"]
 
     @property
-    def roomstats(self):
+    def roomstats(self) -> _WiserRoomStatCollection:
         """Return all roomstats"""
         return self._device_collection["RoomStat"]
 
     @property
-    def shutters(self):
+    def shutters(self) -> _WiserShutterCollection:
         """Return all shutters"""
         return self._device_collection["Shutter"]
 
     @property
-    def smartplugs(self):
+    def smartplugs(self) -> _WiserSmartPlugCollection:
         """Return all smart plugs"""
         return self._device_collection["SmartPlug"]
 
     @property
-    def smartvalves(self):
+    def smartvalves(self) -> _WiserSmartValveCollection:
         """Return all smart valves (iTRVs)"""
         return self._device_collection["SmartValve"]
 
     @property
-    def smokealarms(self):
+    def smokealarms(self) -> _WiserSmokeAlarmCollection:
         """Return all smoke alarms"""
         return self._device_collection["SmokeAlarmDevice"]
 
     @property
-    def ufh_controllers(self):
+    def ufh_controllers(self) -> _WiserUFHControllerCollection:
         """Return all UFH controllers"""
         return self._device_collection["UnderFloorHeating"]
 
-    def get_by_id(self, device_id: int):
+    def get_by_id(self, device_id: int) -> _WiserDevice:
         """
         Gets a device object from the devices id
         param id: id of device
@@ -303,7 +304,7 @@ class _WiserDeviceCollection:
         except IndexError:
             return None
 
-    def get_by_room_id(self, room_id: int) -> list:
+    def get_by_room_id(self, room_id: int) -> list[_WiserDevice]:
         """
         Gets a list of devices belonging to the room id
         param room_id: the id of the room
@@ -314,7 +315,7 @@ class _WiserDeviceCollection:
         except IndexError:
             return None
 
-    def get_by_node_id(self, node_id: int):
+    def get_by_node_id(self, node_id: int) -> _WiserDevice:
         """
         Gets a device object from the devices zigbee node id
         param node_id: zigbee node id of device
@@ -327,7 +328,7 @@ class _WiserDeviceCollection:
         except IndexError:
             return None
 
-    def get_by_serial_number(self, serial_number: str):
+    def get_by_serial_number(self, serial_number: str) -> _WiserDevice:
         """
         Gets a device object from the devices serial number
         param node_id: serial number of device
@@ -342,7 +343,7 @@ class _WiserDeviceCollection:
         except IndexError:
             return None
 
-    def get_by_parent_node_id(self, node_id: int) -> list:
+    def get_by_parent_node_id(self, node_id: int) -> list[_WiserDevice]:
         """
         Gets a list of device from the devices zigbee parent node id
         param node_id: zigbee parent node id of device

@@ -8,7 +8,6 @@ from .const import (
     WiserShutterAwayActionEnum,
 )
 from .helpers.device import _WiserElectricalDevice
-from .helpers.misc import is_value_in_list
 
 
 class _WiserLiftMovementRange(object):
@@ -349,25 +348,27 @@ class _WiserShutterCollection(object):
         self._items = []
 
     @property
-    def all(self) -> dict:
+    def all(self) -> list[_WiserShutter]:
         return list(self._items)
 
     @property
-    def available_modes(self):
+    def available_modes(self) -> list[str]:
         return [mode.value for mode in WiserDeviceModeEnum]
 
     @property
     def count(self) -> int:
         return len(self.all)
 
-    def get_by_id(self, id: int) -> _WiserShutter:
+    def get_by_id(self, shutter_id: int) -> _WiserShutter:
         """
         Gets a Shutter object from the Shutters device id
         param id: device id of shutter
         return: _WiserShutter object
         """
         try:
-            return [shutter for shutter in self.all if shutter.id == id][0]
+            return [
+                shutter for shutter in self.all if shutter.id == shutter_id
+            ][0]
         except IndexError:
             return None
 
@@ -386,7 +387,7 @@ class _WiserShutterCollection(object):
         except IndexError:
             return None
 
-    def get_by_room_id(self, room_id: int) -> list:
+    def get_by_room_id(self, room_id: int) -> list[_WiserShutter]:
         """
         Gets a Shutter object from the Shutters room_id
         param id: room_id of shutter

@@ -1,10 +1,4 @@
-from .const import (
-    TEMP_OFF,
-    TEXT_UNKNOWN,
-    WISERHEATINGACTUATOR,
-    WiserTempLimitsEnum,
-)
-from .helpers.capabilities import _WiserClimateCapabilities
+from .const import TEMP_OFF, TEXT_UNKNOWN, WISERHEATINGACTUATOR, WiserTempLimitsEnum
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
 from .helpers.temp import _WiserTemperatureFunctions as tf
@@ -15,10 +9,10 @@ class _WiserTemperatureSensor:
     """Data structure for plug in temp sensor"""
 
     def __init__(
-        self, data: dict, wiser_rest_controller: _WiserRestController, id
+        self, data: dict, wiser_rest_controller: _WiserRestController, actuator_id
     ):
         self._data = data
-        self._id = id
+        self._id = actuator_id
         self._wiser_rest_controller = wiser_rest_controller
 
     def _send_command(self, cmd: dict):
@@ -53,9 +47,7 @@ class _WiserTemperatureSensor:
             return await self._send_command(
                 {
                     "FloorTemperatureSensor": {
-                        "MaximumTemperature": tf._to_wiser_temp(
-                            temp, "floorHeatingMax"
-                        )
+                        "MaximumTemperature": tf._to_wiser_temp(temp, "floorHeatingMax")
                     }
                 }
             )
@@ -76,9 +68,7 @@ class _WiserTemperatureSensor:
             return await self._send_command(
                 {
                     "FloorTemperatureSensor": {
-                        "MinimumTemperature": tf._to_wiser_temp(
-                            temp, "floorHeatingMin"
-                        )
+                        "MinimumTemperature": tf._to_wiser_temp(temp, "floorHeatingMin")
                     }
                 }
             )
@@ -97,9 +87,7 @@ class _WiserTemperatureSensor:
     @property
     def temperature_offset(self) -> float:
         """Get the temperature offset"""
-        return tf._from_wiser_temp(
-            self._data.get("Offset", None), "floorHeatingOffset"
-        )
+        return tf._from_wiser_temp(self._data.get("Offset", None), "floorHeatingOffset")
 
     async def set_temperature_offset(self, temp: float):
         """Set the temperature offset"""
@@ -145,7 +133,7 @@ class _WiserHeatingActuator(_WiserDevice):
         return self._device_type_data.get("EquipmentId", 0)
 
     @property
-    def equipment(self) -> str:
+    def equipment(self) -> _WiserEquipment | None:
         """Get equipment data"""
         return (
             _WiserEquipment(self._device_type_data.get("EquipmentData"))
@@ -181,7 +169,7 @@ class _WiserHeatingActuatorCollection(object):
         self._items = []
 
     @property
-    def all(self) -> dict:
+    def all(self) -> list[_WiserHeatingActuator]:
         return list(self._items)
 
     @property

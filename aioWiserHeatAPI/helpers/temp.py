@@ -1,13 +1,14 @@
+"""Temperature helper functions."""
+
 from ..const import (
     TEMP_ERROR,
-    TEMP_MINIMUM,
-    TEMP_MAXIMUM,
-    TEMP_OFF,
     TEMP_HW_OFF,
     TEMP_HW_ON,
-    MAX_BOOST_INCREASE,
-    WiserUnitsEnum,
+    TEMP_MAXIMUM,
+    TEMP_MINIMUM,
+    TEMP_OFF,
     WiserTempLimitsEnum,
+    WiserUnitsEnum,
 )
 
 
@@ -18,29 +19,31 @@ class _WiserTemperatureFunctions(object):
     @staticmethod
     def _to_wiser_temp(
         temp: float,
-        type: str = "heating",
+        temp_type: str = "heating",
         units: WiserUnitsEnum = WiserUnitsEnum.metric,
-    ) -> int:
+    ) -> float | int:
         """
         Converts from degrees C to wiser hub format
         param temp: The temperature to convert
         param type: Can be heating (default), hotwater or delta
         return: Integer
         """
-        temp = int(_WiserTemperatureFunctions._validate_temperature(temp, type) * 10)
+        temp = int(
+            _WiserTemperatureFunctions._validate_temperature(temp, temp_type) * 10
+        )
 
         # Convert to metric if imperial units set
         if units == WiserUnitsEnum.imperial:
-            temp = _WiserTemperatureFunctions._convert_from_F(temp)
+            temp = _WiserTemperatureFunctions._convert_from_fahrenheit(temp)
 
         return temp
 
     @staticmethod
     def _from_wiser_temp(
-        temp: int,
-        type: str = "heating",
+        temp: float | int,
+        temp_type: str = "heating",
         units: WiserUnitsEnum = WiserUnitsEnum.metric,
-    ) -> float:
+    ) -> float | None:
         """
         Converts from wiser hub format to degrees C
         param temp: The wiser temperature to convert
@@ -52,12 +55,12 @@ class _WiserTemperatureFunctions(object):
                 return None
             else:
                 temp = _WiserTemperatureFunctions._validate_temperature(
-                    round(temp / 10, 1), type
+                    round(temp / 10, 1), temp_type
                 )
 
             # Convert to imperial if imperial units set
             if units == WiserUnitsEnum.imperial:
-                temp = _WiserTemperatureFunctions._convert_to_F(temp)
+                temp = _WiserTemperatureFunctions._convert_to_fahrenheit(temp)
 
             return temp
         return None
@@ -71,7 +74,7 @@ class _WiserTemperatureFunctions(object):
         return False
 
     @staticmethod
-    def _validate_temperature(temp: float, type: str = "heating") -> float:
+    def _validate_temperature(temp: float, temp_type: str = "heating") -> float | None:
         """
         Validates temperature value is in range of Wiser Hub allowed values
         Sets to min or max temp if value exceeds limits
@@ -80,7 +83,7 @@ class _WiserTemperatureFunctions(object):
         """
 
         # Get limits type
-        limits = WiserTempLimitsEnum[type].value
+        limits = WiserTempLimitsEnum[temp_type].value
         if limits.get("type") == "onoff":
             if temp in [limits.get("on"), limits.get("off")]:
                 return temp
@@ -99,7 +102,7 @@ class _WiserTemperatureFunctions(object):
         raise ValueError("Invalid temperature type for validation")
 
     @staticmethod
-    def _convert_from_F(temp: float) -> float:
+    def _convert_from_fahrenheit(temp: float) -> float:
         """
         Convert F temp to C
         param temp: temp in F to convert
@@ -108,7 +111,7 @@ class _WiserTemperatureFunctions(object):
         return round((temp - 32) * 5 / 9, 1)
 
     @staticmethod
-    def _convert_to_F(temp: float) -> float:
+    def _convert_to_fahrenheit(temp: float) -> float:
         """
         Convert C temp to F
         param temp: temp in C to convert
