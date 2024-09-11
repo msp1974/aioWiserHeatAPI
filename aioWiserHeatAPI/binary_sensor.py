@@ -2,10 +2,10 @@
 Handles binary_sensor devices
 """
 
-from .helpers.device import _WiserBinarySensorDevice
+from .helpers.device import _WiserDevice
 
 
-class _WiserBinarySensor(_WiserBinarySensorDevice):
+class _WiserBinarySensor(_WiserDevice):
     """Class representing a Wiser Binary Sensor"""
 
     @property
