@@ -7,3 +7,4 @@ dist-issue
 aioWiserHeatAPI.egg-info
 venv
 tests/
+extra_config.json*
