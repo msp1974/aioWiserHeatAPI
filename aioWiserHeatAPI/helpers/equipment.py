@@ -77,6 +77,36 @@ class _WiserEquipment:
         return self._data.get("CloudManaged", False)
 
     @property
+    def monitored(self) -> bool:
+        """Get if monitored"""
+        return self._data.get("Monitored", False)
+
+    @property
+    def smart_compatible(self) -> bool:
+        """Get if smart compatible"""
+        return self._data.get("SmartCompatible", False)
+
+    @property
+    def smart_supported(self) -> bool:
+        """Get if smart supported"""
+        return self._data.get("SmartSupported", False)
+
+    @property
+    def can_be_scheduled(self) -> bool:
+        """Get if can be scheduled"""
+        return self._data.get("CanBeScheduled", False)
+
+    @property
+    def onoff_green_schedule_supported(self) -> bool:
+        """Get if OnOff green schedule supported"""
+        return self._data.get("OnOffGreenScheduleSupported", False)
+
+    @property
+    def onoff_cost_schedule_supported(self) -> bool:
+        """Get if OnOff cost schedule supported"""
+        return self._data.get("OnOffCostScheduleSupported", False)
+
+    @property
     def number_of_phases(self) -> str:
         """Get number of phases"""
         return self._data.get("NumberOfPhases", TEXT_UNKNOWN)
@@ -112,9 +142,49 @@ class _WiserEquipment:
         return self._data.get("FunctionalControlMode", TEXT_UNKNOWN)
 
     @property
+    def current_control_mode(self) -> str:
+        """Get current control mode"""
+        return self._data.get("CurrentControlMode", TEXT_UNKNOWN)
+
+    @property
+    def load_state_status(self) -> str:
+        """Get load state status"""
+        return self._data.get("LoadStateStatus", TEXT_UNKNOWN)
+
+    @property
+    def load_state_command_optimized(self) -> str:
+        """Get load state command optimized"""
+        return self._data.get("LoadStateCommandOptimized", TEXT_UNKNOWN)
+
+    @property
+    def load_shedding_status(self) -> str:
+        """Get load shedding status"""
+        return self._data.get("LoadSheddingStatus", TEXT_UNKNOWN)
+
+    @property
+    def load_state_command_prio(self) -> str:
+        """Get load state command prio"""
+        return self._data.get("LoadStateCommandPrio", TEXT_UNKNOWN)
+
+    @property
+    def load_setpoint_command_prio(self) -> int:
+        """Get load setpoint command prio"""
+        return self._data.get("LoadSetpointCommandPrio", None)
+
+    @property
     def pcm_mode(self) -> bool:
         """Get Pcm Mode"""
         return self._data.get("PcmMode", False)
+
+    @property
+    def pcm_supported(self) -> bool:
+        """Get Pcm supported"""
+        return self._data.get("PcmSupported", False)
+
+    @property
+    def pcm_priority(self) -> int:
+        """Get Pcm priority"""
+        return self._data.get("PcmPriority", None)
 
     @property
     def direction(self) -> str:
