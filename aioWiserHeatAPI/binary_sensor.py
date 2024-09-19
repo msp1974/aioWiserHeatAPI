@@ -32,7 +32,7 @@ class _WiserBinarySensor(_WiserDevice):
 
     @property
     def battery(self) -> _WiserBattery:
-        """Get the battery information for the windowdoorsensor"""
+        """Get the battery information for the smokealarm"""
         return _WiserBattery(self._data)
 
 
