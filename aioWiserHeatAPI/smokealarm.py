@@ -99,7 +99,7 @@ class _WiserSmokeAlarm(_WiserDevice):
         return self._device_type_data.get("ReportCount")
 
     @property
-    def notificaitions(self) -> bool:
+    def notifications(self) -> bool:
         """Get if notifications active"""
         return self._device_type_data.get("EnableNotification", False)
 
