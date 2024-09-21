@@ -94,26 +94,6 @@ class _WiserLight(_WiserElectricalDevice):
 
     #added by LGO
     # Hub V2  new features
-    
-    @property
-    def is_output_mode_supported(self) -> bool:
-        """Get is output mode supported for the light"""
-        return (
-            True if self._device_type_data.get("IsOutputModeSupported", False) else False
-        ) 
-    @property
-    def output_mode(self) -> str:
-        """Get is output mode supported for the light"""
-        return (
-             self._device_type_data.get("OutputMode", TEXT_UNKNOWN) 
-        )   
-
-    @property
-    def available_led_indicator(self):
-        """Get available led indicator """
-        return [action.value for action in WiserLightLedIndicatorEnum]
-    #added by LGO
-    # Hub V2  new features
 
     @property
     def is_led_indicator_supported(self) -> bool:
@@ -149,7 +129,25 @@ class _WiserLight(_WiserElectricalDevice):
             raise ValueError(
                 f"{led_indicator} is not a valid mode.  Valid modes are {self.available_led_indicator}"
             )
+
     
+    @property
+    def is_output_mode_supported(self) -> bool:
+        """Get is output mode supported for the light"""
+        return (
+            True if self._device_type_data.get("IsOutputModeSupported", False) else False
+        ) 
+    @property
+    def output_mode(self) -> str:
+        """Get is output mode supported for the light"""
+        return (
+             self._device_type_data.get("OutputMode", TEXT_UNKNOWN) 
+        )   
+
+    @property
+    def available_led_indicator(self):
+        """Get available led indicator """
+        return [action.value for action in WiserLightLedIndicatorEnum]
 
     # end added by LGO
 
@@ -237,40 +235,6 @@ class _WiserDimmableLight(_WiserLight):
     #added by LGO
     # Hub V2  new features
 
-    @property
-    def is_led_indicator_supported(self) -> bool:
-        """Get is led indicator supported for the light"""
-        
-        return (
-            True if self._device_type_data.get("IsLedIndicatorSupported", False) else False
-        )  
-    
-    @property
-    def is_power_on_behaviour_supported(self) -> bool:
-        """Get is_power on behaviour supported for the light"""
-        return (
-            True if self._device_type_data.get("IsPowerOnBehaviourSupported", False) else False
-        ) 
-    @property
-    def available_led_indicator(self):
-        """Get available led indicator """
-        return [action.value for action in WiserLightLedIndicatorEnum]
-
-
-    @property
-    def led_indicator(self) -> str:
-        """Get  led indicator for the light"""
-        return self._device_type_data.get("LedIndicator",TEXT_UNKNOWN)
-
-    async def set_led_indicator(self, led_indicator: Union[WiserLightLedIndicatorEnum, str]) -> bool:
-        if isinstance(led_indicator, WiserLightLedIndicatorEnum):
-            led_indicator = led_indicator.value
-        if is_value_in_list(led_indicator, self.available_led_indicator):
-            return await self._send_command({"LedIndicator": led_indicator})
-        else:
-            raise ValueError(
-                f"{led_indicator} is not a valid mode.  Valid modes are {self.available_led_indicator}"
-            )
 
     @property
     def available_power_on_behaviour(self):
@@ -365,3 +329,4 @@ class _WiserLightCollection(object):
         return: list of _WiserLight objects
         """
         return [light for light in self.all if light.room_id == room_id]
+    
