@@ -6,7 +6,9 @@ from .rest_controller import _WiserRestController
 
 
 class _WiserMoment(object):
-    def __init__(self, wiser_rest_controller: _WiserRestController, moment_data: dict):
+    def __init__(
+        self, wiser_rest_controller: _WiserRestController, moment_data: dict
+    ):
         self._wiser_rest_controller = wiser_rest_controller
         self._moment_data = moment_data
 
@@ -16,10 +18,14 @@ class _WiserMoment(object):
         param cmd: json command structure
         return: boolen - true = success, false = failed
         """
-        result = await self._wiser_rest_controller._send_command(WISERSYSTEM, cmd)
+        result = await self._wiser_rest_controller._send_command(
+            WISERSYSTEM, cmd
+        )
         if result:
             _LOGGER.debug(
-                "Wiser hub - {} command successful".format(inspect.stack()[1].function)
+                "Wiser hub - {} command successful".format(
+                    inspect.stack()[1].function
+                )
             )
             return True
         return False
@@ -38,7 +44,9 @@ class _WiserMoment(object):
 
 
 class _WiserMomentCollection(object):
-    def __init__(self, wiser_rest_controller: _WiserRestController, moments_data: dict):
+    def __init__(
+        self, wiser_rest_controller: _WiserRestController, moments_data: dict
+    ):
         self._moments_data = moments_data
         self._moments = []
         self._wiser_rest_controller = wiser_rest_controller
@@ -46,10 +54,12 @@ class _WiserMomentCollection(object):
 
     def _build(self):
         for moment in self._moments_data:
-            self._moments.append(_WiserMoment(self._wiser_rest_controller, moment))
+            self._moments.append(
+                _WiserMoment(self._wiser_rest_controller, moment)
+            )
 
     @property
-    def all(self) -> list:
+    def all(self) -> list[_WiserMoment]:
         """Return list of moments"""
         return self._moments
 
@@ -58,8 +68,8 @@ class _WiserMomentCollection(object):
         """Count of moments"""
         return len(self._moments)
 
-    def get_by_id(self, id: int) -> _WiserMoment:
+    def get_by_id(self, moment_id: int) -> _WiserMoment:
         try:
-            return [moment for moment in self.all if moment.id == id][0]
+            return [moment for moment in self.all if moment.id == moment_id][0]
         except IndexError:
             return None

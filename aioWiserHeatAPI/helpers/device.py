@@ -117,7 +117,9 @@ class _WiserDevice(object):
 
     @property
     def name(self) -> str:
-        """Get name of device - ProductType + id"""
+        """Get name of device."""
+        if self._data.get("Name"):
+            return self._data.get("Name")
         return f"{self.product_type}-{self.id}"
 
     @property
@@ -157,8 +159,8 @@ class _WiserDevice(object):
 
     @property
     def room_id(self) -> int:
-        """Get heating actuator room id"""
-        return self._device_type_data.get("RoomId", 0)
+        """Get room id of the device."""
+        return self._device_type_data.get("RoomId", self._data.get("RoomId", 0))
 
     @property
     def serial_number(self) -> str:
@@ -226,7 +228,7 @@ class _WiserElectricalDevice(_WiserDevice):
 
     @property
     def away_mode_action(self) -> str:
-        """Get or set the away action of the light (off or no change)"""
+        """Get or set the away action of the device (off or no change)"""
         return self._device_type_data.get("AwayAction", TEXT_UNKNOWN)
 
     async def set_away_mode_action(
@@ -255,7 +257,7 @@ class _WiserElectricalDevice(_WiserDevice):
 
     @property
     def mode(self) -> str:
-        """Get or set the current mode of the light (Manual or Auto)"""
+        """Get or set the current mode of the device (Manual or Auto)"""
         return self._device_type_data.get("Mode", TEXT_UNKNOWN)
 
     async def set_mode(self, mode: Union[WiserDeviceModeEnum, str]) -> bool:
@@ -280,10 +282,10 @@ class _WiserElectricalDevice(_WiserDevice):
 
     @property
     def schedule(self):
-        """Get the schedule of the light"""
+        """Get the schedule of the device"""
         return self._schedule
 
     @property
     def schedule_id(self) -> int:
-        """Get the schedule id for the light"""
-        return self._device_type_data.get("ScheduleId")
+        """Get the schedule id for the device"""
+        return self._device_type_data.get("ScheduleId", 0)

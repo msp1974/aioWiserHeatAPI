@@ -60,36 +60,36 @@ class _WiserHeatingChannelCollection(object):
             self._heating_channels.append(_WiserHeatingChannel(heat_channel))
 
     @property
-    def all(self):
+    def all(self) -> list[_WiserHeatingChannel]:
         return list(self._heating_channels)
 
     @property
     def count(self) -> int:
         return len(self.all)
 
-    def get_by_id(self, id: int):
+    def get_by_id(self, channel_id: int) -> _WiserHeatingChannel:
         """
         Gets a Heating Channel object from the Heating Channels id
         param id: id of heating channel
         return: _WiserHeatingChannel object
         """
         for heating_channel in self.all:
-            if id == heating_channel.id:
+            if channel_id == heating_channel.id:
                 return heating_channel
         return None
 
-    def get_by_room_id(self, id: int):
+    def get_by_room_id(self, room_id: int) -> _WiserHeatingChannel:
         """
         Gets a Heating Channel object from a Room ID
         param id: id of the room
         return: _WiserHeatingChannel object
         """
         for heating_channel in self.all:
-            if id in heating_channel.room_ids:
+            if room_id in heating_channel.room_ids:
                 return heating_channel
         return None
 
-    def get_by_room_name(self, room_name: str):
+    def get_by_room_name(self, room_name: str) -> _WiserHeatingChannel:
         """
         Gets a Heating Channel object from a Room Name
         param id: name of the room

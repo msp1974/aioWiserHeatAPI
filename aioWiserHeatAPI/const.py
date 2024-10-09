@@ -60,6 +60,17 @@ TEXT_WEEKDAYS = "Weekdays"
 TEXT_WEEKENDS = "Weekends"
 TEXT_ALL = "All"
 TEXT_UNABLE = "Unable"
+# added by Lgo44
+
+TEXT_REVERSE = "ReverseWithLoad"
+TEXT_CONSISTENT = "ConsistentWithLoad"
+TEXT_ALWAYSON = "AlwaysOn"
+TEXT_ALWAYSOFF = "AlwaysOff"
+
+TEXT_LASTON = "LastOnBrightness"
+TEXT_LEVELPERCENT = "LevelPercent"
+
+# End added by Lgo44
 
 # Day Value Lists
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -88,6 +99,8 @@ WISERSHUTTER = "Shutter/{}"
 WISERLIGHT = "Light/{}"
 WISERPOWERTAGENERGY = "PTE/{}"
 WISERSMOKEALARM = "SmokeAlarmDevice/{}"
+WISERBINARYSENSOR = "BinarySensor/{}"
+WISERBOILERINTERFACE = "BoilerInterface/{}"
 
 
 # Enums
@@ -116,9 +129,31 @@ class WiserShutterAwayActionEnum(enum.Enum):
     nochange = TEXT_NO_CHANGE
 
 
+# added by Lgo44
+class WiserLightLedIndicatorEnum(enum.Enum):
+    reverse = TEXT_REVERSE
+    consistent = TEXT_CONSISTENT
+    allwayson = TEXT_ALWAYSON
+    allwaysoff = TEXT_ALWAYSOFF
+
+
+class WiserLightPowerOnBehaviourEnum(enum.Enum):
+    last = TEXT_LASTON
+    levelpercent = TEXT_LEVELPERCENT
+
+
+# End added by Lgo44
+
+
 class WiserDeviceModeEnum(enum.Enum):
     auto = TEXT_AUTO
     manual = TEXT_MANUAL
+
+
+class WiserHotWaterClimateModeEnum(enum.Enum):
+    auto = TEXT_AUTO
+    manual = TEXT_MANUAL
+    off = TEXT_OFF
 
 
 class WiserHeatingModeEnum(enum.Enum):

@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Optional
 
 import aiohttp
+import aiohttp.http_exceptions
 
 from . import _LOGGER
 from .const import (
@@ -33,20 +34,21 @@ from .helpers.extra_config import _WiserExtraConfig
 class WiserAPIParams:
     """Class to hold default values"""
 
-    passive_mode_increment = 0.5
-    stored_manual_target_temperature_alt_source = "current"
-    boost_temp_delta = DEFAULT_BOOST_DELTA
+    passive_mode_increment: str = 0.5
+    stored_manual_target_temperature_alt_source: str = "current"
+    boost_temp_delta: int = DEFAULT_BOOST_DELTA
+    hw_climate_mode: bool = False
 
 
 # Connection info class
 class _WiserConnectionInfo(object):
     def __init__(self):
-        self.host = None
-        self.secret = None
-        self.port = None
+        self.host: str | None = None
+        self.secret: str | None = None
+        self.port: int | None = None
         self.units = WiserUnitsEnum.metric
-        self.extra_config_file = None
-        self.enable_automations = False
+        self.extra_config_file: str | None = None
+        self.enable_automations: bool = False
 
 
 # Enums
@@ -121,23 +123,17 @@ class _WiserRestController(object):
                 return response
             except WiserHubRESTError as ex:
                 # if json error try http1.1
-                _LOGGER.debug(
-                    "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
-                )
+                _LOGGER.debug("%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i])
                 self._last_exception = ex
                 http_version = aiohttp.HttpVersion11
             except WiserHubResponseError as ex:
                 # If response error try http1.0
-                _LOGGER.debug(
-                    "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
-                )
+                _LOGGER.debug("%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i])
                 self._last_exception = ex
                 http_version = aiohttp.HttpVersion10
             except WiserHubConnectionError as ex:
                 # Connection timed out or failed.  Try it again
-                _LOGGER.debug(
-                    "%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i]
-                )
+                _LOGGER.debug("%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i])
                 self._last_exception = ex
 
         raise WiserHubConnectionError(self._last_exception)
@@ -185,9 +181,8 @@ class _WiserRestController(object):
             async with aiohttp.ClientSession(
                 version=http_version,
             ) as session:
-                async with session.request(
-                    action.value, url, **kwargs
-                ) as response:
+                async with session.request(action.value, url, **kwargs) as response:
+                    await asyncio.sleep(0)
                     if not response.ok:
                         self._process_nok_response(
                             response, url, data, raise_for_endpoint_error
@@ -229,6 +224,11 @@ class _WiserRestController(object):
                 f"Connection error trying to communicate with Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             ) from ex
+        except aiohttp.http_exceptions.TransferEncodingError as ex:
+            raise WiserHubConnectionError(
+                f"Response payload incomplete error trying to communicate with Wiser Hub "
+                f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
+            ) from ex
 
     def _process_nok_response(
         self,
@@ -261,9 +261,7 @@ class _WiserRestController(object):
                 f"Error code is: {response.status}"
             )
 
-    async def get_hub_data(
-        self, url: str, raise_for_endpoint_error: bool = True
-    ):
+    async def get_hub_data(self, url: str, raise_for_endpoint_error: bool = True):
         """Get data from hub"""
         return await self._do_hub_action(
             WiserRestActionEnum.GET,

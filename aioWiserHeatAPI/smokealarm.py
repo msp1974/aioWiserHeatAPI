@@ -1,10 +1,15 @@
 from .helpers.battery import _WiserBattery
-from .helpers.device import _WiserElectricalDevice
+from .helpers.device import _WiserDevice
 from .helpers.temp import _WiserTemperatureFunctions as tf
 
 
-class _WiserSmokeAlarm(_WiserElectricalDevice):
+class _WiserSmokeAlarm(_WiserDevice):
     """Class representing a Wiser Smoke Alarm device"""
+
+    @property
+    def room_id(self) -> int:
+        """Return room_id."""
+        return self._data.get("RoomId")
 
     @property
     def alarm_sound_level(self) -> int:
@@ -94,7 +99,7 @@ class _WiserSmokeAlarm(_WiserElectricalDevice):
         return self._device_type_data.get("ReportCount")
 
     @property
-    def notificaitions(self) -> bool:
+    def notification_enabled(self) -> bool:
         """Get if notifications active"""
         return self._device_type_data.get("EnableNotification", False)
 
@@ -116,14 +121,14 @@ class _WiserSmokeAlarmCollection(object):
         self._items = []
 
     @property
-    def all(self) -> dict:
+    def all(self) -> list[_WiserSmokeAlarm]:
         return list(self._items)
 
     @property
     def count(self) -> int:
         return len(self.all)
 
-    def get_by_id(self, id: int) -> _WiserSmokeAlarm:
+    def get_by_id(self, smokealarm_id: int) -> _WiserSmokeAlarm:
         """
         Gets a smoke alarm object from the smoke alarms id
         param id: id of smoke alarm
@@ -131,7 +136,7 @@ class _WiserSmokeAlarmCollection(object):
         """
         try:
             return [
-                smokealarm for smokealarm in self.all if smokealarm.id == id
+                smokealarm for smokealarm in self.all if smokealarm.id == smokealarm_id
             ][0]
         except IndexError:
             return None

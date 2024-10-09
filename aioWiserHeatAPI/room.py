@@ -1,4 +1,3 @@
-import asyncio
 import inspect
 from datetime import datetime
 from typing import Union
@@ -7,7 +6,6 @@ from aioWiserHeatAPI.helpers.capabilities import _WiserClimateCapabilities
 
 from . import _LOGGER
 from .const import (
-    DEFAULT_BOOST_DELTA,
     TEMP_MINIMUM,
     TEMP_OFF,
     TEXT_BOOST,
@@ -114,6 +112,15 @@ class _WiserRoom(object):
                 return False
         return False
 
+    async def _get_extra_config(self) -> None:
+        self._extra_config = (
+            self._wiser_rest_controller._extra_config.config(
+                "Rooms", str(self.id)
+            )
+            if self._wiser_rest_controller._extra_config
+            else None
+        )
+
     @property
     def is_passive_mode(self) -> bool:
         return (
@@ -132,7 +139,7 @@ class _WiserRoom(object):
             # Migrate from initial version of extra config
             if (
                 self._extra_config["passive_mode"] == "Disabled"
-                or self._extra_config["passive_mode"] == False
+                or self._extra_config["passive_mode"] is False
             ):
                 return False
             else:
@@ -162,6 +169,7 @@ class _WiserRoom(object):
 
     async def set_passive_mode(self, enable: bool):
         if await self._update_extra_config("passive_mode", enable):
+            await self._get_extra_config()
             if not self.is_away_mode:
                 # Set to min of temp range when initialised
                 if enable and self.mode != WiserHeatingModeEnum.off.value:
@@ -186,12 +194,14 @@ class _WiserRoom(object):
             _LOGGER.error(
                 "Unable to set passive lower temp.  This maybe caused by an issue with your extra config file."
             )
+        await self._get_extra_config()
 
     async def set_passive_mode_upper_temp(self, temp):
         if not await self._update_extra_config("max", temp):
             _LOGGER.error(
                 "Unable to set passive mode upper temp.  This maybe caused by an issue with your extra config file."
             )
+        await self._get_extra_config()
 
     @property
     def available_modes(self) -> list:
@@ -213,7 +223,7 @@ class _WiserRoom(object):
     @property
     def away_mode_suppressed(self) -> str:
         """Get if away mode is suppressed for room"""
-        return self._data.get("AwayModeSuppressed", TEXT_UNKNOWN)
+        return self._data.get("AwayModeSuppressed", False)
 
     @property
     def boost_end_time(self) -> datetime:
@@ -375,7 +385,7 @@ class _WiserRoom(object):
         return self._mode
 
     async def set_mode(self, mode: Union[WiserHeatingModeEnum, str]) -> bool:
-        if type(mode) == WiserHeatingModeEnum:
+        if isinstance(mode, WiserHeatingModeEnum):
             mode = mode.value
 
         if is_value_in_list(mode, self.available_modes):
@@ -494,6 +504,13 @@ class _WiserRoom(object):
         )
 
     @property
+    def setpoint_origin(self) -> str:
+        """Get the origin of the target temperature setting for the room"""
+        return self._data.get(
+            "SetpointOrigin", self._data.get("SetpointOrigin", TEXT_UNKNOWN)
+        )
+
+    @property
     def smartvalve_ids(self) -> list:
         """Get list of smartvalve ids associated with room"""
         return sorted(self._data.get("SmartValveIds", []))
@@ -518,9 +535,7 @@ class _WiserRoom(object):
     @property
     def target_temperature_origin(self) -> str:
         """Get the origin of the target temperature setting for the room"""
-        return self._data.get(
-            "SetpointOrigin", self._data.get("SetpointOrigin", TEXT_UNKNOWN)
-        )
+        return self.setpoint_origin
 
     @property
     def underfloor_heating_id(self) -> int:
@@ -567,12 +582,16 @@ class _WiserRoom(object):
     @property
     def occupied_heating_set_point(self) -> int:
         """Get the setpoint when the room is occupied"""
-        return self._data.get("OccupiedHeatingSetPoint", 85)
+        return tf._from_wiser_temp(
+            self._data.get("OccupiedHeatingSetPoint", TEMP_MINIMUM)
+        )
 
     @property
     def unoccupied_heating_set_point(self) -> int:
         """Get the setpoint when the room is unoccupied"""
-        return self._data.get("UnoccupiedHeatingSetPoint", 65)
+        return tf._from_wiser_temp(
+            self._data.get("UnoccupiedHeatingSetPoint", TEMP_MINIMUM)
+        )
 
     @property
     def climate_demand_for_ui(self) -> int:
@@ -752,7 +771,7 @@ class _WiserRoomCollection:
             )
 
     @property
-    def all(self) -> list:
+    def all(self) -> list[_WiserRoom]:
         """Returns list of room objects"""
         return self._rooms
 
