@@ -56,6 +56,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 * Added addiitonal functions for v2 hub lights, equipments etc
 * Added support for WindowDoor sensors
+* Added support for Boiler Interface device
 
 ### v1.5.14
 
