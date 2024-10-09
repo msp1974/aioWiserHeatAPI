@@ -39,7 +39,7 @@ class _WiserWindowDoorSensor(_WiserBinarySensor):
     """Class representing a Wiser WindowDoor Sensor"""
 
 
-class _WiserBinarySensorCollection(object):
+class _WiserBinarySensorCollection:
     """Class holding all Wiser Binary Sensors"""
 
     def __init__(self):
