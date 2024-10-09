@@ -8,9 +8,11 @@ from .binary_sensor import (
     _WiserBinarySensorCollection,
     _WiserWindowDoorSensor,
 )
+from .boiler_interface import _WiserBoilerInterface, _WiserBoilerInterfaceCollection
 from .const import (
     TEXT_UNKNOWN,
     WISERBINARYSENSOR,
+    WISERBOILERINTERFACE,
     WISERHEATINGACTUATOR,
     WISERLIGHT,
     WISERPOWERTAGENERGY,
@@ -50,6 +52,7 @@ class _WiserDeviceTypeEnum(enum.Enum):
     PowerTagE = "PTE"
     SmokeAlarmDevice = "SmokeAlarmDevice"
     WindowDoorSensor = "BinarySensor"
+    BoilerInterface = "BoilerInterface"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -123,6 +126,12 @@ PRODUCT_TYPE_CONFIG = {
         "class": _WiserWindowDoorSensor,
         "collection": _WiserBinarySensorCollection,
         "endpoint": WISERBINARYSENSOR,
+        "device_id_field": "DeviceId",
+    },
+    "BoilerInterface": {
+        "class": _WiserBoilerInterface,
+        "collection": _WiserBoilerInterfaceCollection,
+        "endpoint": WISERBOILERINTERFACE,
         "device_id_field": "DeviceId",
     },
 }
