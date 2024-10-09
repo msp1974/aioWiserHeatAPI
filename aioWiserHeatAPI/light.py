@@ -9,10 +9,11 @@ from .const import (
     WISERDEVICE,
     WiserDeviceModeEnum,
     WiserLightLedIndicatorEnum,
-    WiserLightPowerOnBehaviourEnum
+    WiserLightPowerOnBehaviourEnum,
 )
 from .helpers.device import _WiserElectricalDevice
 from .helpers.misc import is_value_in_list
+
 
 class _WiserOutputRange(object):
     """Data structure for min/max output range"""
@@ -78,9 +79,7 @@ class _WiserLight(_WiserElectricalDevice):
     @property
     def is_dimmable(self) -> bool:
         """Get if the light is dimmable"""
-        return (
-            True if self._device_type_data.get("IsDimmable", False) else False
-        )
+        return True if self._device_type_data.get("IsDimmable", False) else False
 
     @property
     def is_on(self) -> bool:
@@ -92,35 +91,41 @@ class _WiserLight(_WiserElectricalDevice):
         """Get id of shutter"""
         return self._device_type_data.get("id", 0)
 
-    #added by LGO
+    # added by LGO
     # Hub V2  new features
 
     @property
     def is_led_indicator_supported(self) -> bool:
         """Get is led indicator supported for the light"""
-        
+
         return (
-            True if self._device_type_data.get("IsLedIndicatorSupported", False) else False
-        )  
-    
+            True
+            if self._device_type_data.get("IsLedIndicatorSupported", False)
+            else False
+        )
+
     @property
     def is_power_on_behaviour_supported(self) -> bool:
         """Get is_power on behaviour supported for the light"""
         return (
-            True if self._device_type_data.get("IsPowerOnBehaviourSupported", False) else False
-        ) 
+            True
+            if self._device_type_data.get("IsPowerOnBehaviourSupported", False)
+            else False
+        )
+
     @property
     def available_led_indicator(self):
-        """Get available led indicator """
+        """Get available led indicator"""
         return [action.value for action in WiserLightLedIndicatorEnum]
-
 
     @property
     def led_indicator(self) -> str:
         """Get  led indicator for the light"""
-        return self._device_type_data.get("LedIndicator",TEXT_UNKNOWN)
+        return self._device_type_data.get("LedIndicator", TEXT_UNKNOWN)
 
-    async def set_led_indicator(self, led_indicator: Union[WiserLightLedIndicatorEnum, str]) -> bool:
+    async def set_led_indicator(
+        self, led_indicator: Union[WiserLightLedIndicatorEnum, str]
+    ) -> bool:
         if isinstance(led_indicator, WiserLightLedIndicatorEnum):
             led_indicator = led_indicator.value
         if is_value_in_list(led_indicator, self.available_led_indicator):
@@ -130,24 +135,19 @@ class _WiserLight(_WiserElectricalDevice):
                 f"{led_indicator} is not a valid mode.  Valid modes are {self.available_led_indicator}"
             )
 
-    
     @property
     def is_output_mode_supported(self) -> bool:
         """Get is output mode supported for the light"""
         return (
-            True if self._device_type_data.get("IsOutputModeSupported", False) else False
-        ) 
+            True
+            if self._device_type_data.get("IsOutputModeSupported", False)
+            else False
+        )
+
     @property
     def output_mode(self) -> str:
         """Get is output mode supported for the light"""
-        return (
-             self._device_type_data.get("OutputMode", TEXT_UNKNOWN) 
-        )   
-
-    @property
-    def available_led_indicator(self):
-        """Get available led indicator """
-        return [action.value for action in WiserLightLedIndicatorEnum]
+        return self._device_type_data.get("OutputMode", TEXT_UNKNOWN)
 
     # end added by LGO
 
@@ -161,18 +161,14 @@ class _WiserLight(_WiserElectricalDevice):
         Turn on the light at current brightness level
         return: boolean
         """
-        return await self._send_command(
-            {"RequestOverride": {"State": TEXT_ON}}
-        )
+        return await self._send_command({"RequestOverride": {"State": TEXT_ON}})
 
     async def turn_off(self) -> bool:
         """
         Turn off the light
         return: boolean
         """
-        return await self._send_command(
-            {"RequestOverride": {"State": TEXT_OFF}}
-        )
+        return await self._send_command({"RequestOverride": {"State": TEXT_OFF}})
 
 
 class _WiserDimmableLight(_WiserLight):
@@ -200,9 +196,7 @@ class _WiserDimmableLight(_WiserLight):
                 }
             )
         else:
-            raise ValueError(
-                "Brightness level percentage must be between 0 and 100"
-            )
+            raise ValueError("Brightness level percentage must be between 0 and 100")
 
     @property
     def manual_level(self) -> int:
@@ -218,9 +212,7 @@ class _WiserDimmableLight(_WiserLight):
     def output_range(self) -> _WiserOutputRange:
         """Get output range min/max."""
         # TODO: Add setter for min max values
-        return _WiserOutputRange(
-            self._device_type_data.get("OutputRange", None)
-        )
+        return _WiserOutputRange(self._device_type_data.get("OutputRange", None))
 
     @property
     def scheduled_percentage(self) -> int:
@@ -232,21 +224,22 @@ class _WiserDimmableLight(_WiserLight):
         """Get target percentage brightness of light"""
         return self._device_type_data.get("TargetPercentage", 0)
 
-    #added by LGO
+    # added by LGO
     # Hub V2  new features
-
 
     @property
     def available_power_on_behaviour(self):
-        """Get available led indicator """
+        """Get available led indicator"""
         return [action.value for action in WiserLightPowerOnBehaviourEnum]
-    
+
     @property
     def power_on_behaviour(self) -> str:
         """Get power on behaviour for the light"""
-        return self._device_type_data.get("PowerOnBehaviour",TEXT_UNKNOWN)
+        return self._device_type_data.get("PowerOnBehaviour", TEXT_UNKNOWN)
 
-    async def set_power_on_behaviour(self, power_on_behaviour: Union[WiserLightPowerOnBehaviourEnum, str]) -> bool:
+    async def set_power_on_behaviour(
+        self, power_on_behaviour: Union[WiserLightPowerOnBehaviourEnum, str]
+    ) -> bool:
         if isinstance(power_on_behaviour, WiserLightPowerOnBehaviourEnum):
             power_on_behaviour = power_on_behaviour.value
         if is_value_in_list(power_on_behaviour, self.available_power_on_behaviour):
@@ -259,8 +252,8 @@ class _WiserDimmableLight(_WiserLight):
     @property
     def power_on_level(self) -> int:
         """Get power on level for the light"""
-        return self._device_type_data.get("PowerOnLevel",None)
-    
+        return self._device_type_data.get("PowerOnLevel", None)
+
     # end added by LGO
 
 
@@ -293,9 +286,7 @@ class _WiserLightCollection(object):
     @property
     def onoff_lights(self) -> list[_WiserLight]:
         return list(
-            onoff_lights
-            for onoff_lights in self.all
-            if not onoff_lights.is_dimmable
+            onoff_lights for onoff_lights in self.all if not onoff_lights.is_dimmable
         )
 
     def get_by_id(self, light_id: int) -> _WiserLight:
@@ -316,9 +307,7 @@ class _WiserLightCollection(object):
         return: _WiserLight object
         """
         try:
-            return [light for light in self.all if light.light_id == light_id][
-                0
-            ]
+            return [light for light in self.all if light.light_id == light_id][0]
         except IndexError:
             return None
 
@@ -329,4 +318,3 @@ class _WiserLightCollection(object):
         return: list of _WiserLight objects
         """
         return [light for light in self.all if light.room_id == room_id]
-    

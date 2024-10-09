@@ -2,8 +2,8 @@
 Handles binary_sensor devices
 """
 
-from .helpers.device import _WiserDevice
 from .helpers.battery import _WiserBattery
+from .helpers.device import _WiserDevice
 
 
 class _WiserBinarySensor(_WiserDevice):
@@ -29,7 +29,6 @@ class _WiserBinarySensor(_WiserDevice):
         """Get if notifications is enable"""
         return self._device_type_data.get("EnableNotification")
 
-
     @property
     def battery(self) -> _WiserBattery:
         """Get the battery information for the smokealarm"""
@@ -47,7 +46,7 @@ class _WiserBinarySensorCollection(object):
         self._items = []
 
     @property
-    def all(self) -> dict:
+    def all(self) -> list[_WiserBinarySensor]:
         return list(self._items)
 
     @property

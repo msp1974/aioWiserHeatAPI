@@ -99,7 +99,7 @@ class _WiserSmokeAlarm(_WiserDevice):
         return self._device_type_data.get("ReportCount")
 
     @property
-    def enable_notification(self) -> bool:
+    def notification_enabled(self) -> bool:
         """Get if notifications active"""
         return self._device_type_data.get("EnableNotification", False)
 
@@ -136,9 +136,7 @@ class _WiserSmokeAlarmCollection(object):
         """
         try:
             return [
-                smokealarm
-                for smokealarm in self.all
-                if smokealarm.id == smokealarm_id
+                smokealarm for smokealarm in self.all if smokealarm.id == smokealarm_id
             ][0]
         except IndexError:
             return None

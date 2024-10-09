@@ -5,7 +5,7 @@ from .const import TEXT_UNKNOWN, WISERSYSTEM
 from .rest_controller import _WiserRestController
 
 
-class _WiserAutomation(object):
+class _WiserAutomation:
     def __init__(
         self, wiser_rest_controller: _WiserRestController, automation_data: dict
     ):
@@ -18,14 +18,10 @@ class _WiserAutomation(object):
         param cmd: json command structure
         return: boolen - true = success, false = failed
         """
-        result = await self._wiser_rest_controller._send_command(
-            WISERSYSTEM, cmd
-        )
+        result = await self._wiser_rest_controller._send_command(WISERSYSTEM, cmd)
         if result:
             _LOGGER.debug(
-                "Wiser hub - {} command successful".format(
-                    inspect.stack()[1].function
-                )
+                "Wiser hub - %s command successful", format(inspect.stack()[1].function)
             )
             return True
         return False
@@ -41,18 +37,19 @@ class _WiserAutomation(object):
     @property
     def enabled(self) -> bool:
         return self._automation_data.get("Enabled", False)
- 
-    async def enabled(self):
+
+    async def trigger(self):
         """Activate automation"""
         return await self._send_command({"TriggerAutomation": self.id})
 
     @property
-    def enable_notification(self) -> bool:
+    def notification_enabled(self) -> bool:
         return self._automation_data.get("EnableNotification", False)
- 
+
     async def enable_notification(self):
         """Activate automation"""
-        return await self._send_command({"TriggerAutomation": self.id})
+        return await self._send_command({"EnableNotification": self.id})
+
 
 class _WiserAutomationCollection(object):
     def __init__(
@@ -64,7 +61,7 @@ class _WiserAutomationCollection(object):
         self._build()
 
     def _build(self):
-        for automation in self._automations_data:
+        for automation in self._automation_data:
             self._automations.append(
                 _WiserAutomation(self._wiser_rest_controller, automation)
             )
@@ -81,6 +78,8 @@ class _WiserAutomationCollection(object):
 
     def get_by_id(self, automation_id: int) -> _WiserAutomation:
         try:
-            return [automation for automation in self.all if automation.id == automation_id][0]
+            return [
+                automation for automation in self.all if automation.id == automation_id
+            ][0]
         except IndexError:
             return None

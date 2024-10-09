@@ -31,7 +31,7 @@ class _WiserEquipmentPowerInfo:
 
     @property
     def rms_current(self) -> int:
-        """Get rms current""" 
+        """Get rms current"""
         return self._data.get("RMSCurrent", None)
 
     @property
@@ -39,53 +39,50 @@ class _WiserEquipmentPowerInfo:
         """Get rms voltage"""
         return self._data.get("RMSVoltage", None)
 
+
 #  Add for a notification feature Notification if the   Power is under or over a threshold
-#  for  a time (periodmins)...     
+#  for  a time (periodmins)...
 class _WiserEquipmentUnderPowerNotificationInfo(object):
-    def __init__(self,data: dict):
+    def __init__(self, data: dict):
         self._data = data
 
     @property
     def period_mins(self) -> int:
         """Get delivered power"""
-        return self._data.get("PeriodMins",0)
+        return self._data.get("PeriodMins", 0)
+
     @property
     def limit(self) -> int:
-        """Get limit """
+        """Get limit"""
         return self._data.get("Limit", 0)
+
     @property
     def enabled(self) -> bool:
         """Get status enable"""
         return self._data.get("Enabled", False)
 
+
 class _WiserEquipmentOverPowerNotificationInfo:
-    def __init__(self, equipment_instance,data: dict):
+    def __init__(self, equipment_instance, data: dict):
         self._data = data
-        self._equipment_instance= equipment_instance
+        self._equipment_instance = equipment_instance
 
     @property
     def period_mins(self) -> int:
-        """Get period in minutes """
-        return (self._data.get("PeriodMins")
-            if self._data.get("PeriodMins") 
-            else None
-        )
+        """Get period in minutes"""
+        return self._data.get("PeriodMins") if self._data.get("PeriodMins") else None
+
     @property
     def limit(self) -> int:
-        """Get limit """
-        return (self._data.get("Limit", 100000)
-        if self._data.get("Limit") 
-            else None
-        )
+        """Get limit"""
+        return self._data.get("Limit", 100000) if self._data.get("Limit") else None
+
     @property
     def enabled(self) -> bool:
         """Get status enable"""
-        return (self._data.get("Enabled", False)
-        if self._data.get("Enabled") 
-            else None
-        )
+        return self._data.get("Enabled", False) if self._data.get("Enabled") else None
 
- 
+
 class _WiserEquipment:
     """Class to hold equipment object"""
 
@@ -252,24 +249,26 @@ class _WiserEquipment:
         """Get the power info"""
         return _WiserEquipmentPowerInfo(self._data)
 
-#  Add for a notification feature Notification if the   Power is under or over a threshold
-#  for  a time (periodmins)...   
+    #  Add for a notification feature Notification if the   Power is under or over a threshold
+    #  for  a time (periodmins)...
     @property
     def under_power_notification(self) -> _WiserEquipmentUnderPowerNotificationInfo:
         """Get notification info"""
-    #    if self.under_power_notification.period_mins:
-#        return _WiserEquipmentUnderPowerNotificationInfo(self, self._data.get("UnderPowerNotification"))
         return (
-            _WiserEquipmentUnderPowerNotificationInfo(self,self._data.get("UnderPowerNotification"))
-            if self.get("UnderPowerNotification")
+            _WiserEquipmentUnderPowerNotificationInfo(
+                self._data.get("UnderPowerNotification")
+            )
+            if self._data.get("UnderPowerNotification")
             else None
-            
         )
+
     @property
     def over_power_notification(self) -> _WiserEquipmentOverPowerNotificationInfo:
         """Get notification info"""
         return (
-            _WiserEquipmentUnderPowerNotificationInfo(self,self._data.get("OverPowerNotification"))
+            _WiserEquipmentUnderPowerNotificationInfo(
+                self._data.get("OverPowerNotification")
+            )
             if self._data.get("OverPowerNotification")
             else None
         )
