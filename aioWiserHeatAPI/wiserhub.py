@@ -16,12 +16,15 @@ import pathlib
 from datetime import datetime
 from typing import Optional
 
+from aioWiserHeatAPI.helpers.version import Version
+
 from . import __VERSION__, _LOGGER
 from .cli import log_response_to_file
 from .const import (
     DEFAULT_AWAY_MODE_TEMP,
     DEFAULT_DEGRADED_TEMP,
     MAX_BOOST_INCREASE,
+    OPENTHERMV2_MIN_VERSION,
     TEMP_ERROR,
     TEMP_HW_OFF,
     TEMP_HW_ON,
@@ -31,6 +34,7 @@ from .const import (
     WISERHUBDOMAIN,
     WISERHUBNETWORK,
     WISERHUBOPENTHERM,
+    WISERHUBOPENTHERMV2,
     WISERHUBSCHEDULES,
     WISERHUBSTATUS,
     WiserUnitsEnum,
@@ -152,9 +156,20 @@ class WiserAPI:
             opentherm = self._domain_data.get("System", {}).get(
                 "OpenThermConnectionStatus", ""
             )
-            if opentherm and opentherm == "Connected":
+            if opentherm and opentherm == "Connected" or True:
+                fw_version = Version(
+                    self._domain_data.get("System", {}).get(
+                        "ActiveSystemVersion", "1.0.0"
+                    )
+                )
+                hw_version = self._domain_data.get("System", {}).get(
+                    "HardwareGeneration", 1
+                )
                 self._opentherm_data = await self._wiser_rest_controller.get_hub_data(
-                    WISERHUBOPENTHERM, False
+                    WISERHUBOPENTHERMV2
+                    if hw_version == 2 and fw_version >= OPENTHERMV2_MIN_VERSION
+                    else WISERHUBOPENTHERM,
+                    False,
                 )
         except (
             WiserHubConnectionError,

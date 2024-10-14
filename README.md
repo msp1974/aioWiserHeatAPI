@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.5.15
+# Drayton Wiser Hub API Async v1.5.16
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -52,9 +52,13 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
+### v1.5.16
+
+* Added support for v2 opentherm endpoint for fw above 4.32.46
+
 ### v1.5.15
 
-* Added addiitonal functions for v2 hub lights, equipments etc
+* Added additonal functions for v2 hub lights, equipments etc
 * Added support for WindowDoor sensors
 * Added support for Boiler Interface device
 
