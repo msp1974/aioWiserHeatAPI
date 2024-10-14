@@ -1,5 +1,7 @@
 import enum
 
+from aioWiserHeatAPI.helpers.version import Version
+
 # Temperature Constants
 DEFAULT_AWAY_MODE_TEMP = 10.5
 DEFAULT_DEGRADED_TEMP = 18
@@ -78,6 +80,7 @@ WEEKENDS = ["Saturday", "Sunday"]
 SPECIAL_DAYS = [TEXT_WEEKDAYS, TEXT_WEEKENDS, TEXT_ALL]
 SPECIAL_TIMES = {"Sunrise": 3000, "Sunset": 4000}
 
+OPENTHERMV2_MIN_VERSION = Version("4.32.47")
 
 # Wiser Hub Rest Api URL Constants
 WISERHUBURL = "http://{}:{}/data/v2/"
@@ -85,6 +88,7 @@ WISERHUBDOMAIN = WISERHUBURL + "domain/"
 WISERHUBNETWORK = WISERHUBURL + "network/"
 WISERHUBSCHEDULES = WISERHUBURL + "schedules/"
 WISERHUBOPENTHERM = WISERHUBURL + "opentherm/"
+WISERHUBOPENTHERMV2 = WISERHUBURL + "openTherm/"
 WISERHUBSTATUS = WISERHUBURL + "status/"
 WISERSYSTEM = "System"
 WISERDEVICE = "Device/{}"
