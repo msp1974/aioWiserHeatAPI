@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.5.16
+# Drayton Wiser Hub API Async v1.5.17
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -51,6 +51,11 @@ To help understand the api simply look at the test sample code ```tests/test_api
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+
+### v1.5.17
+
+* Fixed error setting opentherm endpoint for fw above 4.32.46
+* Added support for CFMT devices
 
 ### v1.5.16
 
