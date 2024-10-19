@@ -53,6 +53,7 @@ class _WiserDeviceTypeEnum(enum.Enum):
     SmokeAlarmDevice = "SmokeAlarmDevice"
     WindowDoorSensor = "BinarySensor"
     BoilerInterface = "BoilerInterface"
+    CFMT = "HeatingActuator"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -134,6 +135,13 @@ PRODUCT_TYPE_CONFIG = {
         "endpoint": WISERBOILERINTERFACE,
         "device_id_field": "DeviceId",
     },
+    "CFMT": {
+        "class": _WiserHeatingActuator,
+        "collection": _WiserHeatingActuatorCollection,
+        "endpoint": WISERHEATINGACTUATOR,
+        "heating": True,
+        "has_v2_equipment": True,
+    },
 }
 
 
@@ -197,9 +205,10 @@ class _WiserDeviceCollection:
 
                     # If heating device add room id
                     if device_config.get("heating"):
-                        device_info[0]["RoomId"] = self._get_temp_device_room_id(
-                            self._domain_data, device.get("id")
-                        )
+                        if not device.get("RoomId"):
+                            device_info[0]["RoomId"] = self._get_temp_device_room_id(
+                                self._domain_data, device.get("id")
+                            )
 
                     # If schedule device add schedule
                     if device_config.get("schedule_type"):
