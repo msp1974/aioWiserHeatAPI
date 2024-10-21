@@ -64,6 +64,10 @@ TEXT_ALL = "All"
 TEXT_UNABLE = "Unable"
 # added by Lgo44
 
+#enable notification for WindowDoor
+TEXT_NONE= "None"
+TEXT_ONEITHER= "OnEither"
+
 TEXT_REVERSE = "ReverseWithLoad"
 TEXT_CONSISTENT = "ConsistentWithLoad"
 TEXT_ALWAYSON = "AlwaysOn"
@@ -145,6 +149,9 @@ class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
 
+class WiserWindowDoorEnableNotificationEnum(enum.Enum):
+    oneither= TEXT_ONEITHER 
+    none=TEXT_NONE
 
 # End added by Lgo44
 
