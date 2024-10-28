@@ -22,10 +22,15 @@ from .const import (
     WISERSMARTVALVE,
     WISERSMOKEALARM,
     WISERUFHCONTROLLER,
+    WISERTHRESHOLDSENSOR,
 )
 from .heating_actuator import (
     _WiserHeatingActuator,
     _WiserHeatingActuatorCollection,
+)
+from .threshold_sensor import (
+    _WiserTemperatureHumiditySensor,
+    _WiserThresholdSensorCollection,
 )
 from .helpers.device import _WiserDevice
 from .light import _WiserDimmableLight, _WiserLight, _WiserLightCollection
@@ -54,6 +59,8 @@ class _WiserDeviceTypeEnum(enum.Enum):
     WindowDoorSensor = "BinarySensor"
     BoilerInterface = "BoilerInterface"
     CFMT = "HeatingActuator"
+    ThresholdSensor= "ThresholdSensor"
+    TemperatureHumiditySensor= "ThresholdSensor"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -142,8 +149,21 @@ PRODUCT_TYPE_CONFIG = {
         "heating": True,
         "has_v2_equipment": True,
     },
+    "ThresholdSensor": {
+        "class": _WiserTemperatureHumiditySensor,
+        "collection": _WiserThresholdSensorCollection,
+        "endpoint": WISERTHRESHOLDSENSOR,
+        "device_id_field": "DeviceId",
+        "heating": True,
+    },
+    "TemperatureHumiditySensor": {
+        "class": _WiserTemperatureHumiditySensor,
+        "collection": _WiserThresholdSensorCollection,
+        "endpoint": WISERTHRESHOLDSENSOR,
+        "device_id_field": "DeviceId",
+        "heating": True,
+    },    
 }
-
 
 class _WiserDeviceCollection:
     """Class holding all wiser devices"""
@@ -315,6 +335,11 @@ class _WiserDeviceCollection:
     def binary_sensor(self):
         """Return all binary sensors"""
         return self._device_collection["BinarySensor"]
+
+    @property
+    def threshold_sensor(self) -> _WiserThresholdSensorCollection:
+        """Return all threshold sensor"""
+        return self._device_collection["ThresholdSensor"]
 
     def get_by_id(self, device_id: int) -> _WiserDevice:
         """
