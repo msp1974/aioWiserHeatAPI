@@ -29,6 +29,7 @@ from .heating_actuator import (
     _WiserHeatingActuatorCollection,
 )
 from .threshold_sensor import (
+    _WiserThresholdSensor,
     _WiserTemperatureHumiditySensor,
     _WiserThresholdSensorCollection,
 )
@@ -150,18 +151,16 @@ PRODUCT_TYPE_CONFIG = {
         "has_v2_equipment": True,
     },
     "ThresholdSensor": {
-        "class": _WiserTemperatureHumiditySensor,
+        "class": _WiserThresholdSensor,
         "collection": _WiserThresholdSensorCollection,
         "endpoint": WISERTHRESHOLDSENSOR,
         "device_id_field": "DeviceId",
-        "heating": True,
     },
     "TemperatureHumiditySensor": {
         "class": _WiserTemperatureHumiditySensor,
         "collection": _WiserThresholdSensorCollection,
         "endpoint": WISERTHRESHOLDSENSOR,
         "device_id_field": "DeviceId",
-        "heating": True,
     },    
 }
 
@@ -332,12 +331,12 @@ class _WiserDeviceCollection:
         return self._device_collection["UnderFloorHeating"]
 
     @property
-    def binary_sensor(self):
+    def binary_sensors(self)-> _WiserBinarySensorCollection:
         """Return all binary sensors"""
         return self._device_collection["BinarySensor"]
 
     @property
-    def threshold_sensor(self) -> _WiserThresholdSensorCollection:
+    def threshold_sensors(self) -> _WiserThresholdSensorCollection:
         """Return all threshold sensor"""
         return self._device_collection["ThresholdSensor"]
 

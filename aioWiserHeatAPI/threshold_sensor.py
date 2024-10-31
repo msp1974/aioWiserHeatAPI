@@ -47,17 +47,32 @@ class _WiserThresholdSensor(_WiserDevice):
         return self._device_type_data.get("LowThreshold", 0)
 
     @property
+    def current_level(self) -> str:
+        """Get the high threshold of the sensor setting"""
+        return self._device_type_data.get("CurrentLevel", TEXT_UNKNOWN)
+
+    @property
     def interacts_with_room_climate(self) -> bool:
         """Get the current temperature measured by the room stat"""
         return self._device_type_data.get("InteractsWithRoomClimate", False)
-        
+
+    async def set_interacts_with_room_climate(self, enabled: bool):
+        if await self._send_command({"InteractsWithRoomClimate": str(enabled).lower()}):
+            self._interacts_with_room_climate = enabled
+            return True
+
+
+class _WiserTemperatureSensor(_WiserThresholdSensor):
+    """Class representing Temperature of a Wiser TemperatureHumidity Sensor"""
+
+class _WiserHumiditySensor(_WiserThresholdSensor):
+    """Class representing Humidity of a Wiser TemperatureHumidity Sensor"""
 
 class _WiserTemperatureHumiditySensor(_WiserThresholdSensor):
-    """Class representing a Wiser TemperatureHumidity Sensor"""
+    """Class representing Humidity of a Wiser TemperatureHumidity Sensor"""
 
-
-class _WiserThresholdSensorCollection:
-    """Class holding all wiser room stats"""
+class _WiserThresholdSensorCollection(object):
+    """Class holding all Thresholds Sensors"""
 
     def __init__(self):
         self._items = []
