@@ -5,6 +5,11 @@ class _WiserBoilerInterface(_WiserDevice):
     """Class representing a Wiser Boiler Interface"""
 
     @property
+    def device_id(self) -> list[int]:
+        """Device id."""
+        return self._device_type_data.get("DeviceId")
+
+    @property
     def heating_channel_ids(self) -> list[int]:
         """Heating channel ids."""
         return self._device_type_data.get("HeatingChannelIds")
