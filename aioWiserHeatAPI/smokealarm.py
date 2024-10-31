@@ -102,6 +102,11 @@ class _WiserSmokeAlarm(_WiserDevice):
     def enable_notification(self) -> bool:
         """Get if notifications active"""
         return self._device_type_data.get("EnableNotification", False)
+    
+    async def set_enable_notification(self, enabled: bool):
+        if await self._send_command({"EnableNotification": str(enabled).lower()}):
+            self._enable_notification = enabled
+            return True
 
     @property
     def supervision_notify(self) -> bool:
