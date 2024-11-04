@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Optional
 
 import aiohttp
+import aiohttp.client_exceptions
 import aiohttp.http_exceptions
 
 from . import _LOGGER
@@ -95,7 +96,7 @@ class _WiserRestController(object):
         http_version = aiohttp.HttpVersion11
         self._last_exception = None
 
-        for i in range(0, 5):
+        for i in range(5):
             if i > 0:
                 await asyncio.sleep(REST_RETRY_BACKOFF[i])
             try:
@@ -120,7 +121,7 @@ class _WiserRestController(object):
                     "Request successful and took %ss",
                     (datetime.now() - start_time).total_seconds(),
                 )
-                return response
+
             except WiserHubRESTError as ex:
                 # if json error try http1.1
                 _LOGGER.debug("%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i])
@@ -135,19 +136,25 @@ class _WiserRestController(object):
                 # Connection timed out or failed.  Try it again
                 _LOGGER.debug("%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i])
                 self._last_exception = ex
+            except Exception as ex:
+                # Unknown error
+                _LOGGER.debug("%s. Retrying in %.1fs", ex, REST_RETRY_BACKOFF[i])
+                self._last_exception = ex
+            else:
+                return response
 
         raise WiserHubConnectionError(self._last_exception)
 
-    async def _execute_request(  # noqa
+    async def _execute_request(
         self,
         action: WiserRestActionEnum,
         url: str,
-        data: dict = None,
+        data: dict | None = None,
         raise_for_endpoint_error: bool = True,
         http_version=aiohttp.HttpVersion11,
     ):
-        """
-        Send request to hub and raise errors if fails
+        """Send request to hub and raise errors if fails.
+
         param url: url of hub rest api endpoint
         param patchData: json object containing command and values to set
         return: boolean
@@ -224,7 +231,10 @@ class _WiserRestController(object):
                 f"Connection error trying to communicate with Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             ) from ex
-        except aiohttp.http_exceptions.TransferEncodingError as ex:
+        except (
+            aiohttp.client_exceptions.ClientPayloadError,
+            aiohttp.http_exceptions.TransferEncodingError,
+        ) as ex:
             raise WiserHubConnectionError(
                 f"Response payload incomplete error trying to communicate with Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
@@ -363,4 +373,6 @@ class _WiserRestController(object):
                 f"{schedule_type}/{schedule_id}",
                 schedule_data,
             )
+        else:
+            result = None
         return result
