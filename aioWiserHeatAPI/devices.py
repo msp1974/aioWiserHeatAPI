@@ -4,15 +4,14 @@ Module to manage all devices
 
 import enum
 
-from .binary_sensor import (
-    _WiserBinarySensorCollection,
-    _WiserWindowDoorSensor,
-)
+from .binary_sensor import _WiserBinarySensorCollection, _WiserWindowDoorSensor
 from .boiler_interface import _WiserBoilerInterface, _WiserBoilerInterfaceCollection
+from .button_panel import _WiserButtonPanel, _WiserButtonPanelCollection
 from .const import (
     TEXT_UNKNOWN,
     WISERBINARYSENSOR,
     WISERBOILERINTERFACE,
+    WISERBUTTONPANEL,
     WISERHEATINGACTUATOR,
     WISERLIGHT,
     WISERPOWERTAGENERGY,
@@ -23,10 +22,7 @@ from .const import (
     WISERSMOKEALARM,
     WISERUFHCONTROLLER,
 )
-from .heating_actuator import (
-    _WiserHeatingActuator,
-    _WiserHeatingActuatorCollection,
-)
+from .heating_actuator import _WiserHeatingActuator, _WiserHeatingActuatorCollection
 from .helpers.device import _WiserDevice
 from .light import _WiserDimmableLight, _WiserLight, _WiserLightCollection
 from .pte import _WiserPowerTagEnergy, _WiserPowerTagEnergyCollection
@@ -54,6 +50,7 @@ class _WiserDeviceTypeEnum(enum.Enum):
     WindowDoorSensor = "BinarySensor"
     BoilerInterface = "BoilerInterface"
     CFMT = "HeatingActuator"
+    ButtonPanel = "ButtonPanel"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -134,6 +131,11 @@ PRODUCT_TYPE_CONFIG = {
         "endpoint": WISERHEATINGACTUATOR,
         "heating": True,
         "has_v2_equipment": True,
+    },
+    "ButtonPanel": {
+        "class": _WiserButtonPanel,
+        "collection": _WiserButtonPanelCollection,
+        "endpoint": WISERBUTTONPANEL,
     },
 }
 
