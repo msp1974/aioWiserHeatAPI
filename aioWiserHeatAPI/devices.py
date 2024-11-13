@@ -4,15 +4,14 @@ Module to manage all devices
 
 import enum
 
-from .binary_sensor import (
-    _WiserBinarySensorCollection,
-    _WiserWindowDoorSensor,
-)
+from .binary_sensor import _WiserBinarySensorCollection, _WiserWindowDoorSensor
 from .boiler_interface import _WiserBoilerInterface, _WiserBoilerInterfaceCollection
+from .button_panel import _WiserButtonPanel, _WiserButtonPanelCollection
 from .const import (
     TEXT_UNKNOWN,
     WISERBINARYSENSOR,
     WISERBOILERINTERFACE,
+    WISERBUTTONPANEL,
     WISERHEATINGACTUATOR,
     WISERLIGHT,
     WISERPOWERTAGENERGY,
@@ -23,10 +22,7 @@ from .const import (
     WISERSMOKEALARM,
     WISERUFHCONTROLLER,
 )
-from .heating_actuator import (
-    _WiserHeatingActuator,
-    _WiserHeatingActuatorCollection,
-)
+from .heating_actuator import _WiserHeatingActuator, _WiserHeatingActuatorCollection
 from .helpers.device import _WiserDevice
 from .light import _WiserDimmableLight, _WiserLight, _WiserLightCollection
 from .pte import _WiserPowerTagEnergy, _WiserPowerTagEnergyCollection
@@ -54,6 +50,7 @@ class _WiserDeviceTypeEnum(enum.Enum):
     WindowDoorSensor = "BinarySensor"
     BoilerInterface = "BoilerInterface"
     CFMT = "HeatingActuator"
+    ButtonPanel = "ButtonPanel"
 
 
 PRODUCT_TYPE_CONFIG = {
@@ -93,47 +90,40 @@ PRODUCT_TYPE_CONFIG = {
         "class": _WiserShutter,
         "collection": _WiserShutterCollection,
         "endpoint": WISERSHUTTER,
-        "device_id_field": "DeviceId",
         "schedule_type": WiserScheduleTypeEnum.level,
     },
     "OnOffLight": {
         "class": _WiserLight,
         "collection": _WiserLightCollection,
         "endpoint": WISERLIGHT,
-        "device_id_field": "DeviceId",
         "schedule_type": WiserScheduleTypeEnum.level,
     },
     "DimmableLight": {
         "class": _WiserDimmableLight,
         "collection": _WiserLightCollection,
         "endpoint": WISERLIGHT,
-        "device_id_field": "DeviceId",
         "schedule_type": WiserScheduleTypeEnum.level,
     },
     "PowerTagE": {
         "class": _WiserPowerTagEnergy,
         "collection": _WiserPowerTagEnergyCollection,
         "endpoint": WISERPOWERTAGENERGY,
-        "device_id_field": "DeviceId",
         "has_v2_equipment": True,
     },
     "SmokeAlarmDevice": {
         "class": _WiserSmokeAlarm,
         "collection": _WiserSmokeAlarmCollection,
         "endpoint": WISERSMOKEALARM,
-        "device_id_field": "DeviceId",
     },
     "WindowDoorSensor": {
         "class": _WiserWindowDoorSensor,
         "collection": _WiserBinarySensorCollection,
         "endpoint": WISERBINARYSENSOR,
-        "device_id_field": "DeviceId",
     },
     "BoilerInterface": {
         "class": _WiserBoilerInterface,
         "collection": _WiserBoilerInterfaceCollection,
         "endpoint": WISERBOILERINTERFACE,
-        "device_id_field": "DeviceId",
     },
     "CFMT": {
         "class": _WiserHeatingActuator,
@@ -141,6 +131,11 @@ PRODUCT_TYPE_CONFIG = {
         "endpoint": WISERHEATINGACTUATOR,
         "heating": True,
         "has_v2_equipment": True,
+    },
+    "ButtonPanel": {
+        "class": _WiserButtonPanel,
+        "collection": _WiserButtonPanelCollection,
+        "endpoint": WISERBUTTONPANEL,
     },
 }
 
@@ -196,9 +191,13 @@ class _WiserDeviceCollection:
                         for device_info in self._domain_data.get(
                             _WiserDeviceTypeEnum[device_type].value
                         )
-                        if device_info.get(device_config.get("device_id_field", "id"))
+                        if device_info.get("DeviceId", device_info.get("id"))
                         == device.get("id")
                     ]
+
+                    # Safety net to prevent error if device info not found
+                    if not device_info:
+                        continue
 
                     # Get class to create and collection to append for device
                     device_class = PRODUCT_TYPE_CONFIG[device_type].get("class")

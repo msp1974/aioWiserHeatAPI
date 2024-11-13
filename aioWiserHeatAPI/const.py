@@ -105,6 +105,7 @@ WISERPOWERTAGENERGY = "PTE/{}"
 WISERSMOKEALARM = "SmokeAlarmDevice/{}"
 WISERBINARYSENSOR = "BinarySensor/{}"
 WISERBOILERINTERFACE = "BoilerInterface/{}"
+WISERBUTTONPANEL = "ButtonPanel/{}"
 
 
 # Enums
