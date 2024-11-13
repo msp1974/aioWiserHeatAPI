@@ -45,7 +45,7 @@ setuptools.setup(
         "aiofiles>=23.2.1",
         "pyyaml>=6.0.1",
     ],
-    python_requires=">=3.11",
+    python_requires=">=3.12",
     entry_points={
         "console_scripts": ["wiser = aioWiserHeatAPI.cli:main"],
     },
