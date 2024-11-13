@@ -175,10 +175,10 @@ class _WiserRestController(object):
 
         # if data is not None:
         if data:
-            kwargs["json"] = data
+            kwargs["data"] = json.dumps(data, ensure_ascii=False).encode("utf8")
             kwargs["headers"].update(
                 {
-                    "Content-Type": "application/json;charset=UTF-8",
+                    "Content-Type": "application/json",
                 }
             )
         if self._timeout is not None:
@@ -247,19 +247,21 @@ class _WiserRestController(object):
         data: dict,
         raise_for_endpoint_error: bool = True,
     ):
-        if response.status == 400:
+        status = response.status
+
+        if status == 400:
             _LOGGER.debug("400 error")
-        if response.status == 401:
+        if status == 401:
             raise WiserHubAuthenticationError(
                 f"Error authenticating to Wiser Hub "
                 f"{self._wiser_connection_info.host}. Check your secret key"
             )
-        elif response.status == 404 and raise_for_endpoint_error:
+        elif status == 404 and raise_for_endpoint_error:
             raise WiserHubRESTError(
                 f"Rest endpoint not found on Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url}"
             )
-        elif response.status == 408:
+        elif status == 408:
             raise WiserHubConnectionError(
                 f"Connection timed out trying to communicate with Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url}"
@@ -268,7 +270,7 @@ class _WiserRestController(object):
             raise WiserHubRESTError(
                 f"Unknown error communicating with Wiser Hub "
                 f"{self._wiser_connection_info.host} for url {url} with data {data}. "
-                f"Error code is: {response.status}"
+                f"Error code is: {status}"
             )
 
     async def get_hub_data(self, url: str, raise_for_endpoint_error: bool = True):
