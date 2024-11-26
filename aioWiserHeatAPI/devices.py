@@ -363,7 +363,11 @@ class _WiserDeviceCollection:
                     if device := self.get_by_id(device_id):
                         if hasattr(device, anc_device_type_info.attribute):
                             getattr(device, anc_device_type_info.attribute).append(
-                                anc_device_type_info.device_class(anc_device)
+                                anc_device_type_info.device_class(
+                                    self._wiser_rest_controller,
+                                    anc_device_type_info.endpoint,
+                                    anc_device,
+                                )
                             )
 
     def _get_temp_device_room_id(self, domain_data: dict, device_id: int) -> int:
