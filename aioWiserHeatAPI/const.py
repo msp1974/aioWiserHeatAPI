@@ -101,11 +101,14 @@ WISERHEATINGACTUATOR = "HeatingActuator/{}"
 WISERUFHCONTROLLER = "UnderFloorHeating/{}"
 WISERSHUTTER = "Shutter/{}"
 WISERLIGHT = "Light/{}"
+WISERPOWERTAGCONTROL = "PTC/{}"
 WISERPOWERTAGENERGY = "PTE/{}"
 WISERSMOKEALARM = "SmokeAlarmDevice/{}"
 WISERBINARYSENSOR = "BinarySensor/{}"
 WISERBOILERINTERFACE = "BoilerInterface/{}"
 WISERBUTTONPANEL = "ButtonPanel/{}"
+WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
+WISERUICONFIGURATION = "UIConfiguration/{}"
 
 
 # Enums
