@@ -4,10 +4,16 @@ Handles binary_sensor devices
 
 from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
+from .helpers.threshold import _WiserThresholdSensor
 
 
 class _WiserBinarySensor(_WiserDevice):
     """Class representing a Wiser Binary Sensor"""
+
+    def __init__(self, *args):
+        """Initialise."""
+        super().__init__(*args)
+        self._threshold_sensors: list[_WiserThresholdSensor] = []
 
     @property
     def active(self) -> bool:
@@ -33,6 +39,11 @@ class _WiserBinarySensor(_WiserDevice):
     def battery(self) -> _WiserBattery:
         """Get the battery information for the smokealarm"""
         return _WiserBattery(self._data)
+
+    @property
+    def threshold_sensors(self) -> list[_WiserThresholdSensor]:
+        """Get threshold sensors."""
+        return self._threshold_sensors
 
 
 class _WiserWindowDoorSensor(_WiserBinarySensor):
