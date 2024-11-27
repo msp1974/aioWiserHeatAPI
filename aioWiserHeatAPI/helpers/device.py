@@ -1,5 +1,7 @@
+import hashlib
 import inspect
 from typing import Union
+from uuid import UUID
 
 from .. import _LOGGER
 from ..const import (
@@ -76,7 +78,7 @@ class _WiserDevice(object):
     @property
     def device_type_id(self) -> int:
         """Get the device id for the specific device type"""
-        return self._data.get("id")
+        return self._device_type_data.get("id")
 
     @property
     def identify(self) -> bool:
@@ -188,7 +190,13 @@ class _WiserDevice(object):
     @property
     def uuid(self) -> str:
         """Get UUID zigbee"""
-        return self._device_type_data.get("UUID", TEXT_UNKNOWN)
+        if uuid := self._device_type_data.get("UUID"):
+            return uuid
+        uname = (
+            f"{self.product_type}_{self.serial_number}_{self.id}_{self.device_type_id}"
+        )
+        hexstr = hashlib.md5(uname.encode("UTF-8")).hexdigest()
+        return UUID(hex=hexstr)
 
     # END Added by LGO
 

@@ -2,6 +2,8 @@ from .const import TEMP_OFF, TEXT_UNKNOWN, WISERHEATINGACTUATOR, WiserTempLimits
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
 from .helpers.temp import _WiserTemperatureFunctions as tf
+from .helpers.threshold import _WiserThresholdSensor
+from .helpers.uiconfiguration import _WiserUIConfigSensor
 from .rest_controller import _WiserRestController
 
 
@@ -107,6 +109,12 @@ class _WiserTemperatureSensor:
 class _WiserHeatingActuator(_WiserDevice):
     """Class representing a Wiser Heating Actuator device"""
 
+    def __init__(self, *args):
+        """Initialise."""
+        super().__init__(*args)
+        self._threshold_sensors: list[_WiserThresholdSensor] = []
+        self._uiconfig_sensors: list[_WiserUIConfigSensor] = []
+
     @property
     def current_target_temperature(self) -> float:
         """Get the current target temperature setting"""
@@ -160,6 +168,16 @@ class _WiserHeatingActuator(_WiserDevice):
     def output_type(self) -> str:
         """Get output type"""
         return self._device_type_data.get("OutputType", TEXT_UNKNOWN)
+
+    @property
+    def threshold_sensors(self) -> list[_WiserThresholdSensor]:
+        """Get threshold sensors."""
+        return self._threshold_sensors
+
+    @property
+    def uiconfig_sensors(self) -> list[_WiserUIConfigSensor]:
+        """Get ui configuration sensors."""
+        return self._uiconfig_sensors
 
 
 class _WiserHeatingActuatorCollection(object):

@@ -77,6 +77,24 @@ class _WiserLight(_WiserElectricalDevice):
         return self._device_type_data.get("CurrentState", 0)
 
     @property
+    def id(self) -> int:
+        """Get id of device"""
+        # Added here to handle 2 gang light switch
+        if self.product_model == "2GANG/SWITCH/2":
+            return self._data.get("id") * 1000 + self.endpoint
+        return self._data.get("id")
+
+    @property
+    def name(self) -> str:
+        """Get name of device."""
+        device_name = self._data.get("Name")
+        device_type_name = self._device_type_data.get("Name")
+        if device_name or device_type_name:
+            return f"{device_name if device_name else ''}{' ' if device_name else ''}{device_type_name if device_type_name else ''}"
+        else:
+            return f"{self.product_type}-{self.light_id}"
+
+    @property
     def is_dimmable(self) -> bool:
         """Get if the light is dimmable"""
         return True if self._device_type_data.get("IsDimmable", False) else False
@@ -292,11 +310,14 @@ class _WiserLightCollection(object):
     def get_by_id(self, light_id: int) -> _WiserLight:
         """
         Gets a Light object from the Lights device id
-        param id: device id of shutter
-        return: _WiserShutter object
+        param id: device id of light
+        return: _WiserLight object
         """
         try:
-            return [light for light in self.all if light.id == light_id][0]
+            lights = [light for light in self.all if light.id == light_id]
+            if lights and len(lights) == 1:
+                return lights[0]
+            return lights
         except IndexError:
             return None
 

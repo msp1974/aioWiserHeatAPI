@@ -1,7 +1,6 @@
 import asyncio
 import inspect
 from datetime import datetime
-from typing import Union
 
 from aioWiserHeatAPI.exceptions import WiserExtraConfigError
 
@@ -9,7 +8,6 @@ from . import _LOGGER
 from .const import (
     TEMP_HW_OFF,
     TEMP_HW_ON,
-    TEMP_MINIMUM,
     TEXT_BOOST,
     TEXT_OFF,
     TEXT_ON,
@@ -25,6 +23,8 @@ from .helpers.temp import _WiserTemperatureFunctions as tf
 from .rest_controller import _WiserRestController
 from .schedule import _WiserSchedule
 
+DEFAULT_TARGET_TEMP = 60
+
 
 class _WiserHotwater(object):
     """Class representing a Wiser Hot Water controller"""
@@ -39,7 +39,18 @@ class _WiserHotwater(object):
         self._data = hw_data
         self._schedule = schedule
 
-        self._extra_config = self._wiser_rest_controller._extra_config
+        self._extra_config = (
+            self._wiser_rest_controller._extra_config.config("HotWater", str(self.id))
+            if self._wiser_rest_controller._extra_config
+            else None
+        )
+
+        self._default_extra_config = {
+            "climate_off": False,
+            "target_temperature_low": DEFAULT_TARGET_TEMP - 8,
+            "target_temperature_high": DEFAULT_TARGET_TEMP,
+            "manual_heat": False,
+        }
 
         # Add device id to schedule
         if self._schedule:
@@ -62,6 +73,25 @@ class _WiserHotwater(object):
             )
             return True
         return False
+
+    async def _update_extra_config(self, key: str, value) -> bool:
+        if self._wiser_rest_controller._extra_config:
+            try:
+                await self._wiser_rest_controller._extra_config.async_update_config(
+                    "HotWater", str(self.id), {key: value}
+                )
+                await self._get_extra_config()
+                return True
+            except Exception:
+                return False
+        return False
+
+    async def _get_extra_config(self) -> None:
+        self._extra_config = (
+            self._wiser_rest_controller._extra_config.config("HotWater", str(self.id))
+            if self._wiser_rest_controller._extra_config
+            else None
+        )
 
     @property
     def available_modes(self) -> list[str]:
@@ -108,7 +138,7 @@ class _WiserHotwater(object):
     @property
     def current_state(self) -> str:
         """Get the current state of the hot water"""
-        return self._data.get("HotWaterRelayState", TEXT_UNKNOWN)
+        return self._data.get("WaterHeatingState", TEXT_UNKNOWN)
 
     @property
     def id(self) -> int | None:
@@ -152,12 +182,7 @@ class _WiserHotwater(object):
         """Determine if hw is off for climate mode."""
         if self.is_climate_mode:
             if (
-                (
-                    self._wiser_rest_controller._extra_config
-                    and self._wiser_rest_controller._extra_config.config(
-                        "HotWater", "climate_mode"
-                    ).get("climate_off", False)
-                )
+                (self._extra_config and self._extra_config.get("climate_off", False))
                 and self._data.get("Mode")
                 in [WiserDeviceModeEnum.manual.value, WiserDeviceModeEnum.auto.value]
                 and not self.is_heating
@@ -165,16 +190,25 @@ class _WiserHotwater(object):
                 return True
 
             # If not off but extr_config says it is, update extra config.
-            elif self._wiser_rest_controller._extra_config:
-                if self._wiser_rest_controller._extra_config.config(
-                    "HotWater", "climate_mode"
-                ).get("climate_off"):
+            elif self._extra_config:
+                if self._extra_config.get("climate_off"):
                     asyncio.get_running_loop().create_task(
-                        self._wiser_rest_controller._extra_config.async_update_config(
-                            "HotWater", "climate_mode", {"climate_off": False}
-                        )
+                        self._update_extra_config("climate_off", False)
                     )
         return False
+
+    @property
+    def manual_heat(self) -> bool:
+        """Return if manual heat is active."""
+        if self.is_climate_mode is False or self.is_climate_mode_off:
+            return False
+        else:
+            return self._extra_config.get("manual_heat")
+
+    async def set_manual_heat(self, enabled: bool):
+        """Set manual heat."""
+        if self.is_climate_mode:
+            await self._update_extra_config("manual_heat", enabled)
 
     @property
     def mode(self) -> str | None:
@@ -192,16 +226,14 @@ class _WiserHotwater(object):
             mode = mode.value
         if mode == WiserHotWaterClimateModeEnum.off.value:
             if self.is_climate_mode:
-                await self._wiser_rest_controller._extra_config.async_update_config(
-                    "HotWater", "climate_mode", {"climate_off": True}
-                )
+                await self._update_extra_config("climate_off", True)
                 await self._send_command(
                     {
                         "Mode": WiserDeviceModeEnum.manual.value,
+                        "ManualWaterHeatingState": TEXT_OFF,
                         "RequestOverride": {"Type": "None"},
                     }
                 )
-                await self.override_state(TEXT_OFF)
                 return True
             else:
                 raise ValueError(
@@ -209,9 +241,7 @@ class _WiserHotwater(object):
                 )
         elif is_value_in_list(mode, self.available_modes):
             if self.is_climate_mode:
-                await self._wiser_rest_controller._extra_config.async_update_config(
-                    "HotWater", "climate_mode", {"climate_off": False}
-                )
+                await self._update_extra_config("climate_off", False)
             result = await self._send_command(
                 {"Mode": mode.title(), "RequestOverride": {"Type": "None"}}
             )
@@ -277,27 +307,65 @@ class _WiserHotwater(object):
     def current_target_temperature(self) -> float:
         """Return current saved target temperature if in climate mode"""
         if self.is_climate_mode:
-            return (
-                self._wiser_rest_controller._extra_config.config(
-                    "HotWater", "climate_mode"
-                ).get("target_temperature", TEMP_MINIMUM)
-                if self._wiser_rest_controller._extra_config
-                else TEMP_MINIMUM
-            )
+            if self._extra_config:
+                return self._extra_config.get(
+                    "target_temperature",
+                    self._default_extra_config.get("target_temperature"),
+                )
+            return self._default_extra_config.get("target_temperature")
+
+        return None
+
+    @property
+    def current_target_temperature_low(self) -> float:
+        """Return current saved target temperature if in climate mode"""
+        if self.is_climate_mode:
+            if self._extra_config:
+                return self._extra_config.get(
+                    "target_temperature_low",
+                    self._default_extra_config.get("target_temperature_low"),
+                )
+            return self._default_extra_config.get("target_temperature_low")
+
+        return None
+
+    @property
+    def current_target_temperature_high(self) -> float:
+        """Return current saved target temperature if in climate mode"""
+        if self.is_climate_mode:
+            if self._extra_config:
+                return self._extra_config.get(
+                    "target_temperature_high",
+                    self._default_extra_config.get("target_temperature_high"),
+                )
+            return self._default_extra_config.get("target_temperature_high")
+
         return None
 
     async def set_target_temperature(self, temp: float) -> bool:
         """Set the target temperature of the hotwater to support climate mode."""
         if self.is_climate_mode:
-            await self._wiser_rest_controller._extra_config.async_update_config(
-                "HotWater", "climate_mode", {"target_temperature": temp}
-            )
+            await self._update_extra_config("target_temperature", temp)
             return True
         raise WiserExtraConfigError(
             "You cannot set target temperature for hot water unless climate mode is not enabled."
         )
 
-    async def boost(self, duration: int) -> bool:
+    async def set_target_temperature_low(self, temp):
+        if not await self._update_extra_config("target_temperature_low", temp):
+            _LOGGER.error(
+                "Unable to set hotwater target lower temp.  This maybe caused by an issue with your extra config file."
+            )
+        await self._get_extra_config()
+
+    async def set_target_temperature_high(self, temp):
+        if not await self._update_extra_config("target_temperature_high", temp):
+            _LOGGER.error(
+                "Unable to set hotwater target upper temp.  This maybe caused by an issue with your extra config file."
+            )
+        await self._get_extra_config()
+
+    async def boost(self, duration: int, state: str = TEXT_ON) -> bool:
         """
         Turn the hot water on for x minutes, overriding the current schedule or manual setting
         param duration: the duration to turn on for in minutes
@@ -314,6 +382,17 @@ class _WiserHotwater(object):
             return await self.cancel_overrides()
         else:
             return True
+
+    async def override_boost(self, state: str):
+        """Override boost on/off to off/on but keep same remaining duration."""
+        if (state == TEXT_ON and self.is_heating) or (
+            state == TEXT_OFF and not self.is_heating
+        ):
+            return
+
+        await self.override_state_for_duration(
+            state, int(self.boost_time_remaining / 60)
+        )
 
     async def cancel_overrides(self):
         """
