@@ -412,6 +412,14 @@ class _WiserDeviceCollection:
             return None
 
     @property
+    def power_tags_c(self) -> _WiserPowerTagControlCollection:
+        """Return all power tag Cs"""
+        try:
+            return self._device_collection["PTC"]
+        except KeyError:
+            return None
+
+    @property
     def power_tags(self) -> _WiserPowerTagEnergyCollection:
         """Return all power tags"""
         try:

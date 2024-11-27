@@ -2,18 +2,138 @@
 Handles power tag energy devices
 """
 
-from .const import TEXT_UNABLE, TEXT_UNKNOWN
-from .helpers.device import _WiserDevice
+import inspect
+
+from aioWiserHeatAPI import _LOGGER
+
+from .const import TEXT_OFF, TEXT_ON, TEXT_UNABLE, TEXT_UNKNOWN, WISERDEVICE
+from .helpers.device import _WiserElectricalDevice
 from .helpers.equipment import _WiserEquipment
 
 
-class _WiserPowerTagControl(_WiserDevice):
+class _WiserPowerTagControl(_WiserElectricalDevice):
     """Class representing a Wiser Power Tag Energy device"""
+
+    async def _send_command(self, cmd: dict, device_level: bool = False):
+        """
+        Send control command to the smart plug
+        param cmd: json command structure
+        return: boolen - true = success, false = failed
+        """
+        if device_level:
+            result = await self._wiser_rest_controller._send_command(
+                WISERDEVICE.format(self.id), cmd
+            )
+            if result:
+                self._data = result
+        else:
+            result = await self._wiser_rest_controller._send_command(
+                self._endpoint.format(self.device_type_id), cmd
+            )
+            if result:
+                self._device_type_data = result
+        if result:
+            _LOGGER.debug(
+                "Wiser light - {} command successful".format(
+                    inspect.stack()[1].function
+                )
+            )
+            return True
+        return False
+
+    @property
+    def control_source(self) -> str:
+        """Get the current control source."""
+        return self._device_type_data.get("ControlSource", TEXT_UNKNOWN)
 
     @property
     def delivered_power(self) -> int:
-        """Get current power of device"""
-        return self.equipment.power.current_summation_delivered
+        """Get the amount of current throught the plug over time"""
+        return self._device_type_data.get("CurrentSummationDelivered", None)
+
+    @property
+    def equipment_id(self) -> int:
+        """Get equipment id (v2 hub)"""
+        return self._device_type_data.get("EquipmentId", 0)
+
+    @property
+    def equipment(self) -> _WiserEquipment | None:
+        """Get equipment data"""
+        return (
+            _WiserEquipment(self._device_type_data.get("EquipmentData"))
+            if self._device_type_data.get("EquipmentData")
+            else None
+        )
+
+    @property
+    def instantaneous_power(self) -> int:
+        """Get the amount of current throught the plug now"""
+        return self._device_type_data.get("InstantaneousDemand", None)
+
+    @property
+    def manual_state(self) -> str:
+        """Get the current manual mode setting of the smart plug"""
+        return self._device_type_data.get("ManualState", TEXT_UNKNOWN)
+
+    @property
+    def target_state(self) -> str:
+        """Get the target state."""
+        return self._device_type_data.get("TargetState", TEXT_UNKNOWN)
+
+    @property
+    def is_on(self) -> bool:
+        """Get if the smart plug is on"""
+        return True if self.output_state == TEXT_ON else False
+
+    @property
+    def output_state(self) -> str:
+        """Get plug output state"""
+        return self._device_type_data.get("OutputState", TEXT_OFF)
+
+    @property
+    def scheduled_state(self) -> str:
+        """Get the current scheduled state of the smart plug"""
+        return self._device_type_data.get("ScheduledState", TEXT_UNKNOWN)
+
+    @property
+    def actuator_type(self) -> str:
+        """Get actuator type."""
+        return self._device_type_data.get("ActuatorType", TEXT_UNKNOWN)
+
+    @property
+    def feedback_type(self) -> str:
+        """Get feedback type."""
+        return self._device_type_data.get("FeedbackType", TEXT_UNKNOWN)
+
+    @property
+    def polarity(self) -> str:
+        """Get polarity."""
+        return self._device_type_data.get("Polarity", TEXT_UNKNOWN)
+
+    @property
+    def relay_action(self) -> str:
+        """Get relay action."""
+        return self._device_type_data.get("RelayAction", TEXT_UNKNOWN)
+
+    async def turn_on(self) -> bool:
+        """
+        Turn on the smart plug
+        return: boolean
+        """
+        result = await self._send_command({"RequestOutput": TEXT_ON})
+        if result:
+            self._output_state = TEXT_ON
+        return result
+
+    async def turn_off(self) -> bool:
+        """
+        Turn off the smart plug
+        return: boolean
+        """
+        result = await self._send_command({"RequestOutput": TEXT_OFF})
+        if result:
+            self._output_state = TEXT_OFF
+        return result
 
     @property
     def energy_export(self) -> str:
@@ -28,31 +148,6 @@ class _WiserPowerTagControl(_WiserDevice):
             if self._device_type_data.get("EquipmentData")
             else None
         )
-
-    @property
-    def grid_limit(self) -> int:
-        """Get grid limit"""
-        return self._device_type_data.get("GridLimit", 0)
-
-    @property
-    def grid_limit_uom(self) -> str:
-        """Get grid limit uom"""
-        return self._device_type_data.get("GridLimitUom", TEXT_UNKNOWN)
-
-    @property
-    def instantaneous_power(self) -> int:
-        """Get current power of device"""
-        return self.equipment.power.total_active_power
-
-    @property
-    def raw_total_active_power(self) -> int:
-        """Get raw total active power of device"""
-        return self._device_type_data.get("RawTotalActivePower", None)
-
-    @property
-    def received_power(self) -> int:
-        """Get current power of device"""
-        return self.equipment.power.current_summation_received
 
     @property
     def rfid(self) -> int:
