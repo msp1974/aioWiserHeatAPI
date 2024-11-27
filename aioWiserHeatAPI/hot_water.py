@@ -49,6 +49,7 @@ class _WiserHotwater(object):
             "climate_off": False,
             "target_temperature_low": DEFAULT_TARGET_TEMP - 8,
             "target_temperature_high": DEFAULT_TARGET_TEMP,
+            "manual_heat": False,
         }
 
         # Add device id to schedule
@@ -195,6 +196,19 @@ class _WiserHotwater(object):
                         self._update_extra_config("climate_off", False)
                     )
         return False
+
+    @property
+    def manual_heat(self) -> bool:
+        """Return if manual heat is active."""
+        if self.is_climate_mode is False or self.is_climate_mode_off:
+            return False
+        else:
+            return self._extra_config.get("manual_heat")
+
+    async def set_manual_heat(self, enabled: bool):
+        """Set manual heat."""
+        if self.is_climate_mode:
+            await self._update_extra_config("manual_heat", enabled)
 
     @property
     def mode(self) -> str | None:
