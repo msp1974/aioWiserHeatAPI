@@ -60,6 +60,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 * Added: support for PTC devices
 * Added: UUID now exists for all devices (for future use)
 * Added: New attributes and stored extra config for Hot Water to support HW Climate automation in HA integration
+* Added: Control of interacts with room climate for binary sensors
 
 ### v1.5.19
 * Fixed error when BoilerInterface does not provide DeviceId field
