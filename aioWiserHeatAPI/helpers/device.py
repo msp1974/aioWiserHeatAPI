@@ -78,7 +78,7 @@ class _WiserDevice(object):
     @property
     def device_type_id(self) -> int:
         """Get the device id for the specific device type"""
-        return self._data.get("id")
+        return self._device_type_data.get("id")
 
     @property
     def identify(self) -> bool:
