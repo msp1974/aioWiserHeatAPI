@@ -2,6 +2,10 @@
 Handles binary_sensor devices
 """
 
+import inspect
+
+from aioWiserHeatAPI import _LOGGER
+
 from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 from .helpers.threshold import _WiserThresholdSensor
@@ -15,6 +19,26 @@ class _WiserBinarySensor(_WiserDevice):
         super().__init__(*args)
         self._threshold_sensors: list[_WiserThresholdSensor] = []
 
+    async def _send_command(self, cmd: dict):
+        """
+        Send control command to the Threshold sensor
+        param cmd: json command structure
+        return: boolen - true = success, false = failed
+        """
+        result = await self._wiser_rest_controller._send_command(
+            self._endpoint.format(self.device_type_id), cmd
+        )
+        if result:
+            self._device_type_data = result
+        if result:
+            _LOGGER.debug(
+                "Wiser light - {} command successful".format(
+                    inspect.stack()[1].function
+                )
+            )
+            return True
+        return False
+
     @property
     def active(self) -> bool:
         """Get if is active"""
@@ -24,6 +48,11 @@ class _WiserBinarySensor(_WiserDevice):
     def interacts_with_room_climate(self) -> bool:
         """Get the if interacts with room climate"""
         return self._device_type_data.get("InteractsWithRoomClimate")
+
+    async def set_interacts_with_room_climate(self, enabled: bool):
+        if await self._send_command({"InteractsWithRoomClimate": str(enabled).lower()}):
+            self._interacts_with_room_climate = enabled
+            return True
 
     @property
     def type(self) -> str:
