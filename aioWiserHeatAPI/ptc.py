@@ -141,15 +141,6 @@ class _WiserPowerTagControl(_WiserElectricalDevice):
         return self._device_type_data.get("EnergyExport", TEXT_UNABLE)
 
     @property
-    def equipment(self) -> _WiserEquipment | None:
-        """Get equipment data"""
-        return (
-            _WiserEquipment(self._device_type_data.get("EquipmentData"))
-            if self._device_type_data.get("EquipmentData")
-            else None
-        )
-
-    @property
     def rfid(self) -> int:
         """Get rfid of device"""
         return self._data.get("RfId", 0)
