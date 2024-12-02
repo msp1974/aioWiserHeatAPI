@@ -2,14 +2,12 @@
 Module to manage all devices
 """
 
-import enum
 from dataclasses import dataclass
 from typing import Any
 
 from .binary_sensor import (
     _WiserBinarySensor,
     _WiserBinarySensorCollection,
-    _WiserWindowDoorSensor,
 )
 from .boiler_interface import _WiserBoilerInterface, _WiserBoilerInterfaceCollection
 from .button_panel import _WiserButtonPanel, _WiserButtonPanelCollection
@@ -46,6 +44,7 @@ from .shutter import _WiserShutter, _WiserShutterCollection
 from .smartplug import _WiserSmartPlug, _WiserSmartPlugCollection
 from .smartvalve import _WiserSmartValve, _WiserSmartValveCollection
 from .smokealarm import _WiserSmokeAlarm, _WiserSmokeAlarmCollection
+from .temp_humidity import _WiserTempHumidity, _WiserTempHumidityCollection
 from .ufh import _WiserUFHController, _WiserUFHControllerCollection
 
 
@@ -143,6 +142,11 @@ PRODUCT_TYPE_CONFIG = {
         collection=_WiserButtonPanelCollection,
         endpoint=WISERBUTTONPANEL,
     ),
+    "TempHumidity": DeviceConfig(
+        device_class=_WiserTempHumidity,
+        collection=_WiserTempHumidityCollection,
+        endpoint=None,
+    ),
 }
 
 ANCILLARY_SENSOR_CONFIG = {
@@ -156,110 +160,6 @@ ANCILLARY_SENSOR_CONFIG = {
         attribute="_uiconfig_sensors",
         endpoint=WISERUICONFIGURATION,
     ),
-}
-
-
-class _WiserDeviceTypeEnum(enum.Enum):
-    iTRV = "SmartValve"
-    RoomStat = "RoomStat"
-    SmartPlug = "SmartPlug"
-    HeatingActuator = "HeatingActuator"
-    UnderFloorHeating = "UnderFloorHeating"
-    Shutter = "Shutter"
-    OnOffLight = "Light"
-    DimmableLight = "Light"
-    PowerTagE = "PTE"
-    SmokeAlarmDevice = "SmokeAlarmDevice"
-    WindowDoorSensor = "BinarySensor"
-    BoilerInterface = "BoilerInterface"
-    CFMT = "HeatingActuator"
-    ButtonPanel = "ButtonPanel"
-
-
-PRODUCT_TYPE_CONFIG_OLD = {
-    "iTRV": {
-        "class": _WiserSmartValve,
-        "collection": _WiserSmartValveCollection,
-        "endpoint": WISERSMARTVALVE,
-        "heating": True,
-    },
-    "RoomStat": {
-        "class": _WiserRoomStat,
-        "collection": _WiserRoomStatCollection,
-        "endpoint": WISERROOMSTAT,
-        "heating": True,
-    },
-    "HeatingActuator": {
-        "class": _WiserHeatingActuator,
-        "collection": _WiserHeatingActuatorCollection,
-        "endpoint": WISERHEATINGACTUATOR,
-        "heating": True,
-        "has_v2_equipment": True,
-    },
-    "UnderFloorHeating": {
-        "class": _WiserUFHController,
-        "collection": _WiserUFHControllerCollection,
-        "endpoint": WISERUFHCONTROLLER,
-        "heating": True,
-    },
-    "SmartPlug": {
-        "class": _WiserSmartPlug,
-        "collection": _WiserSmartPlugCollection,
-        "endpoint": WISERSMARTPLUG,
-        "schedule_type": WiserScheduleTypeEnum.onoff,
-        "has_v2_equipment": True,
-    },
-    "Shutter": {
-        "class": _WiserShutter,
-        "collection": _WiserShutterCollection,
-        "endpoint": WISERSHUTTER,
-        "schedule_type": WiserScheduleTypeEnum.level,
-    },
-    "OnOffLight": {
-        "class": _WiserLight,
-        "collection": _WiserLightCollection,
-        "endpoint": WISERLIGHT,
-        "schedule_type": WiserScheduleTypeEnum.level,
-    },
-    "DimmableLight": {
-        "class": _WiserDimmableLight,
-        "collection": _WiserLightCollection,
-        "endpoint": WISERLIGHT,
-        "schedule_type": WiserScheduleTypeEnum.level,
-    },
-    "PowerTagE": {
-        "class": _WiserPowerTagEnergy,
-        "collection": _WiserPowerTagEnergyCollection,
-        "endpoint": WISERPOWERTAGENERGY,
-        "has_v2_equipment": True,
-    },
-    "SmokeAlarmDevice": {
-        "class": _WiserSmokeAlarm,
-        "collection": _WiserSmokeAlarmCollection,
-        "endpoint": WISERSMOKEALARM,
-    },
-    "WindowDoorSensor": {
-        "class": _WiserWindowDoorSensor,
-        "collection": _WiserBinarySensorCollection,
-        "endpoint": WISERBINARYSENSOR,
-    },
-    "BoilerInterface": {
-        "class": _WiserBoilerInterface,
-        "collection": _WiserBoilerInterfaceCollection,
-        "endpoint": WISERBOILERINTERFACE,
-    },
-    "CFMT": {
-        "class": _WiserHeatingActuator,
-        "collection": _WiserHeatingActuatorCollection,
-        "endpoint": WISERHEATINGACTUATOR,
-        "heating": True,
-        "has_v2_equipment": True,
-    },
-    "ButtonPanel": {
-        "class": _WiserButtonPanel,
-        "collection": _WiserButtonPanelCollection,
-        "endpoint": WISERBUTTONPANEL,
-    },
 }
 
 
@@ -310,7 +210,23 @@ class _WiserDeviceCollection:
                     device_type
                 ].collection()
 
-            if device_type_data := self._domain_data.get(device_type):
+            if device_type == "TempHumidity":
+                # This is a workaround for temp humidity device(s)
+                for device in self._domain_data.get("Device"):
+                    if device.get("ProductType") == "TemperatureHumiditySensor":
+                        device_config = PRODUCT_TYPE_CONFIG[device_type]
+                        device_class = device_config.device_class
+                        self._device_collection[device_type]._items.append(
+                            device_class(
+                                self._wiser_rest_controller,
+                                device_config.endpoint,
+                                device,
+                                {},
+                                None,
+                            )
+                        )
+
+            elif device_type_data := self._domain_data.get(device_type):
                 # We have this device type in data
                 device_config = PRODUCT_TYPE_CONFIG[device_type]
 
@@ -480,6 +396,14 @@ class _WiserDeviceCollection:
         """Return all binary sensors"""
         try:
             return self._device_collection["BinarySensor"]
+        except KeyError:
+            return None
+
+    @property
+    def temp_humidity_sensors(self):
+        """Return all temp humidity sensors"""
+        try:
+            return self._device_collection["TempHumidity"]
         except KeyError:
             return None
 
