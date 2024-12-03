@@ -260,6 +260,10 @@ class _WiserDeviceCollection:
                     else:
                         device_schedule = None
 
+                    # If has equipment data add to device info
+                    if equipment_id := device.get("EquipmentId"):
+                        device["EquipmentData"] = self._get_equipment_data(equipment_id)
+
                     # Add device to collection
                     self._device_collection[device_type]._items.append(
                         device_class(
