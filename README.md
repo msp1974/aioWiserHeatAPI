@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.6.2
+# Drayton Wiser Hub API Async v1.6.3
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -51,6 +51,9 @@ To help understand the api simply look at the test sample code ```tests/test_api
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+
+### v1.6.3
+* Fix: fix error in temp validator from websocket schedule data that errored if a slot was set to off
 
 ### v1.6.2
 * Refactor: Removed unused imports causing error in python3.13
