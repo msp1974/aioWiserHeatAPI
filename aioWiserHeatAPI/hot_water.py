@@ -90,7 +90,7 @@ class _WiserHotwater(object):
         self._extra_config = (
             self._wiser_rest_controller._extra_config.config("HotWater", str(self.id))
             if self._wiser_rest_controller._extra_config
-            else None
+            else self._default_extra_config
         )
 
     @property
@@ -202,8 +202,9 @@ class _WiserHotwater(object):
         """Return if manual heat is active."""
         if self.is_climate_mode is False or self.is_climate_mode_off:
             return False
-        else:
+        elif self._extra_config:
             return self._extra_config.get("manual_heat")
+        return self._default_extra_config.get("manual_heat")
 
     async def set_manual_heat(self, enabled: bool):
         """Set manual heat."""
