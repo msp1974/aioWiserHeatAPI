@@ -72,6 +72,12 @@ TEXT_ALWAYSOFF = "AlwaysOff"
 TEXT_LASTON = "LastOnBrightness"
 TEXT_LEVELPERCENT = "LevelPercent"
 
+#enable notification for WindowDoor
+TEXT_NONE= "None"
+TEXT_ONEITHER= "OnEither"
+TEXT_ONTRUE="OnTrue"
+TEXT_ONFALSE="OnFalse"
+
 # End added by Lgo44
 
 # Day Value Lists
@@ -162,6 +168,12 @@ class WiserHotWaterClimateModeEnum(enum.Enum):
     auto = TEXT_AUTO
     manual = TEXT_MANUAL
     off = TEXT_OFF
+
+class WiserWindowDoorEnableNotificationEnum(enum.Enum):
+    oneither= TEXT_ONEITHER 
+    none=TEXT_NONE
+    ontrue=TEXT_ONTRUE
+    onfalse=TEXT_ONFALSE
 
 
 class WiserHeatingModeEnum(enum.Enum):
