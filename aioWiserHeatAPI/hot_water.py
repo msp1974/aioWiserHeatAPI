@@ -52,6 +52,8 @@ class _WiserHotwater(object):
             "manual_heat": False,
         }
 
+        self._current_temperature: float = 0.0
+
         # Add device id to schedule
         if self._schedule:
             self.schedule._assignments.append({"id": self.id, "name": self.name})
@@ -103,8 +105,8 @@ class _WiserHotwater(object):
     @property
     def available_presets(self) -> list:
         """Get available preset modes"""
-        # Remove advance schedule if no schedule exists or in passive mode
-        if not self.schedule:
+        # Remove advance schedule if no schedule exists or in climate mode
+        if not self.schedule or self.is_climate_mode:
             return [
                 mode.value
                 for mode in WiserPresetOptionsEnum
@@ -183,14 +185,13 @@ class _WiserHotwater(object):
         if self.is_climate_mode:
             if (
                 (self._extra_config and self._extra_config.get("climate_off", False))
-                and self._data.get("Mode")
-                in [WiserDeviceModeEnum.manual.value, WiserDeviceModeEnum.auto.value]
+                and self._data.get("Mode") == WiserDeviceModeEnum.manual.value
                 and not self.is_heating
             ):
                 return True
 
             # If not off but extr_config says it is, update extra config.
-            elif self._extra_config:
+            elif not self.is_boosted and self._extra_config:
                 if self._extra_config.get("climate_off"):
                     asyncio.get_running_loop().create_task(
                         self._update_extra_config("climate_off", False)
@@ -215,7 +216,11 @@ class _WiserHotwater(object):
     def mode(self) -> str | None:
         """Get or set the current hot water mode (On, Off or Auto)"""
         try:
-            return TEXT_OFF if self.is_climate_mode_off else self._data.get("Mode")
+            return (
+                TEXT_OFF
+                if self.is_climate_mode_off and not self.is_boosted
+                else self._data.get("Mode")
+            )
         except KeyError:
             return None
 
@@ -305,6 +310,11 @@ class _WiserHotwater(object):
         return self._data.get("HotWaterDescription", TEXT_UNKNOWN)
 
     @property
+    def current_temperature(self) -> float:
+        """Return current temperature."""
+        return self._current_temperature
+
+    @property
     def current_target_temperature(self) -> float:
         """Return current saved target temperature if in climate mode"""
         if self.is_climate_mode:
@@ -372,7 +382,7 @@ class _WiserHotwater(object):
         param duration: the duration to turn on for in minutes
         return: boolean
         """
-        return await self.override_state_for_duration(TEXT_ON, duration)
+        return await self.override_state_for_duration(state, duration)
 
     async def cancel_boost(self) -> bool | None:
         """
