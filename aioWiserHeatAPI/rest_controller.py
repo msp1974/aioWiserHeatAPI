@@ -186,7 +186,7 @@ class _WiserRestController(object):
 
         try:
             async with aiohttp.ClientSession(
-                version=http_version,
+                version=http_version, connector=aiohttp.TCPConnector(verify_ssl=False)
             ) as session:
                 async with session.request(action.value, url, **kwargs) as response:
                     await asyncio.sleep(0)
