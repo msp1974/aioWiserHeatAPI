@@ -1,9 +1,9 @@
 from ..const import (
-    ROOMSTAT_MIN_BATTERY_LEVEL,
     ROOMSTAT_FULL_BATTERY_LEVEL,
+    ROOMSTAT_MIN_BATTERY_LEVEL,
     TEXT_UNKNOWN,
-    TRV_FULL_BATTERY_LEVEL,
     TRV_BATTERY_LEVEL_MAPPING,
+    TRV_FULL_BATTERY_LEVEL,
 )
 
 
@@ -25,7 +25,12 @@ class _WiserBattery(object):
     @property
     def percent(self) -> int:
         """Get the percent of battery remaining"""
-        if self._data.get("ProductType") == "RoomStat" and self.voltage:
+        if self.voltage is None:
+            # This device does not provide battery voltage.  Calc % from level text
+            levels = {"normal": 100, "twothirds": 66, "onethird": 33, "low": 10}
+            return levels.get(self.level.lower(), 0)
+
+        elif self._data.get("ProductType") == "RoomStat" and self.voltage:
             return percentage_clip(
                 round(
                     (
