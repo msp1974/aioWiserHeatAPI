@@ -55,6 +55,7 @@ from .rest_controller import _WiserConnectionInfo, _WiserRestController
 from .room import _WiserRoomCollection
 from .schedule import WiserScheduleTypeEnum, _WiserScheduleCollection
 from .system import _WiserSystem
+from .automation import _WiserAutomation,_WiserAutomationCollection
 
 
 class WiserAPI:
@@ -266,6 +267,16 @@ class WiserAPI:
                         self._domain_data.get("Moment"),
                     )
 
+            # added by LGO
+                # Automations
+                if self._domain_data.get("Automation"):
+                    self._automations = _WiserAutomationCollection(
+                        self._wiser_rest_controller,
+                        self._domain_data.get("Automation"),
+                    )
+
+            # end added by LGO
+
                 # If gets here with no exceptions then success and return true
                 return True
         except (
@@ -301,6 +312,11 @@ class WiserAPI:
     def moments(self) -> _WiserMomentCollection:
         """List of moment entities on the Wiser Hub"""
         return self._moments
+
+    @property
+    def automations(self) -> _WiserAutomationCollection:
+        """List of Automation entities on the Wiser Hub"""
+        return self._automations
 
     @property
     def rooms(self) -> _WiserRoomCollection:
