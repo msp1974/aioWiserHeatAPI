@@ -3,6 +3,8 @@ Handles binary_sensor devices
 """
 
 import inspect
+from typing import Union
+from .helpers.misc import is_value_in_list
 
 from aioWiserHeatAPI import _LOGGER
 
@@ -10,6 +12,14 @@ from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 from .helpers.threshold import _WiserThresholdSensor
 
+from .const import (
+    TEXT_NONE,
+    TEXT_ONEITHER,
+    TEXT_UNKNOWN,
+    WISERDEVICE,
+    WiserWindowDoorEnableNotificationEnum,
+    WiserWindowDoorTypeEnum,
+    )
 
 class _WiserBinarySensor(_WiserDevice):
     """Class representing a Wiser Binary Sensor"""
@@ -55,14 +65,50 @@ class _WiserBinarySensor(_WiserDevice):
             return True
 
     @property
+    def available_type(self):
+        """Get available enable notification"""
+        return [action.value for action in WiserWindowDoorTypeEnum ]
+
+
+    @property
     def type(self) -> str:
         """Get the type of device"""
         return self._device_type_data.get("Type")
+    
+    async def set_type(
+    self, type: Union[WiserWindowDoorTypeEnum, str]
+    ) -> bool:
+        if isinstance(type, WiserWindowDoorTypeEnum):
+            type = type.value
+        if is_value_in_list(type, self.available_type):
+            return await self._send_command({"Type": type})
+        else:
+            raise ValueError(
+                f"{type} is not a valid type.  Valid types are {self.available_type}"
+            )   
+
+    @property
+    def available_enable_notification(self):
+        """Get available enable notification"""
+        return [action.value for action in WiserWindowDoorEnableNotificationEnum ]
 
     @property
     def enable_notification(self) -> str:
         """Get if notifications is enable"""
         return self._device_type_data.get("EnableNotification")
+
+    async def set_enable_notification(
+    self, enable_notification: Union[WiserWindowDoorEnableNotificationEnum, str]
+    ) -> bool:
+        if isinstance(enable_notification, WiserWindowDoorEnableNotificationEnum):
+            enable_notification = enable_notification.value
+        if is_value_in_list(enable_notification, self.available_enable_notification):
+            return await self._send_command({"EnableNotification": enable_notification})
+        else:
+            raise ValueError(
+                f"{enable_notification} is not a valid mode.  Valid modes are {self.available_enable_notification}"
+            )
+
 
     @property
     def battery(self) -> _WiserBattery:
