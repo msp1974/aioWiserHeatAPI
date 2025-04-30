@@ -91,6 +91,9 @@ class _WiserSystem(object):
         self._summer_discomfort_prevention = self._system_data.get(
             "SummerDiscomfortPrevention"
         )
+        # Wiser Home V7 app
+        self._seasonal_comfort_enabled = self._system_data.get(
+            "SeasonalComfortEnabled")
 
         # End Added by LGO
 
@@ -333,6 +336,20 @@ class _WiserSystem(object):
         if await self._send_command({"SummerComfortEnabled": enabled}):
             self._summer_comfort_enabled = enabled
             return True
+
+   # Added by LGO 
+    # Wiser app V7
+    
+    @property
+    def seasonal_comfort_enabled(self) -> bool:
+        """Get or set if seasonal comfort is enabled"""
+        return self._seasonal_comfort_enabled
+
+    async def set_seasonal_comfort_enabled(self, enabled: bool):
+        if await self._send_command({"SeasonalComfortEnabled": enabled}):
+            self._seasonal_comfort_enabled = enabled
+            return True
+    # En added by LGO 
 
     @property
     def indoor_discomfort_temperature(self) -> float:
