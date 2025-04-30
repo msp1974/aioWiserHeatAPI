@@ -61,6 +61,11 @@ class _WiserEquipmentUnderPowerNotificationInfo(object):
         """Get status enable"""
         return self._data.get("Enabled", False)
 
+    async def set_enabled(self, enabled: bool):
+        if await self._send_command({"Enabled": str(enabled).lower()}):
+            self._enabled = enabled
+            return True
+
 
 class _WiserEquipmentOverPowerNotificationInfo:
     def __init__(self, equipment_instance, data: dict):
@@ -81,6 +86,11 @@ class _WiserEquipmentOverPowerNotificationInfo:
     def enabled(self) -> bool:
         """Get status enable"""
         return self._data.get("Enabled", False) if self._data.get("Enabled") else None
+
+    async def set_enabled(self, enabled: bool):
+        if await self._send_command({"Enabled": str(enabled).lower()}):
+            self._enabled = enabled
+            return True
 
 
 class _WiserEquipment:
