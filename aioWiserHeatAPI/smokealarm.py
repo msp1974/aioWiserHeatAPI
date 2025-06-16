@@ -1,15 +1,15 @@
 from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 from .helpers.temp import _WiserTemperatureFunctions as tf
-
+from .const import (WISERSMOKEALARM)
 
 class _WiserSmokeAlarm(_WiserDevice):
     """Class representing a Wiser Smoke Alarm device"""
 
     @property
-    def room_id(self) -> int:
+    def smokealarm_id(self) -> int:
         """Return room_id."""
-        return self._data.get("RoomId")
+        return self._data.get("id")
 
     @property
     def alarm_sound_level(self) -> int:
@@ -99,10 +99,23 @@ class _WiserSmokeAlarm(_WiserDevice):
         return self._device_type_data.get("ReportCount")
 
     @property
-    def notification_enabled(self) -> bool:
+    def enable_notification(self) -> bool:
         """Get if notifications active"""
         return self._device_type_data.get("EnableNotification", False)
 
+    async def set_enable_notification(self, enabled: bool):
+        result = await self._wiser_rest_controller._send_command(
+                WISERSMOKEALARM.format(), {"EnableNotification": str(enabled).lower()}
+            )
+        result = await self._wiser_rest_controller._send_command(WISERSMOKEALARM, {"EnableNotification": str(enabled).lower()})
+
+        if result:
+                self._data = result
+
+    @property
+    def notification_enabled(self) -> bool:
+        """Get if notifications active"""
+        return self._device_type_data.get("EnableNotification", False)
     @property
     def supervision_notify(self) -> bool:
         """Get if supervision notify active"""
