@@ -55,6 +55,11 @@ class _WiserBinarySensor(_WiserDevice):
         return self._device_type_data.get("Active")
 
     @property
+    def sensorstatus(self) -> bool:
+        """Get sensor status"""
+        return self._device_type_data.get("SensorStatus")
+
+    @property
     def interacts_with_room_climate(self) -> bool:
         """Get the if interacts with room climate"""
         return self._device_type_data.get("InteractsWithRoomClimate")
