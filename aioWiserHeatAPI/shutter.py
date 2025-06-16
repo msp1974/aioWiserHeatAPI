@@ -282,6 +282,11 @@ class _WiserShutter(_WiserElectricalDevice):
         """Get seasonal target lift of shutter"""
         return self._device_type_data.get("SeasonalTargetLift", 0)
 
+    async def set_seasonal_target_lift(self, lift: int):
+        if await self._send_command({"SeasonalTargetLift": lift}):
+            self._seasonal_comfort_lift = lift
+            return True
+
     @property
     def facade(self) -> str:
         """Get facade of shutter"""
@@ -302,6 +307,10 @@ class _WiserShutter(_WiserElectricalDevice):
         """Get derogation timestamp of shutter"""
         return self._device_type_data.get("SeasonalDerogationUtcTimestamp", False)
 
+    @property
+    def covering_type (self) -> str:
+        """Get the covering type Door?"""
+        return self._device_type_data.get("CoveringType", TEXT_UNKNOWN)
 
     #End Added by LGO Seasonal comfort
 
