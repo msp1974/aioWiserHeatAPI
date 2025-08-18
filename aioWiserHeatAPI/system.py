@@ -17,7 +17,9 @@ from .helpers.special_times import sunrise_times, sunset_times
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .helpers.zigbee import _WiserZigbee
 from .rest_controller import _WiserRestController
-
+#Added by LGO
+from .helpers.weather import _WiserWeather
+from .helpers.equipment import _WiserEquipment
 
 class _WiserSystem(object):
     """Class representing a Wiser Hub device"""
@@ -57,6 +59,12 @@ class _WiserSystem(object):
         self._signal = _WiserSignalStrength(self._device_data)
         self._upgrade_data = _WiserFirmareUpgradeInfo(self._data.get("UpgradeInfo", {}))
         self._zigbee_data = _WiserZigbee(self._data.get("Zigbee", {}))
+
+        # Added by LGO  
+        self._weather_data = _WiserWeather(self._data.get("Weather", {}))
+        self._equipment_data = _WiserEquipment(self._data.get("Equipment", {}))
+
+        # End Added by LGO
 
         # Variables to hold values for settabel values
         self._automatic_daylight_saving = self._system_data.get(
@@ -337,6 +345,11 @@ class _WiserSystem(object):
             self._summer_comfort_enabled = enabled
             return True
 
+    @property
+    def weather(self) -> _WiserWeather:
+        """Get weather info"""
+        return self._weather_data
+
    # Added by LGO 
     # Wiser app V7
     
@@ -421,7 +434,7 @@ class _WiserSystem(object):
     def can_activate_pcm(self) -> bool:
         """Get Can activate PCM"""
         return self._system_data.get("CanActivatePCM", False)
-
+    
     # End Added LGO
 
     @property
