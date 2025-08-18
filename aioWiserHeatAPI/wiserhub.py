@@ -56,7 +56,7 @@ from .room import _WiserRoomCollection
 from .schedule import WiserScheduleTypeEnum, _WiserScheduleCollection
 from .system import _WiserSystem
 from .automation import _WiserAutomation,_WiserAutomationCollection
-
+from .equipments import _WiserEquipments, _WiserEquipmentsCollection
 
 class WiserAPI:
     """
@@ -99,6 +99,10 @@ class WiserAPI:
         self._rooms = None
         self._schedules = None
         self._system = None
+
+        #LGO
+        self._automations = None
+        self._equipments = None
 
         self._enable_automations = enable_automations
         self._extra_config_file = extra_config_file
@@ -275,6 +279,13 @@ class WiserAPI:
                         self._domain_data.get("Automation"),
                     )
 
+                # Equipments
+                if self._domain_data.get("Equipment", []):
+                    self._equipments = _WiserEquipmentsCollection(
+                        self._wiser_rest_controller,
+                        self._domain_data.get("Equipment")
+                    )
+
             # end added by LGO
 
                 # If gets here with no exceptions then success and return true
@@ -338,6 +349,12 @@ class WiserAPI:
         """Entity of the Wiser Hub"""
         return self._system
 
+    # ADDED by LGO     
+    @property
+    def equipments(self) -> _WiserEquipmentsCollection:
+        """List of equipmentss"""
+        return self._equipments
+ 
     @property
     def units(self) -> WiserUnitsEnum:
         """Get or set units for temperature"""
