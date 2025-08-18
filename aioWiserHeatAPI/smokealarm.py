@@ -1,10 +1,40 @@
+import inspect
+from aioWiserHeatAPI import _LOGGER
+
 from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 from .helpers.temp import _WiserTemperatureFunctions as tf
-from .const import (WISERSMOKEALARM)
+from .const import (WISERSMOKEALARM,WISERDEVICE)
 
 class _WiserSmokeAlarm(_WiserDevice):
     """Class representing a Wiser Smoke Alarm device"""
+
+    async def _send_command(self, cmd: dict, device_level: bool = False):
+        """
+        Send control command to the smoke alarm device.
+        param cmd: json command structure
+        return: boolen - true = success, false = failed
+        """
+        if device_level:
+            result = await self._wiser_rest_controller._send_command(
+                WISERDEVICE.format(self.id), cmd
+            )
+            if result:
+                self._data = result
+        else:
+            result = await self._wiser_rest_controller._send_command(
+                self._endpoint.format(self.device_type_id), cmd
+            )
+            if result:
+                self._device_type_data = result
+        if result:
+            _LOGGER.debug(
+                "Wiser light - {} command successful".format(
+                    inspect.stack()[1].function
+                )
+            )
+            return True
+        return False
 
     @property
     def smokealarm_id(self) -> int:
@@ -104,13 +134,10 @@ class _WiserSmokeAlarm(_WiserDevice):
         return self._device_type_data.get("EnableNotification", False)
 
     async def set_enable_notification(self, enabled: bool):
-        result = await self._wiser_rest_controller._send_command(
-                WISERSMOKEALARM.format(), {"EnableNotification": str(enabled).lower()}
-            )
-        result = await self._wiser_rest_controller._send_command(WISERSMOKEALARM, {"EnableNotification": str(enabled).lower()})
+        """ set enable notification on smoka alarm"""      
+        if await self._send_command({"EnableNotification": str(enabled).lower()}):
+            self._enable_notification = enabled
 
-        if result:
-                self._data = result
 
     @property
     def notification_enabled(self) -> bool:
