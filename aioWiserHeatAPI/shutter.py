@@ -269,7 +269,7 @@ class _WiserShutter(_WiserElectricalDevice):
     #Added by LGO Seasonal comfort
     @property
     def respect_seasonal_comfort(self) -> bool:
-        """Get if the shutter respect seasonal comfort"""
+        """Get if the shutter respect seasonal comfort""" 
         return self._device_type_data.get("RespectSeasonalComfort", False)
 
     async def set_respect_seasonal_comfort(self, en: bool):
@@ -284,7 +284,7 @@ class _WiserShutter(_WiserElectricalDevice):
 
     async def set_seasonal_target_lift(self, lift: int):
         if await self._send_command({"SeasonalTargetLift": lift}):
-            self._seasonal_comfort_lift = lift
+            self._seasonal_target_lift = lift
             return True
 
     @property
