@@ -51,6 +51,10 @@ To help understand the api simply look at the test sample code ```tests/test_api
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+### v1.6.7
+* Added: support equipment with power notification commands
+* Added: support of wiser automation, weather
+* Added: support seasonnal comfort
 
 ### v1.6.6
 * Added: support SSL redirect on hub for future firmware
