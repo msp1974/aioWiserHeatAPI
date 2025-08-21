@@ -47,7 +47,7 @@ from .smartvalve import _WiserSmartValve, _WiserSmartValveCollection
 from .smokealarm import _WiserSmokeAlarm, _WiserSmokeAlarmCollection
 from .temp_humidity import _WiserTempHumidity, _WiserTempHumidityCollection
 from .ufh import _WiserUFHController, _WiserUFHControllerCollection
-
+from .equipments import _WiserEquipments, _WiserEquipmentsCollection
 
 @dataclass(frozen=True, kw_only=True)
 class DeviceConfig:
@@ -149,6 +149,7 @@ PRODUCT_TYPE_CONFIG = {
         endpoint=None,
     ),
 }
+
 
 ANCILLARY_SENSOR_CONFIG = {
     "ThresholdSensor": AncillaryDeviceConfig(
