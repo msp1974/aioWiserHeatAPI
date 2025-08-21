@@ -4,9 +4,9 @@ Handles equipment devices
 import inspect
 from . import _LOGGER
 
-from .const import TEXT_UNABLE, TEXT_UNKNOWN, WISERDEVICE, WISEREQUIPMENT
-from .helpers.device import _WiserDevice
-from .helpers.equipment import _WiserEquipment, _WiserEquipmentPowerInfo,_WiserEquip
+from .const import TEXT_UNABLE, TEXT_UNKNOWN,  WISEREQUIPMENT
+#from .helpers.device import _WiserDevice
+from .helpers.equipment import _WiserEquipment
 
 from .rest_controller import _WiserRestController
 
@@ -103,7 +103,7 @@ class _WiserEquipments:
         param cmd: json command structure
         return: boolen - true = success, false = failed
         """
-        _LOGGER.warning(f"# LGODEBUG Data  {cmd} ")
+        
         result = await self._wiser_rest_controller._send_command(WISEREQUIPMENT, cmd)
         if result:
             _LOGGER.debug(
@@ -117,7 +117,7 @@ class _WiserEquipments:
         """Get equipment data"""
 
         return (
-            _WiserEquip(self._equipment_data)
+            _WiserEquipment(self._equipment_data)
             if self._equipment_data.get("id")
             else None
         )
@@ -303,7 +303,7 @@ class _WiserEquipmentsCollection(object):
         """Return number of equipments"""
         return len(self.all)
 
-    def get_equip_by_id(self, equipment_id: int) -> _WiserEquip:
+    def get_equip_by_id(self, equipment_id: int) -> _WiserEquipment:
         """
         Gets a Equipment object from the device id
         param id: id of equipments
