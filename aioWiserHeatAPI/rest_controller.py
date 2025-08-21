@@ -310,7 +310,8 @@ class _WiserRestController(object):
         return: boolean
         """
         url = WISERHUBDOMAIN + url
-        _LOGGER.debug(
+#        _LOGGER.debug(
+        _LOGGER.info(            
             "Sending command to url: %s with parameters %s", url, command_data
         )
 

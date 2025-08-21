@@ -122,7 +122,7 @@ WISERUICONFIGURATION = "UIConfiguration/{}"
 
 WISEREQUIPMENT = "Equipment/{}"
 WISERAUTOMATION = "Automation/{}"
-
+WISERWEATHER = "Weather"
 
 # Enums
 class WiserUnitsEnum(enum.Enum):
