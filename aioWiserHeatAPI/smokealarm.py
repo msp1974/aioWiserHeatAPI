@@ -1,15 +1,45 @@
+import inspect
+from aioWiserHeatAPI import _LOGGER
+
 from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 from .helpers.temp import _WiserTemperatureFunctions as tf
-
+from .const import (WISERSMOKEALARM,WISERDEVICE)
 
 class _WiserSmokeAlarm(_WiserDevice):
     """Class representing a Wiser Smoke Alarm device"""
 
+    async def _send_command(self, cmd: dict, device_level: bool = False):
+        """
+        Send control command to the smoke alarm device.
+        param cmd: json command structure
+        return: boolen - true = success, false = failed
+        """
+        if device_level:
+            result = await self._wiser_rest_controller._send_command(
+                WISERDEVICE.format(self.id), cmd
+            )
+            if result:
+                self._data = result
+        else:
+            result = await self._wiser_rest_controller._send_command(
+                self._endpoint.format(self.device_type_id), cmd
+            )
+            if result:
+                self._device_type_data = result
+        if result:
+            _LOGGER.debug(
+                "Wiser light - {} command successful".format(
+                    inspect.stack()[1].function
+                )
+            )
+            return True
+        return False
+
     @property
-    def room_id(self) -> int:
+    def smokealarm_id(self) -> int:
         """Return room_id."""
-        return self._data.get("RoomId")
+        return self._data.get("id")
 
     @property
     def alarm_sound_level(self) -> int:
@@ -99,10 +129,20 @@ class _WiserSmokeAlarm(_WiserDevice):
         return self._device_type_data.get("ReportCount")
 
     @property
-    def notification_enabled(self) -> bool:
+    def enable_notification(self) -> bool:
         """Get if notifications active"""
         return self._device_type_data.get("EnableNotification", False)
 
+    async def set_enable_notification(self, enabled: bool):
+        """ set enable notification on smoka alarm"""      
+        if await self._send_command({"EnableNotification": str(enabled).lower()}):
+            self._enable_notification = enabled
+
+
+    @property
+    def notification_enabled(self) -> bool:
+        """Get if notifications active"""
+        return self._device_type_data.get("EnableNotification", False)
     @property
     def supervision_notify(self) -> bool:
         """Get if supervision notify active"""

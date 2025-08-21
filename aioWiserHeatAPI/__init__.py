@@ -3,6 +3,6 @@ import logging
 name = "aioWiserHeatAPI"
 __all__ = ["wiserAPI", "wiserDiscovery"]
 
-__VERSION__ = "1.6.6"
+__VERSION__ = "1.6.7"
 
 _LOGGER = logging.getLogger(__name__)

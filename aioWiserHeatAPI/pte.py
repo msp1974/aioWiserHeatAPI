@@ -2,7 +2,7 @@
 Handles power tag energy devices
 """
 
-from .const import TEXT_UNABLE, TEXT_UNKNOWN
+from .const import TEXT_UNABLE, TEXT_UNKNOWN, WISERDEVICE
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
 

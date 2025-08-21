@@ -27,6 +27,7 @@ from .const import (
     WISERTHRESHOLDSENSOR,
     WISERUFHCONTROLLER,
     WISERUICONFIGURATION,
+    WISEREQUIPMENT,
 )
 from .heating_actuator import _WiserHeatingActuator, _WiserHeatingActuatorCollection
 from .helpers.device import _WiserDevice
@@ -46,7 +47,7 @@ from .smartvalve import _WiserSmartValve, _WiserSmartValveCollection
 from .smokealarm import _WiserSmokeAlarm, _WiserSmokeAlarmCollection
 from .temp_humidity import _WiserTempHumidity, _WiserTempHumidityCollection
 from .ufh import _WiserUFHController, _WiserUFHControllerCollection
-
+from .equipments import _WiserEquipments, _WiserEquipmentsCollection
 
 @dataclass(frozen=True, kw_only=True)
 class DeviceConfig:
@@ -148,6 +149,7 @@ PRODUCT_TYPE_CONFIG = {
         endpoint=None,
     ),
 }
+
 
 ANCILLARY_SENSOR_CONFIG = {
     "ThresholdSensor": AncillaryDeviceConfig(
@@ -400,6 +402,14 @@ class _WiserDeviceCollection:
         """Return all binary sensors"""
         try:
             return self._device_collection["BinarySensor"]
+        except KeyError:
+            return None
+
+    @property
+    def equipments(self):
+        """Return all equipments"""
+        try:
+            return self._device_collection["Equipments"]
         except KeyError:
             return None
 
