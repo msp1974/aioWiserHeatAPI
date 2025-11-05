@@ -80,6 +80,7 @@ class _WiserRestController(object):
         self._extra_config: _WiserExtraConfig = None
 
         self._last_exception = None
+        self.use_https: bool = False
 
     def remove_control_characters(self, data: str):
         """Remove control charactwers from string."""
@@ -160,7 +161,12 @@ class _WiserRestController(object):
         return: boolean
         """
 
-        url = url.format(
+        # Set correct http(s) prefix
+        if self.use_https:
+            port = self._wiser_connection_info.port
+            url = "https://" + url.format(self._wiser_connection_info.host, 443 if port == 80 else port)    
+        else:
+            url = "http://" + url.format(
             self._wiser_connection_info.host,
             self._wiser_connection_info.port,
         )

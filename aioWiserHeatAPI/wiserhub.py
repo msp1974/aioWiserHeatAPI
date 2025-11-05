@@ -14,7 +14,7 @@ This API allows you to get information from and control your wiserhub.
 
 import pathlib
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from aioWiserHeatAPI.helpers.version import Version
 
@@ -37,6 +37,7 @@ from .const import (
     WISERHUBOPENTHERMV2,
     WISERHUBSCHEDULES,
     WISERHUBSTATUS,
+    WISERHUBURL,
     WiserUnitsEnum,
 )
 from .devices import _WiserDeviceCollection
@@ -51,7 +52,12 @@ from .helpers.automations import _WiserHeatingChannelAutomations
 from .helpers.status import WiserStatus
 from .hot_water import _WiserHotwater
 from .moments import _WiserMomentCollection
-from .rest_controller import _WiserConnectionInfo, _WiserRestController
+from .refactor import refactor
+from .rest_controller import (
+    WiserRestActionEnum,
+    _WiserConnectionInfo,
+    _WiserRestController,
+)
 from .room import _WiserRoomCollection
 from .schedule import WiserScheduleTypeEnum, _WiserScheduleCollection
 from .system import _WiserSystem
@@ -133,12 +139,35 @@ class WiserAPI:
             if await automations.run_automations():
                 await self._build_objects()
 
+    async def get_hub_data(self) -> dict[str, Any]:
+        """Get data from hub."""
+        await self._get_hub_data()
+        return self.raw_hub_data
+
+    async def send_hub_command(
+        self, path: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Send command to hub and return result."""
+        if path and payload:
+            response = await self._wiser_rest_controller._do_hub_action(
+                WiserRestActionEnum.PATCH, WISERHUBURL + path, payload
+            )
+            return response
+
     async def _get_hub_data(self) -> bool:
         try:
             start_time = datetime.now()
             self._domain_data = await self._wiser_rest_controller.get_hub_data(
                 WISERHUBDOMAIN
             )
+
+            # Determine if we need to use https for v2 hubs
+            if self._domain_data and self._domain_data.get("System", {}).get(
+                "HardwareGeneration", 1
+            ) > 1:
+                self._wiser_rest_controller.use_https = True
+                
+
             self._network_data = await self._wiser_rest_controller.get_hub_data(
                 WISERHUBNETWORK
             )
@@ -346,6 +375,11 @@ class WiserAPI:
             "OpenTherm": self._opentherm_data,
             "Status": self._status_data,
         }
+
+    # @property
+    # def refactored(self) -> dict[str, Any]:
+    #    """Refactor json data."""
+    #    return refactor(self.raw_hub_data)
 
     def output_raw_hub_data(
         self, data_class: str, filename: str, file_path: str

@@ -83,7 +83,7 @@ SPECIAL_TIMES = {"Sunrise": 3000, "Sunset": 4000}
 OPENTHERMV2_MIN_VERSION = Version("4.32.47")
 
 # Wiser Hub Rest Api URL Constants
-WISERHUBURL = "http://{}:{}/data/v2/"
+WISERHUBURL = "{}:{}/data/v2/"
 WISERHUBDOMAIN = WISERHUBURL + "domain/"
 WISERHUBNETWORK = WISERHUBURL + "network/"
 WISERHUBSCHEDULES = WISERHUBURL + "schedules/"
