@@ -54,7 +54,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ### v1.7.1
 
-- Set min f/w version of 4.42.23 for https on gen2 hubs
+- Fix: Set min f/w version of 4.42.23 for https on gen2 hubs
 
 ### v1.7.0
 
