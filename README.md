@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.7.0
+# Drayton Wiser Hub API Async v1.7.1
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -19,7 +19,6 @@ Reference [https://it.knightnet.org.uk/kb/nr-qa/drayton-wiser-heating-control/#c
    Look for the Wi-Fi network (SSID) called **‘WiserHeatXXXXXX’** where XXXXXX is last 6 digits of the MAC address
 2. Connect to the network from a Windows/Linux/Mac/Android/iPhone machine
 3. Execute the secret url :-)
-
    - Open a browser to url `http://192.168.8.1/secret`
 
    This will return a string which is your system secret, store this somewhere. If you are running the test script simply put this value , with the ip address of the hub, in your wiserkeys.params
@@ -52,6 +51,10 @@ To help understand the api simply look at the test sample code `tests/test_api_p
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+
+### v1.7.1
+
+- Set min f/w version of 4.42.23 for https on gen2 hubs
 
 ### v1.7.0
 
