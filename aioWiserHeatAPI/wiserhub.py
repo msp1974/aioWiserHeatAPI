@@ -172,7 +172,13 @@ class WiserAPI:
                         "ActiveSystemVersion", "1.0.0"
                     )
                 )
+                _LOGGER.debug(
+                    "Hub Hardware Generation: %s, Firmware Version: %s",
+                    hw_gen,
+                    fw_version,
+                )
                 if hw_gen == 2 and fw_version >= HUB_GEN2_MIN_HTTPS_VERSION:
+                    _LOGGER.debug("Using HTTPS for Wiser Hub REST API calls")
                     self._wiser_rest_controller.use_https = True
 
             self._network_data = await self._wiser_rest_controller.get_hub_data(
