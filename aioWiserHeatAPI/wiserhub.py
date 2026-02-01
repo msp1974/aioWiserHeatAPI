@@ -23,6 +23,7 @@ from .cli import log_response_to_file
 from .const import (
     DEFAULT_AWAY_MODE_TEMP,
     DEFAULT_DEGRADED_TEMP,
+    HUB_GEN2_MIN_HTTPS_VERSION,
     MAX_BOOST_INCREASE,
     OPENTHERMV2_MIN_VERSION,
     TEMP_ERROR,
@@ -161,12 +162,18 @@ class WiserAPI:
                 WISERHUBDOMAIN
             )
 
-            # Determine if we need to use https for v2 hubs
-            if self._domain_data and self._domain_data.get("System", {}).get(
-                "HardwareGeneration", 1
-            ) > 1:
-                self._wiser_rest_controller.use_https = True
-                
+            # Determine if we need to use https for v2 hubs.  FW needs to be 4.42.23 or higher
+            if self._domain_data:
+                hw_gen = self._domain_data.get("System", {}).get(
+                    "HardwareGeneration", 1
+                )
+                fw_version = Version(
+                    self._domain_data.get("System", {}).get(
+                        "ActiveSystemVersion", "1.0.0"
+                    )
+                )
+                if hw_gen == 2 and fw_version >= HUB_GEN2_MIN_HTTPS_VERSION:
+                    self._wiser_rest_controller.use_https = True
 
             self._network_data = await self._wiser_rest_controller.get_hub_data(
                 WISERHUBNETWORK
