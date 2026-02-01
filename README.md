@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.7.2
+# Drayton Wiser Hub API Async v1.7.3
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -52,9 +52,9 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
-### v1.7.2
+### v1.7.3
 
-- Fix: Set min f/w version of 4.42.23 for https on gen2 hubs
+- Fix: Set min f/w version of 4.42.22 for https on gen2 hubs
 
 ### v1.7.0
 
