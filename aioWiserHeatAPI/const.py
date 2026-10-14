@@ -68,6 +68,7 @@ TEXT_REVERSE = "ReverseWithLoad"
 TEXT_CONSISTENT = "ConsistentWithLoad"
 TEXT_ALWAYSON = "AlwaysOn"
 TEXT_ALWAYSOFF = "AlwaysOff"
+TEXT_OFF_AFTER_2S = "OffAfter2s"
 
 TEXT_LASTON = "LastOnBrightness"
 TEXT_LEVELPERCENT = "LevelPercent"
@@ -144,6 +145,7 @@ class WiserLightLedIndicatorEnum(enum.Enum):
     consistent = TEXT_CONSISTENT
     allwayson = TEXT_ALWAYSON
     allwaysoff = TEXT_ALWAYSOFF
+    offafter2s = TEXT_OFF_AFTER_2S
 
 
 class WiserLightPowerOnBehaviourEnum(enum.Enum):
