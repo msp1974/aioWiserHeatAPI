@@ -20,7 +20,9 @@ class _WiserBattery(object):
     @property
     def level(self) -> str:
         """Get the descritpion of the battery level"""
-        return self._data.get("BatteryLevel", TEXT_UNKNOWN)
+        # Some button panels omit BatteryLevel or explicitly report null.
+        # Normalise both cases so callers can safely treat this as text.
+        return self._data.get("BatteryLevel") or TEXT_UNKNOWN
 
     @property
     def percent(self) -> int:
