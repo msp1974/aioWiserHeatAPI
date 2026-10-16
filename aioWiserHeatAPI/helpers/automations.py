@@ -1,6 +1,4 @@
 import logging
-
-from ..const import WiserHeatingModeEnum
 from ..heating import _WiserHeatingChannelCollection
 from ..hot_water import _WiserHotwater
 from ..rest_controller import _WiserRestController
@@ -62,6 +60,9 @@ class _WiserHeatingChannelAutomations:
         passive_mode_increment = (
             self._wiser_rest_controller._api_parameters.passive_mode_increment
         )
+        temperature_limiter_provider = (
+            self._wiser_rest_controller._api_parameters.passive_mode_temperature_limiter_provider
+        )
         # iterate each heating channel
         for heating_channel in self._heating_channels:
             passive_rooms = [
@@ -69,7 +70,7 @@ class _WiserHeatingChannelAutomations:
                 for room in self._rooms
                 if room.is_passive_mode
                 and room.id in heating_channel.room_ids
-                and room.current_temperature  # added to prevent error if trv offline
+                and room.current_temperature is not None
             ]
 
             # If no passive mode rooms
@@ -94,20 +95,27 @@ class _WiserHeatingChannelAutomations:
                 for room in passive_rooms:
                     # If room is boosted do not override
                     if not room.is_boosted:
-                        # Set target temp to heat passive room in
-                        # increments of passive_temperature_increment (default 0.5)
-                        target_temp = min(
-                            round(
-                                (room.current_temperature + passive_mode_increment) * 2
+                        if temperature_limiter_provider is not None and bool(
+                            temperature_limiter_provider(room)
+                        ):
+                            # External Temperature Limiter rooms keep Wiser heat
+                            # demand at the lower threshold. Their assigned valve
+                            # is controlled independently by the integration.
+                            target_temp = room.passive_mode_lower_temp
+                        else:
+                            # Preserve the original native Passive Mode behaviour:
+                            # modulate the room valve while another room is heating.
+                            target_temp = min(
+                                round(
+                                    (
+                                        room.current_temperature
+                                        + passive_mode_increment
+                                    )
+                                    * 2
+                                )
+                                / 2,
+                                room.passive_mode_upper_temp,
                             )
-                            / 2,
-                            (
-                                room.schedule.current_setting
-                                if room.mode == WiserHeatingModeEnum.auto.value
-                                and room.schedule
-                                else room.passive_mode_upper_temp
-                            ),
-                        )
 
                         if target_temp < room.passive_mode_lower_temp:
                             target_temp = room.passive_mode_lower_temp

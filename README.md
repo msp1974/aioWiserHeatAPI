@@ -52,6 +52,10 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
+### Unreleased
+
+- Added: optional scheduled lower-temperature provider for Passive Mode
+
 ### v1.7.3
 
 - Fix: Set min f/w version of 4.42.22 for https on gen2 hubs

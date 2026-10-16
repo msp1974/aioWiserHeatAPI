@@ -6,7 +6,7 @@ import json
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Callable, Optional
 
 import aiohttp
 import aiohttp.client_exceptions
@@ -35,7 +35,10 @@ from .helpers.extra_config import _WiserExtraConfig
 class WiserAPIParams:
     """Class to hold default values"""
 
-    passive_mode_increment: str = 0.5
+    passive_mode_increment: float = 0.5
+    passive_mode_temperature_limiter_provider: Optional[Callable] = None
+    passive_mode_lower_temp_provider: Optional[Callable] = None
+    passive_mode_upper_temp_provider: Optional[Callable] = None
     stored_manual_target_temperature_alt_source: str = "current"
     boost_temp_delta: int = DEFAULT_BOOST_DELTA
     hw_climate_mode: bool = False
