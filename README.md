@@ -7,7 +7,7 @@ The API also supports Smart Plugs and initial basic functionality for Shutter an
 
 ## Requirements
 
-Requires a minimum of Python v3.10
+Requires a minimum of Python v3.12
 
 ## Installation
 
