@@ -1,7 +1,7 @@
 from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 from .helpers.temp import _WiserTemperatureFunctions as tf
-
+from .const import TEXT_UNKNOWN
 
 class _WiserSmartValve(_WiserDevice):
     """Class representing a Wiser Smart Valve device"""
@@ -32,6 +32,32 @@ class _WiserSmartValve(_WiserDevice):
     def percentage_demand(self) -> int:
         """Get the current percentage demand of the smart valve"""
         return self._device_type_data.get("PercentageDemand")
+
+# added by LGO for compatibility with Wiser Heat 202510
+    @property
+    def window_state(self) -> str:
+        """Get the window state"""
+        if self._device_type_data.get("WindowState") == "Closed":
+            return False
+        elif self._device_type_data.get("WindowState") in ["Open","Opened"]:
+            return True 
+        else:    
+            return TEXT_UNKNOWN
+    
+    @property
+    def external_roomstat_temperature(self) -> int:
+        """Get the external roomstat temperature"""
+        return tf._from_wiser_temp(
+            self._device_type_data.get("ExternalRoomStatTemperature"), "current"
+        )
+
+    @property
+    def room_id(self) -> int:
+        """Get the room_id of the smart valve"""
+        return self._device_type_data.get("RoomId",None)
+
+
+# end added by LGO for compatibility with Wiser Heat 202510
 
 
 class _WiserSmartValveCollection(object):

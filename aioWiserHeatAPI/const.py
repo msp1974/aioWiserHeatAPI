@@ -74,6 +74,18 @@ TEXT_OFF_AFTER_2S = "OffAfter2s"
 TEXT_LASTON = "LastOnBrightness"
 TEXT_LEVELPERCENT = "LevelPercent"
 
+TEXT_RL_LED = "RL_LED"
+
+#enable notification for WindowDoor
+TEXT_NONE= "None"
+TEXT_ONEITHER= "OnEither"
+TEXT_ONTRUE="OnTrue"
+TEXT_ONFALSE="OnFalse"
+
+# Type for WindowDoor
+TEXT_WINDOW = "Window"    
+TEXT_DOOR = "Door"
+
 # End added by Lgo44
 
 # Day Value Lists
@@ -113,7 +125,9 @@ WISERBUTTONPANEL = "ButtonPanel/{}"
 WISEREQUIPMENT = "Equipment/{}"
 WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
-
+WISEREQUIPMENT = "Equipment/{}"
+WISERAUTOMATION = "Automation/{}"
+WISERWEATHER = "Weather"
 
 # Enums
 class WiserUnitsEnum(enum.Enum):
@@ -153,7 +167,19 @@ class WiserLightLedIndicatorEnum(enum.Enum):
 class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
+class WiserLightOutputModeEnum(enum.Enum): 
+    auto = TEXT_AUTO
+    rl_led = TEXT_RL_LED 
 
+class WiserWindowDoorEnableNotificationEnum(enum.Enum):
+    oneither= TEXT_ONEITHER 
+    none=TEXT_NONE
+    ontrue=TEXT_ONTRUE
+    onfalse=TEXT_ONFALSE
+
+class WiserWindowDoorTypeEnum(enum.Enum):
+    window= TEXT_WINDOW 
+    door=TEXT_DOOR
 
 # End added by Lgo44
 

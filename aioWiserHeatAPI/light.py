@@ -6,10 +6,12 @@ from .const import (
     TEXT_OFF,
     TEXT_ON,
     TEXT_UNKNOWN,
+    TEXT_AUTO,
     WISERDEVICE,
     WiserDeviceModeEnum,
     WiserLightLedIndicatorEnum,
     WiserLightPowerOnBehaviourEnum,
+    WiserLightOutputModeEnum,
 )
 from .helpers.device import _WiserElectricalDevice
 from .helpers.misc import is_value_in_list
@@ -161,12 +163,6 @@ class _WiserLight(_WiserElectricalDevice):
             if self._device_type_data.get("IsOutputModeSupported", False)
             else False
         )
-
-    @property
-    def output_mode(self) -> str:
-        """Get is output mode supported for the light"""
-        return self._device_type_data.get("OutputMode", TEXT_UNKNOWN)
-
     # end added by LGO
 
     @property
@@ -271,8 +267,33 @@ class _WiserDimmableLight(_WiserLight):
     def power_on_level(self) -> int:
         """Get power on level for the light"""
         return self._device_type_data.get("PowerOnLevel", None)
-
     # end added by LGO
+
+    # added by LGO - Output Mode
+    @property
+    def available_output_mode(self):
+        """Get available output modes  """
+        return [action.value for action in WiserLightOutputModeEnum]
+
+    @property
+    def output_mode(self) -> str:
+        """Get is output mode supported for the light"""
+        if self._device_type_data.get("IsOutputModeSupported"):
+            return self._device_type_data.get("OutputMode", TEXT_AUTO)
+
+    async def set_output_mode(
+        self, output_mode: Union[WiserLightOutputModeEnum, str]
+    ) -> bool:
+        if isinstance(output_mode, WiserLightOutputModeEnum):
+            output_mode = output_mode.value
+        if is_value_in_list(output_mode, self.available_output_mode):
+            return await self._send_command({"SetOutputMode": output_mode})
+        else:
+            raise ValueError(
+                f"{output_mode} is not a valid mode.  Valid modes are {self.available_output_mode}"
+            )
+
+    # end added by LGO - Output Mode
 
 
 class _WiserLightCollection(object):

@@ -17,7 +17,10 @@ from .helpers.special_times import sunrise_times, sunset_times
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .helpers.zigbee import _WiserZigbee
 from .rest_controller import _WiserRestController
-
+#Added by LGO
+ 
+from .helpers.equipment import _WiserEquipment
+from .helpers.weather import _WiserWeather
 
 class _WiserSystem(object):
     """Class representing a Wiser Hub device"""
@@ -58,6 +61,14 @@ class _WiserSystem(object):
         self._upgrade_data = _WiserFirmareUpgradeInfo(self._data.get("UpgradeInfo", {}))
         self._zigbee_data = _WiserZigbee(self._data.get("Zigbee", {}))
 
+        # Added by LGO 
+        # Weather       
+        self._weather_data = _WiserWeather(self._data.get("Weather", {}))  
+        # Equipment
+        self._equipment_data = _WiserEquipment(self._data.get("Equipment", {}))
+
+        # End Added by LGO
+
         # Variables to hold values for settabel values
         self._automatic_daylight_saving = self._system_data.get(
             "AutomaticDaylightSaving"
@@ -79,7 +90,7 @@ class _WiserSystem(object):
         self._valve_protection_enabled = self._system_data.get("ValveProtectionEnabled")
 
         # Added by LGO
-        # Summer comfort
+        # Summer comfort and seasonal comfort
         self._summer_comfort_enabled = self._system_data.get("SummerComfortEnabled")
         self._indoor_discomfort_temperature = self._system_data.get(
             "IndoorDiscomfortTemperature"
@@ -91,6 +102,9 @@ class _WiserSystem(object):
         self._summer_discomfort_prevention = self._system_data.get(
             "SummerDiscomfortPrevention"
         )
+        # Wiser Home V7 app seasonal comfort
+        self._seasonal_comfort_enabled = self._system_data.get(
+            "SeasonalComfortEnabled")
 
         # End Added by LGO
 
@@ -332,6 +346,23 @@ class _WiserSystem(object):
         """Set whether summer comfort mode is enabled"""
         if await self._send_command({"SummerComfortEnabled": enabled}):
             self._summer_comfort_enabled = enabled
+            return True
+
+    @property
+    def weather(self) -> _WiserWeather:
+        """Get weather info"""
+        return self._weather_data
+
+    # Wiser app V7 seasonnal comfort
+    
+    @property
+    def seasonal_comfort_enabled(self) -> bool:
+        """Get or set if seasonal comfort is enabled"""
+        return self._seasonal_comfort_enabled
+
+    async def set_seasonal_comfort_enabled(self, enabled: bool):
+        if await self._send_command({"SeasonalComfortEnabled": enabled}):
+            self._seasonal_comfort_enabled = enabled
             return True
 
     @property
