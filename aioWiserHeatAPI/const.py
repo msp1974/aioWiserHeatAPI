@@ -110,6 +110,7 @@ WISERSMOKEALARM = "SmokeAlarmDevice/{}"
 WISERBINARYSENSOR = "BinarySensor/{}"
 WISERBOILERINTERFACE = "BoilerInterface/{}"
 WISERBUTTONPANEL = "ButtonPanel/{}"
+WISEREQUIPMENT = "Equipment/{}"
 WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
 

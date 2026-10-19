@@ -28,6 +28,7 @@ from .const import (
     WISERUFHCONTROLLER,
     WISERUICONFIGURATION,
 )
+from .evse import _WiserEVSE, _WiserEVSECollection
 from .heating_actuator import _WiserHeatingActuator, _WiserHeatingActuatorCollection
 from .helpers.device import _WiserDevice
 from .helpers.threshold import (
@@ -147,6 +148,12 @@ PRODUCT_TYPE_CONFIG = {
         collection=_WiserTempHumidityCollection,
         endpoint=None,
     ),
+    # EVSE devices have no separate EVSE domain section. Their live data is
+    # published directly as an Equipment record linked to the generic Device.
+    "EVSE": DeviceConfig(
+        device_class=_WiserEVSE,
+        collection=_WiserEVSECollection,
+    ),
 }
 
 ANCILLARY_SENSOR_CONFIG = {
@@ -225,6 +232,26 @@ class _WiserDeviceCollection:
                                 None,
                             )
                         )
+
+            elif device_type == "EVSE":
+                device_config = PRODUCT_TYPE_CONFIG[device_type]
+                for equipment in self._equipment_data:
+                    if equipment.get("DeviceApplicationInstanceType") != "EVSE":
+                        continue
+                    device_info_data = self._get_device_info_by_id(
+                        equipment.get("DeviceApplicationInstanceId")
+                    )
+                    if device_info_data is None:
+                        continue
+                    self._device_collection[device_type]._items.append(
+                        device_config.device_class(
+                            self._wiser_rest_controller,
+                            device_config.endpoint,
+                            device_info_data,
+                            equipment,
+                            None,
+                        )
+                    )
 
             elif device_type_data := self._domain_data.get(device_type):
                 # We have this device type in data
@@ -320,6 +347,14 @@ class _WiserDeviceCollection:
         """Return all heating actuators"""
         try:
             return self._device_collection["HeatingActuator"]
+        except KeyError:
+            return None
+
+    @property
+    def evse(self) -> _WiserEVSECollection:
+        """Return all EV charging socket devices."""
+        try:
+            return self._device_collection["EVSE"]
         except KeyError:
             return None
 
