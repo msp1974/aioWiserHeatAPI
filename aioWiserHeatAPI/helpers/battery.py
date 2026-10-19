@@ -20,14 +20,16 @@ class _WiserBattery(object):
     @property
     def level(self) -> str:
         """Get the descritpion of the battery level"""
-        return self._data.get("BatteryLevel", TEXT_UNKNOWN)
+        # Some button panels omit BatteryLevel or explicitly report null.
+        # Normalise both cases so callers can safely treat this as text.
+        return self._data.get("BatteryLevel") or TEXT_UNKNOWN
 
     @property
     def percent(self) -> int:
         """Get the percent of battery remaining"""
+        levels = {"normal": 100, "twothirds": 66, "onethird": 33, "low": 10}
         if self.voltage is None:
             # This device does not provide battery voltage.  Calc % from level text
-            levels = {"normal": 100, "twothirds": 66, "onethird": 33, "low": 10}
             return levels.get(self.level.lower(), 0)
 
         elif self._data.get("ProductType") == "RoomStat" and self.voltage:
@@ -46,6 +48,10 @@ class _WiserBattery(object):
                 if self.voltage < TRV_FULL_BATTERY_LEVEL
                 else 100
             )
+        elif self._data.get("ProductType") == "ButtonPanel":
+            # The hub reports a voltage for button panels but does not expose a
+            # calibrated voltage curve, so use its qualitative battery level.
+            return levels.get(self.level.lower(), 0)
         else:
             return None
 

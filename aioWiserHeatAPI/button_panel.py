@@ -1,10 +1,16 @@
 from typing import Any
 
+from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 
 
 class _WiserButtonPanel(_WiserDevice):
     """Class representing a Wiser Button Panel"""
+
+    @property
+    def battery(self) -> _WiserBattery:
+        """Get the battery information for the button panel."""
+        return _WiserBattery(self._data)
 
     @property
     def number_of_gangs(self) -> list[int]:
