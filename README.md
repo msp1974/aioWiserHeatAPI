@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.7.4
+# Drayton Wiser Hub API Async v1.7.5
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -52,7 +52,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
-### v1.7.4
+### v1.7.5
 
 - Added: optional scheduled lower-temperature provider for Passive Mode
 - Added: EVSE device support
