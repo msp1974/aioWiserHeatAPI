@@ -219,6 +219,12 @@ class _WiserOpentherm(object):
         return tf._from_wiser_temp(self._data.get("ch2FlowSetpoint", None), "current")
 
     @property
+    def central_heating_active(self) -> bool:
+        """Return whether the boiler is operating in central-heating mode."""
+        slave_status = self.operational_data.slave_status
+        return isinstance(slave_status, int) and bool(slave_status & (1 << 1))
+
+    @property
     def connection_status(self) -> str:
         """Get opentherm connection status"""
         return self._enabled_status

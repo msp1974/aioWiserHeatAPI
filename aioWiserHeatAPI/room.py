@@ -35,12 +35,14 @@ class _WiserRoom(object):
         schedule: _WiserSchedule,
         devices: list,
         enable_automations: bool,
+        opentherm=None,
     ):
         self._wiser_rest_controller = wiser_rest_controller
         self._data = room
         self._schedule = schedule
         self._devices = devices
         self._enable_automations = enable_automations
+        self._opentherm = opentherm
         self._extra_config = (
             self._wiser_rest_controller._extra_config.config(
                 "Rooms", str(self.id)
@@ -148,6 +150,25 @@ class _WiserRoom(object):
 
     @property
     def passive_mode_lower_temp(self) -> float:
+        provider = (
+            self._wiser_rest_controller._api_parameters.passive_mode_lower_temp_provider
+        )
+        if (
+            provider is not None
+            and self.is_passive_mode
+            and self.mode == WiserHeatingModeEnum.auto.value
+            and self.schedule
+        ):
+            try:
+                scheduled_lower = provider(self)
+                if scheduled_lower is not None:
+                    return min(float(scheduled_lower), self.passive_mode_upper_temp)
+            except Exception:
+                _LOGGER.warning(
+                    "Ignoring invalid scheduled Passive Mode lower temperature for %s",
+                    self.name,
+                    exc_info=True,
+                )
         if self._extra_config and "min" in self._extra_config:
             return min(self._extra_config["min"], self.passive_mode_upper_temp)
         return min(
@@ -156,23 +177,46 @@ class _WiserRoom(object):
 
     @property
     def passive_mode_upper_temp(self) -> float:
+        provider = (
+            self._wiser_rest_controller._api_parameters.passive_mode_upper_temp_provider
+        )
         if (
             self.is_passive_mode
             and self.mode == WiserHeatingModeEnum.auto.value
             and self.schedule
         ):
+            if provider is not None:
+                try:
+                    override_upper = provider(self)
+                    if override_upper is not None:
+                        return float(override_upper)
+                except Exception:
+                    _LOGGER.warning(
+                        "Ignoring invalid Passive Mode upper temperature override for %s",
+                        self.name,
+                        exc_info=True,
+                    )
             return self.schedule.current_setting
         else:
-            if self._extra_config and "max" in self._extra_config:
-                return self._extra_config["max"]
-            return self._default_extra_config["max"]
+            return self.configured_passive_mode_upper_temp
+
+    @property
+    def configured_passive_mode_upper_temp(self) -> float:
+        """Return the static Passive upper temperature from extra config."""
+        if self._extra_config and "max" in self._extra_config:
+            return self._extra_config["max"]
+        return self._default_extra_config["max"]
 
     async def set_passive_mode(self, enable: bool):
         if await self._update_extra_config("passive_mode", enable):
             await self._get_extra_config()
             if not self.is_away_mode:
                 # Set to min of temp range when initialised
-                if enable and self.mode != WiserHeatingModeEnum.off.value:
+                if (
+                    enable
+                    and self.mode != WiserHeatingModeEnum.off.value
+                    and not self._auto_uses_scheduled_passive_lower_temp
+                ):
                     await self.set_target_temperature(
                         self.passive_mode_lower_temp
                     )
@@ -188,6 +232,27 @@ class _WiserRoom(object):
             _LOGGER.error(
                 "Unable to set passive mode.  This maybe caused by an issue with your extra config file."
             )
+
+    @property
+    def _auto_uses_scheduled_passive_lower_temp(self) -> bool:
+        """Return whether an external limiter owns the Auto schedule target."""
+        provider = (
+            self._wiser_rest_controller._api_parameters.passive_mode_temperature_limiter_provider
+        )
+        if (
+            self.mode == WiserHeatingModeEnum.auto.value
+            and self.schedule is not None
+            and provider is not None
+        ):
+            try:
+                return bool(provider(self))
+            except Exception:
+                _LOGGER.warning(
+                    "Ignoring invalid Passive Mode temperature limiter for %s",
+                    self.name,
+                    exc_info=True,
+                )
+        return False
 
     async def set_passive_mode_lower_temp(self, temp):
         if not await self._update_extra_config("min", temp):
@@ -211,8 +276,9 @@ class _WiserRoom(object):
     @property
     def available_presets(self) -> list:
         """Get available preset modes"""
-        # Remove advance schedule if no schedule exists or in passive mode
-        if self.is_passive_mode or not self.schedule:
+        # Advance is available whenever the room has a schedule. Passive Mode
+        # advances its paired lower and upper range through the integration.
+        if not self.schedule:
             return [
                 mode.value
                 for mode in WiserPresetOptionsEnum
@@ -364,13 +430,21 @@ class _WiserRoom(object):
         )
 
     @property
+    def is_calling_for_heat(self) -> bool | None:
+        """Return whether the room is requesting heat."""
+        if "PercentageDemand" not in self._data:
+            return None
+        return self.percentage_demand > 0
+
+    @property
     def is_heating(self) -> bool:
-        """Get if the room is currently heating"""
-        return (
-            True
-            if self._data.get("ControlOutputState", TEXT_OFF) == TEXT_ON
-            else False
-        )
+        """Return whether central heating is currently servicing room demand."""
+        if self._opentherm and self._opentherm.connection_status == "Connected":
+            return (
+                self.is_calling_for_heat is True
+                and self._opentherm.central_heating_active
+            )
+        return self._data.get("ControlOutputState", TEXT_OFF) == TEXT_ON
 
     @property
     def manual_target_temperature(self) -> float:
@@ -404,9 +478,7 @@ class _WiserRoom(object):
                             self.stored_manual_target_temperature
                         )
             elif mode == WiserHeatingModeEnum.auto.value:
-                await self._send_command(
-                    {"Mode": WiserHeatingModeEnum.auto.value}
-                )
+                await self._send_command({"Mode": WiserHeatingModeEnum.auto.value})
 
             self._mode = mode
             return True
@@ -741,6 +813,7 @@ class _WiserRoomCollection:
         schedules: _WiserScheduleCollection,
         devices: _WiserDeviceCollection,
         enable_automations: bool,
+        opentherm=None,
     ):
         super().__init__()
         self._wiser_rest_controller = wiser_rest_controller
@@ -748,6 +821,7 @@ class _WiserRoomCollection:
         self._schedules = schedules
         self._devices = devices
         self._enable_automations = enable_automations
+        self._opentherm = opentherm
         self._rooms: list(_WiserRoom) = []
         self._build()
 
@@ -767,6 +841,7 @@ class _WiserRoomCollection:
                     schedule[0] if len(schedule) > 0 else None,
                     devices,
                     self._enable_automations,
+                    self._opentherm,
                 )
             )
 
