@@ -51,18 +51,10 @@ To help understand the api simply look at the test sample code `tests/test_api_p
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
-=======
 
 ### v1.7.4
 
 - Added: optional scheduled lower-temperature provider for Passive Mode
-- Added: EVSE device support
-- Added: Button panel battery status
-- Added: Support for the `OffAfter2s` LED indicator mode
-- Fix: Refine room heating state for OpenTherm systems
-
-### v1.7.4
-
 - Added: EVSE device support
 - Added: Button panel battery status
 - Added: Support for the `OffAfter2s` LED indicator mode
