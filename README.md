@@ -61,6 +61,13 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 - Added: Support for the `OffAfter2s` LED indicator mode
 - Fix: Refine room heating state for OpenTherm systems
 
+### v1.7.4
+
+- Added: EVSE device support
+- Added: Button panel battery status
+- Added: Support for the `OffAfter2s` LED indicator mode
+- Fix: Refine room heating state for OpenTherm systems
+
 ### v1.7.3
 
 - Fix: Set min f/w version of 4.42.22 for https on gen2 hubs
