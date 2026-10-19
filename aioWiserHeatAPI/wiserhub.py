@@ -281,6 +281,7 @@ class WiserAPI:
                     self._schedules.get_by_type(WiserScheduleTypeEnum.heating),
                     self._devices,
                     self._enable_automations,
+                    self._system.opentherm,
                 )
 
                 # Hot Water
