@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.7.3
+# Drayton Wiser Hub API Async v1.7.4
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -51,6 +51,13 @@ To help understand the api simply look at the test sample code `tests/test_api_p
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+
+### v1.7.4
+
+- Added: EVSE device support
+- Added: Button panel battery status
+- Added: Support for the `OffAfter2s` LED indicator mode
+- Fix: Refine room heating state for OpenTherm systems
 
 ### v1.7.3
 
