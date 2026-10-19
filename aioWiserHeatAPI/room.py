@@ -431,7 +431,7 @@ class _WiserRoom(object):
         """Return whether central heating is currently servicing room demand."""
         if self._opentherm and self._opentherm.connection_status == "Connected":
             return (
-                self.is_calling_for_heat
+                self.is_calling_for_heat is True
                 and self._opentherm.central_heating_active
             )
         return self._data.get("ControlOutputState", TEXT_OFF) == TEXT_ON
