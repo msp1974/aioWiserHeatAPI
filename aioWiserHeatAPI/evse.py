@@ -36,7 +36,7 @@ class _WiserEVSE(_WiserDevice):
     @property
     def available_control_states(self) -> list[str]:
         """Return control states accepted by the hub for this equipment."""
-        return self._device_type_data.get("AvailableControlState", [])
+        return self._device_type_data.get("AvailableControlState") or []
 
     @property
     def control_state(self) -> str:
@@ -47,12 +47,16 @@ class _WiserEVSE(_WiserDevice):
                 "LoadStateCommandPrio",
                 self._device_type_data.get("LoadStateStatus", TEXT_UNKNOWN),
             ),
-        )
+        ) or TEXT_UNKNOWN
 
     @property
     def is_on(self) -> bool:
         """Return whether charging has not been force-disabled."""
-        return self.control_state not in {"consumptionForceOff", "Off"}
+        return self.control_state not in {
+            TEXT_UNKNOWN,
+            "consumptionForceOff",
+            "Off",
+        }
 
     async def _set_control_state(self, state: str) -> bool:
         """Set one of the control states advertised by the equipment."""
