@@ -95,9 +95,21 @@ class _WiserHeatingChannelAutomations:
                 for room in passive_rooms:
                     # If room is boosted do not override
                     if not room.is_boosted:
-                        if temperature_limiter_provider is not None and bool(
-                            temperature_limiter_provider(room)
-                        ):
+                        temperature_limited = False
+                        if temperature_limiter_provider is not None:
+                            try:
+                                temperature_limited = bool(
+                                    temperature_limiter_provider(room)
+                                )
+                            except Exception:
+                                _LOGGER.warning(
+                                    "Ignoring invalid Passive Mode temperature "
+                                    "limiter for %s",
+                                    room.name,
+                                    exc_info=True,
+                                )
+
+                        if temperature_limited:
                             # External Temperature Limiter rooms keep Wiser heat
                             # demand at the lower threshold. Their assigned valve
                             # is controlled independently by the integration.
