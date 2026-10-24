@@ -90,7 +90,11 @@ class _WiserScheduleNext:
     def setting(self) -> float | str | None:
         """Get the next entry setting - temp for heating, state for on/off devices"""
         if self._schedule_type == TEXT_HEATING:
-            return tf._from_wiser_temp(self._data.get("DegreesC", TEMP_MINIMUM))
+            temperature = self._data.get(TEXT_DEGREESC, TEMP_MINIMUM)
+            # The hub represents an off heating period with a null setpoint.
+            if temperature is None:
+                return TEMP_OFF
+            return tf._from_wiser_temp(temperature)
         if self._schedule_type == TEXT_ONOFF:
             return self._data.get("State")
         if self._schedule_type == TEXT_LEVEL:
