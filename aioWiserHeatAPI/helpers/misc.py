@@ -1,8 +1,10 @@
-import aiofiles.os as os
+import asyncio
+from pathlib import Path
 
 
 async def file_exists(file: str) -> bool:
-    return await os.path.isfile(file)
+    """Return whether a path is a file without blocking the event loop."""
+    return await asyncio.to_thread(Path(file).is_file)
 
 
 def is_value_in_list(value: str, item_list: list) -> bool:
