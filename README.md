@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.7.6
+# Drayton Wiser Hub API Async v1.7.7
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -21,9 +21,9 @@ Reference [https://it.knightnet.org.uk/kb/nr-qa/drayton-wiser-heating-control/#c
 2. Connect to the network from a Windows/Linux/Mac/Android/iPhone machine
 
 3. Execute the secret url :-)
-
+   
    - Open a browser to url `http://192.168.8.1/secret`
-
+   
    This will return a string which is your system secret, store this somewhere. If you are running the test script simply put this value , with the ip address of the hub, in your wiserkeys.params
 
 4. Press the setup button on the HeatHub again and it will go back to normal operations
@@ -56,7 +56,7 @@ Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/b
 
 ## Changelog
 
-### v1.7.6
+### v1.7.7
 
 - Fix: Avoid eager `aiofiles.os` imports during startup to prevent mixed-version import failures in Home Assistant (issue #763)
 - Fix: Handle advancing a heating schedule when the next period is off (issue #657)
