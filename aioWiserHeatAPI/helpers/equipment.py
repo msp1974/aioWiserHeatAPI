@@ -190,6 +190,26 @@ class _WiserEquipment:
         return self._data.get("CurrentControlMode", TEXT_UNKNOWN)
 
     @property
+    def available_control_states(self) -> list[str]:
+        """Get the control states available for this equipment"""
+        return self._data.get("AvailableControlState") or []
+
+    @property
+    def overview_schedule_id(self) -> int:
+        """Get the overview schedule ID for this equipment"""
+        return self._data.get("OverviewScheduleId") or None
+
+    @property
+    def stated_power(self) -> int:
+        """Get the stated power value available for this equipment"""
+        return self._data.get("StatedPower") or None
+
+    @property
+    def cable_stated_power(self) -> int:
+        """Get the cabled stated power value available for this EVSE equipment"""
+        return self._data.get("StatedPower") or None
+
+    @property
     def load_state_status(self) -> str:
         """Get load state status"""
         return self._data.get("LoadStateStatus", TEXT_UNKNOWN)
