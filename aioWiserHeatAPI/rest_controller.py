@@ -257,9 +257,13 @@ class _WiserRestController(object):
         raise_for_endpoint_error: bool = True,
     ):
         status = response.status
-
+        
+        if status == 301:
+            _LOGGER.debug("301 error : Moved permanently")
+            self.use_https: bool = True
         if status == 400:
-            _LOGGER.debug("400 error")
+            _LOGGER.debug("400 error : HTTP Request sent to an HTTPS port")
+            self.use_https: bool = True
         if status == 401:
             raise WiserHubAuthenticationError(
                 f"Error authenticating to Wiser Hub "

@@ -70,17 +70,17 @@ class _WiserEquipmentOverPowerNotificationInfo:
     @property
     def period_mins(self) -> int:
         """Get period in minutes"""
-        return self._data.get("PeriodMins") if self._data.get("PeriodMins") else None
+        return self._data.get("PeriodMins")
 
     @property
     def limit(self) -> int:
         """Get limit"""
-        return self._data.get("Limit", 100000) if self._data.get("Limit") else None
+        return self._data.get("Limit")
 
     @property
     def enabled(self) -> bool:
         """Get status enable"""
-        return self._data.get("Enabled", False) if self._data.get("Enabled") else None
+        return self._data.get("Enabled", False)
 
 
 class _WiserEquipment:
@@ -190,6 +190,26 @@ class _WiserEquipment:
         return self._data.get("CurrentControlMode", TEXT_UNKNOWN)
 
     @property
+    def available_control_states(self) -> list[str]:
+        """Get the control states available for this equipment"""
+        return self._data.get("AvailableControlState") or []
+
+    @property
+    def overview_schedule_id(self) -> int:
+        """Get the overview schedule ID for this equipment"""
+        return self._data.get("OverviewScheduleId") or None
+
+    @property
+    def stated_power(self) -> int:
+        """Get the stated power value available for this equipment"""
+        return self._data.get("StatedPower") or None
+
+    @property
+    def cable_stated_power(self) -> int:
+        """Get the cabled stated power value available for this EVSE equipment"""
+        return self._data.get("CableStatedPower") or None
+
+    @property
     def load_state_status(self) -> str:
         """Get load state status"""
         return self._data.get("LoadStateStatus", TEXT_UNKNOWN)
@@ -252,7 +272,9 @@ class _WiserEquipment:
     #  Add for a notification feature Notification if the   Power is under or over a threshold
     #  for  a time (periodmins)...
     @property
-    def under_power_notification(self) -> _WiserEquipmentUnderPowerNotificationInfo:
+    def under_power_notification(
+        self,
+    ) -> _WiserEquipmentUnderPowerNotificationInfo | None:
         """Get notification info"""
         return (
             _WiserEquipmentUnderPowerNotificationInfo(
@@ -263,10 +285,13 @@ class _WiserEquipment:
         )
 
     @property
-    def over_power_notification(self) -> _WiserEquipmentOverPowerNotificationInfo:
+    def over_power_notification(
+        self,
+    ) -> _WiserEquipmentOverPowerNotificationInfo | None:
         """Get notification info"""
         return (
-            _WiserEquipmentUnderPowerNotificationInfo(
+            _WiserEquipmentOverPowerNotificationInfo(
+                self,
                 self._data.get("OverPowerNotification")
             )
             if self._data.get("OverPowerNotification")
