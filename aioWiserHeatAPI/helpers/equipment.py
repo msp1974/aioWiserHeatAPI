@@ -68,12 +68,12 @@ class _WiserEquipmentOverPowerNotificationInfo:
         self._equipment_instance = equipment_instance
 
     @property
-    def period_mins(self) -> int:
+    def period_mins(self) -> int | None:
         """Get period in minutes"""
         return self._data.get("PeriodMins")
 
     @property
-    def limit(self) -> int:
+    def limit(self) -> int | None:
         """Get limit"""
         return self._data.get("Limit")
 
@@ -195,17 +195,17 @@ class _WiserEquipment:
         return self._data.get("AvailableControlState") or []
 
     @property
-    def overview_schedule_id(self) -> int:
+    def overview_schedule_id(self) -> int | None:
         """Get the overview schedule ID for this equipment"""
         return self._data.get("OverviewScheduleId") or None
 
     @property
-    def stated_power(self) -> int:
+    def stated_power(self) -> int | None:
         """Get the stated power value available for this equipment"""
         return self._data.get("StatedPower") or None
 
     @property
-    def cable_stated_power(self) -> int:
+    def cable_stated_power(self) -> int | None:
         """Get the cabled stated power value available for this EVSE equipment"""
         return self._data.get("CableStatedPower") or None
 

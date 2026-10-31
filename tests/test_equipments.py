@@ -106,6 +106,26 @@ class WiserEquipmentNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result)
         self.assertTrue(equipment.under_power_notification.enabled)
 
+    async def test_set_notification_enabled_preserves_missing_thresholds(
+        self,
+    ) -> None:
+        """Missing notification thresholds are not replaced with zero values."""
+        controller = AsyncMock()
+        controller._send_command.return_value = {}
+        equipment = _WiserEquipments(
+            controller,
+            {"id": 21, "OverPowerNotification": {"Enabled": False}},
+        )
+
+        result = await equipment.set_over_power_notification_enabled(True)
+
+        self.assertTrue(result)
+        controller._send_command.assert_awaited_once_with(
+            "Equipment/21",
+            {"OverPowerNotification": {"Enabled": True}},
+        )
+        self.assertTrue(equipment.over_power_notification.enabled)
+
     async def test_set_notification_enabled_returns_false_when_not_configured(
         self,
     ) -> None:

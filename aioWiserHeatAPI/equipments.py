@@ -21,15 +21,15 @@ class _WiserEquipments(_WiserEquipment):
         if not isinstance(notification, dict):
             return False
 
+        updated_notification = {
+            key: notification[key]
+            for key in ("PeriodMins", "Limit")
+            if key in notification
+        }
+        updated_notification["Enabled"] = enabled
         await self._wiser_rest_controller._send_command(
             WISEREQUIPMENT.format(self.id),
-            {
-                notification_name: {
-                    "PeriodMins": notification.get("PeriodMins", 0),
-                    "Limit": notification.get("Limit", 0),
-                    "Enabled": enabled,
-                }
-            },
+            {notification_name: updated_notification},
         )
         notification["Enabled"] = enabled
         return True
