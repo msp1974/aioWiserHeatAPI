@@ -36,7 +36,7 @@ class _WiserEVSE(_WiserDevice):
     @property
     def available_control_states(self) -> list[str]:
         """Return control states accepted by the hub for this equipment."""
-        return self._device_type_data.get("AvailableControlState") or []
+        return self.equipment.available_control_states
 
     @property
     def control_state(self) -> str:
