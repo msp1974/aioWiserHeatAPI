@@ -45,6 +45,26 @@ class WiserEquipmentNotificationTest(unittest.TestCase):
         self.assertEqual(notification.limit, 1000)
         self.assertTrue(notification.enabled)
 
+    def test_over_power_notification_preserves_zero_values(self) -> None:
+        """Explicit zero values are not treated as missing configuration."""
+        equipment = _WiserEquipment(
+            {"OverPowerNotification": {"PeriodMins": 0, "Limit": 0}}
+        )
+
+        notification = equipment.over_power_notification
+
+        self.assertEqual(notification.period_mins, 0)
+        self.assertEqual(notification.limit, 0)
+
+    def test_missing_over_power_values_remain_none(self) -> None:
+        """Missing over-power values remain unavailable."""
+        equipment = _WiserEquipment({"OverPowerNotification": {"Enabled": False}})
+
+        notification = equipment.over_power_notification
+
+        self.assertIsNone(notification.period_mins)
+        self.assertIsNone(notification.limit)
+
     def test_under_power_notification_keeps_under_power_info(self) -> None:
         """Under-power data continues to use its existing info class."""
         equipment = _WiserEquipment(

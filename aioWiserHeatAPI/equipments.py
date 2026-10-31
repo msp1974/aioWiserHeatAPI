@@ -21,7 +21,7 @@ class _WiserEquipments(_WiserEquipment):
         if not isinstance(notification, dict):
             return False
 
-        result = await self._wiser_rest_controller._send_command(
+        await self._wiser_rest_controller._send_command(
             WISEREQUIPMENT.format(self.id),
             {
                 notification_name: {
@@ -31,10 +31,8 @@ class _WiserEquipments(_WiserEquipment):
                 }
             },
         )
-        if result:
-            notification["Enabled"] = enabled
-            return True
-        return False
+        notification["Enabled"] = enabled
+        return True
 
     async def set_under_power_notification_enabled(self, enabled: bool) -> bool:
         """Enable or disable the under-power notification."""

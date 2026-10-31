@@ -83,6 +83,29 @@ class WiserEquipmentNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertTrue(equipment.under_power_notification.enabled)
 
+    async def test_set_notification_enabled_accepts_empty_success_response(
+        self,
+    ) -> None:
+        """A successful command with an empty response updates local data."""
+        controller = AsyncMock()
+        controller._send_command.return_value = {}
+        equipment = _WiserEquipments(
+            controller,
+            {
+                "id": 21,
+                "UnderPowerNotification": {
+                    "PeriodMins": 5,
+                    "Limit": 1000,
+                    "Enabled": False,
+                },
+            },
+        )
+
+        result = await equipment.set_under_power_notification_enabled(True)
+
+        self.assertTrue(result)
+        self.assertTrue(equipment.under_power_notification.enabled)
+
     async def test_set_notification_enabled_returns_false_when_not_configured(
         self,
     ) -> None:
