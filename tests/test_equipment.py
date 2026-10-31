@@ -12,6 +12,19 @@ from aioWiserHeatAPI.helpers.equipment import (
 class WiserEquipmentNotificationTest(unittest.TestCase):
     """Test equipment power notification data."""
 
+    def test_available_control_states_returns_advertised_states(self) -> None:
+        """Available control states are exposed from the equipment data."""
+        states = ["selfManagement", "consumptionForceOff"]
+        equipment = _WiserEquipment({"AvailableControlState": states})
+
+        self.assertEqual(equipment.available_control_states, states)
+
+    def test_missing_available_control_states_returns_empty_list(self) -> None:
+        """Missing available control states are represented by an empty list."""
+        equipment = _WiserEquipment({})
+
+        self.assertEqual(equipment.available_control_states, [])
+
     def test_over_power_notification_uses_over_power_info(self) -> None:
         """Over-power data is exposed through its matching info class."""
         equipment = _WiserEquipment(
