@@ -29,7 +29,6 @@ from .const import (
     WISERUICONFIGURATION,
 )
 from .evse import _WiserEVSE, _WiserEVSECollection
-from .equipments import _WiserEquipmentsCollection
 from .heating_actuator import _WiserHeatingActuator, _WiserHeatingActuatorCollection
 from .helpers.device import _WiserDevice
 from .helpers.threshold import (
@@ -183,10 +182,7 @@ class _WiserDeviceCollection:
         self._wiser_rest_controller = wiser_rest_controller
         self._device_data = domain_data.get("Device", {})
         self._domain_data = domain_data
-        self._equipment_data = domain_data.get("Equipment", []) or []
-        self._equipments = _WiserEquipmentsCollection(
-            wiser_rest_controller, self._equipment_data
-        )
+        self._equipment_data = domain_data.get("Equipment", {})  # Supported by v2 hub
         self._schedules = schedules
         self._device_collection = {}
 
@@ -361,11 +357,6 @@ class _WiserDeviceCollection:
             return self._device_collection["EVSE"]
         except KeyError:
             return None
-
-    @property
-    def equipments(self) -> _WiserEquipmentsCollection:
-        """Return all equipment records reported by the hub."""
-        return self._equipments
 
     @property
     def lights(self) -> _WiserLightCollection:
