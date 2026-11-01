@@ -25,6 +25,21 @@ class WiserEquipmentNotificationTest(unittest.TestCase):
 
         self.assertEqual(equipment.available_control_states, [])
 
+    def test_invalid_available_control_states_returns_empty_list(self) -> None:
+        """Malformed control-state data is not exposed as an iterable string."""
+        equipment = _WiserEquipment({"AvailableControlState": "selfManagement"})
+
+        self.assertEqual(equipment.available_control_states, [])
+
+    def test_available_control_states_returns_a_copy(self) -> None:
+        """Consumers cannot mutate the source hub data through the property."""
+        source = ["selfManagement"]
+        equipment = _WiserEquipment({"AvailableControlState": source})
+
+        equipment.available_control_states.append("consumptionForceOff")
+
+        self.assertEqual(source, ["selfManagement"])
+
     def test_equipment_power_and_schedule_attributes(self) -> None:
         """Equipment-specific power and schedule fields use their matching keys."""
         equipment = _WiserEquipment(
@@ -46,6 +61,29 @@ class WiserEquipmentNotificationTest(unittest.TestCase):
         self.assertIsNone(equipment.overview_schedule_id)
         self.assertIsNone(equipment.stated_power)
         self.assertIsNone(equipment.cable_stated_power)
+
+    def test_zero_equipment_values_are_preserved(self) -> None:
+        """Explicit zero values are distinct from missing values."""
+        equipment = _WiserEquipment(
+            {
+                "OverviewScheduleId": 0,
+                "StatedPower": 0,
+                "CableStatedPower": 0,
+            }
+        )
+
+        self.assertEqual(equipment.overview_schedule_id, 0)
+        self.assertEqual(equipment.stated_power, 0)
+        self.assertEqual(equipment.cable_stated_power, 0)
+
+    def test_missing_under_power_values_remain_none(self) -> None:
+        """Missing under-power values are not invented as zero thresholds."""
+        equipment = _WiserEquipment({"UnderPowerNotification": {"Enabled": False}})
+
+        notification = equipment.under_power_notification
+
+        self.assertIsNone(notification.period_mins)
+        self.assertIsNone(notification.limit)
 
     def test_over_power_notification_uses_over_power_info(self) -> None:
         """Over-power data is exposed through its matching info class."""

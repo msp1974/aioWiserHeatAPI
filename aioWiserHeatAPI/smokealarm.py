@@ -104,6 +104,20 @@ class _WiserSmokeAlarm(_WiserDevice):
         return self._device_type_data.get("EnableNotification", False)
 
     @property
+    def notification_supported(self) -> bool:
+        """Return whether this alarm reports native notification support."""
+        return "EnableNotification" in self._device_type_data
+
+    async def set_notification_enabled(self, enabled: bool) -> bool:
+        """Enable or disable native notifications for this smoke alarm."""
+        await self._wiser_rest_controller._send_command(
+            self._endpoint.format(self.id),
+            {"EnableNotification": enabled},
+        )
+        self._device_type_data["EnableNotification"] = enabled
+        return True
+
+    @property
     def supervision_notify(self) -> bool:
         """Get if supervision notify active"""
         return self._device_type_data.get("SupervisionNotify", False)

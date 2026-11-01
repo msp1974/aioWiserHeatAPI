@@ -60,9 +60,18 @@ class _WiserBinarySensor(_WiserDevice):
         return self._device_type_data.get("Type")
 
     @property
-    def enable_notification(self) -> str:
-        """Get if notifications is enable"""
+    def enable_notification(self) -> bool | None:
+        """Return whether native notifications are enabled, when supported."""
         return self._device_type_data.get("EnableNotification")
+
+    async def set_notification_enabled(self, enabled: bool) -> bool:
+        """Enable or disable native notifications for this sensor."""
+        await self._wiser_rest_controller._send_command(
+            self._endpoint.format(self.device_type_id),
+            {"EnableNotification": enabled},
+        )
+        self._device_type_data["EnableNotification"] = enabled
+        return True
 
     @property
     def battery(self) -> _WiserBattery:
