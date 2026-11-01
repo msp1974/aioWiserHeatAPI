@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import AsyncMock
 
 from aioWiserHeatAPI.devices import _WiserDeviceCollection
+from aioWiserHeatAPI.evse import _WiserEVSE
 from aioWiserHeatAPI.equipments import (
     _WiserEquipments,
     _WiserEquipmentsCollection,
@@ -137,6 +138,42 @@ class WiserEquipmentNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(result)
         controller._send_command.assert_not_awaited()
+
+
+class WiserEVSECommandTest(unittest.IsolatedAsyncioTestCase):
+    """Test EVSE equipment commands."""
+
+    async def test_empty_success_response_preserves_equipment_data(self) -> None:
+        """An empty successful response updates state without losing telemetry."""
+        controller = AsyncMock()
+        controller._send_command.return_value = {}
+        evse = _WiserEVSE(
+            controller,
+            None,
+            {"id": 7},
+            {
+                "id": 21,
+                "AvailableControlState": [
+                    "selfManagement",
+                    "consumptionForceOff",
+                ],
+                "ControlState": "selfManagement",
+                "TotalActivePower": 7200,
+            },
+        )
+
+        result = await evse.turn_off()
+
+        self.assertTrue(result)
+        controller._send_command.assert_awaited_once_with(
+            "Equipment/21", {"ControlState": "consumptionForceOff"}
+        )
+        self.assertEqual(evse.control_state, "consumptionForceOff")
+        self.assertEqual(evse.instantaneous_power, 7200)
+        self.assertEqual(
+            evse.available_control_states,
+            ["selfManagement", "consumptionForceOff"],
+        )
 
 
 if __name__ == "__main__":

@@ -69,12 +69,15 @@ class _WiserEVSE(_WiserDevice):
         result = await self._wiser_rest_controller._send_command(
             WISEREQUIPMENT.format(self.equipment_id), {"ControlState": state}
         )
-        if result:
-            # Some hub versions return only the changed field. Preserve the
-            # equipment telemetry and advertised states until the next poll.
-            self._device_type_data = {**self._device_type_data, **result}
-            return True
-        return False
+        # Successful hub commands can return an empty object or only the
+        # changed field. Preserve existing telemetry and reflect the requested
+        # state until the next poll supplies a complete equipment record.
+        self._device_type_data = {
+            **self._device_type_data,
+            **result,
+            "ControlState": result.get("ControlState", state),
+        }
+        return True
 
     async def turn_on(self) -> bool:
         """Return the EVSE to its normal self-managed state."""
