@@ -8,6 +8,7 @@ from aioWiserHeatAPI.equipments import (
     _WiserEquipments,
     _WiserEquipmentsCollection,
 )
+from aioWiserHeatAPI.rest_controller import WiserRestActionEnum
 
 
 class WiserEquipmentsCollectionTest(unittest.TestCase):
@@ -43,6 +44,31 @@ class WiserEquipmentsCollectionTest(unittest.TestCase):
         )
 
         self.assertEqual(collection.get_by_equipment_id(22).id, 22)
+
+    def test_collection_ignores_malformed_equipment_data(self) -> None:
+        """Unexpected domain data cannot break collection construction."""
+        collection = _WiserEquipmentsCollection(AsyncMock(), {"id": 21})
+
+        self.assertEqual(collection.all, [])
+        self.assertEqual(collection.count, 0)
+
+    def test_collection_ignores_non_mapping_records(self) -> None:
+        """Only object-shaped equipment records become equipment instances."""
+        collection = _WiserEquipmentsCollection(
+            AsyncMock(), [{"id": 21}, None, "invalid"]
+        )
+
+        self.assertEqual(collection.count, 1)
+        self.assertEqual(collection.get_by_id(21).id, 21)
+
+    def test_get_by_device_id_uses_application_instance_id(self) -> None:
+        """Linked equipment can be resolved from its physical device id."""
+        collection = _WiserEquipmentsCollection(
+            AsyncMock(),
+            [{"id": 21, "DeviceApplicationInstanceId": 8}],
+        )
+
+        self.assertEqual(collection.get_by_device_id(8).id, 21)
 
 
 class WiserEquipmentNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
@@ -134,6 +160,95 @@ class WiserEquipmentNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         equipment = _WiserEquipments(controller, {"id": 21})
 
         result = await equipment.set_over_power_notification_enabled(True)
+
+        self.assertFalse(result)
+        controller._send_command.assert_not_awaited()
+
+    async def test_create_under_power_notification(self) -> None:
+        """A complete under-power notification is sent and stored locally."""
+        controller = AsyncMock()
+        equipment = _WiserEquipments(controller, {"id": 21})
+
+        result = await equipment.set_under_power_notification(5, 0)
+
+        self.assertTrue(result)
+        controller._send_command.assert_awaited_once_with(
+            "Equipment/21",
+            {
+                "UnderPowerNotification": {
+                    "PeriodMins": 5,
+                    "Limit": 0,
+                    "Enabled": True,
+                }
+            },
+        )
+        self.assertEqual(equipment.under_power_notification.period_mins, 5)
+        self.assertEqual(equipment.under_power_notification.limit, 0)
+        self.assertTrue(equipment.under_power_notification.enabled)
+
+    async def test_update_over_power_notification(self) -> None:
+        """Setting a notification replaces all of its configurable values."""
+        controller = AsyncMock()
+        equipment = _WiserEquipments(
+            controller,
+            {
+                "id": 21,
+                "OverPowerNotification": {
+                    "PeriodMins": 5,
+                    "Limit": 100,
+                    "Enabled": True,
+                },
+            },
+        )
+
+        result = await equipment.set_over_power_notification(10, 250, False)
+
+        self.assertTrue(result)
+        controller._send_command.assert_awaited_once_with(
+            "Equipment/21",
+            {
+                "OverPowerNotification": {
+                    "PeriodMins": 10,
+                    "Limit": 250,
+                    "Enabled": False,
+                }
+            },
+        )
+        self.assertEqual(equipment.over_power_notification.period_mins, 10)
+        self.assertEqual(equipment.over_power_notification.limit, 250)
+        self.assertFalse(equipment.over_power_notification.enabled)
+
+    async def test_delete_over_power_notification(self) -> None:
+        """Deletion uses the native notification endpoint and clears local data."""
+        controller = AsyncMock()
+        equipment = _WiserEquipments(
+            controller,
+            {
+                "id": 21,
+                "OverPowerNotification": {
+                    "PeriodMins": 5,
+                    "Limit": 100,
+                    "Enabled": True,
+                },
+            },
+        )
+
+        result = await equipment.delete_over_power_notification()
+
+        self.assertTrue(result)
+        controller._send_command.assert_awaited_once_with(
+            "Equipment/21/OverPowerNotification/",
+            None,
+            WiserRestActionEnum.DELETE,
+        )
+        self.assertIsNone(equipment.over_power_notification)
+
+    async def test_delete_missing_notification_does_not_call_hub(self) -> None:
+        """Deleting a notification that is not configured is a no-op."""
+        controller = AsyncMock()
+        equipment = _WiserEquipments(controller, {"id": 21})
+
+        result = await equipment.delete_under_power_notification()
 
         self.assertFalse(result)
         controller._send_command.assert_not_awaited()
