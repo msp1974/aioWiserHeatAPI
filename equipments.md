@@ -1,24 +1,18 @@
-# Equipment records
+Summary
+Rewrite the new implementation of equipments:
+Add some attributes to equipment records.
 
-Generation 2 hubs include an `Equipment` array in the domain response. These
-records complement physical devices with power, scheduling, load-control, and
-native notification data.
+Problem
 
-`devices.equipments` exposes every valid equipment record and supports lookup
-by equipment ID or linked device application-instance ID. Hubs that omit the
-array expose an empty collection.
+Changes
+add "available_control_states" and "overview_schedule_id" to equipment for smart plugs and EVSE
+add "stated_power" to equipment for smart plugs (stated power gives the power of the device)
+add "cable_stated_power" to equipment for EVSE (cable stated power gives the maximum charging power)
+it affects the files:
+    helpers/equipment.py
+    equipments.py
+    evse.py
 
-Equipment records provide the following optional fields without inventing
-defaults for missing values:
-
-- available control states and overview schedule ID;
-- stated power for smart plugs;
-- cable stated power for EVSE devices;
-- under-power and over-power notification settings.
-
-Native power notifications can be created, updated, enabled, disabled, and
-deleted. Create and update operations patch the complete notification object.
-Deletion uses the notification subresource exposed by the hub.
-
-EVSE devices use the validated control states from their linked equipment
-record.
+Testing
+Works fine on my HA.
+Fixes https://github.com/asantaga/wiserHomeAssistantPlatform/issues/786

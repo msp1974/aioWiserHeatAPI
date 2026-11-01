@@ -47,14 +47,14 @@ class _WiserEquipmentUnderPowerNotificationInfo(object):
         self._data = data
 
     @property
-    def period_mins(self) -> int | None:
-        """Get notification period in minutes."""
-        return self._data.get("PeriodMins")
+    def period_mins(self) -> int:
+        """Get delivered power"""
+        return self._data.get("PeriodMins", 0)
 
     @property
-    def limit(self) -> int | None:
+    def limit(self) -> int:
         """Get limit"""
-        return self._data.get("Limit")
+        return self._data.get("Limit", 0)
 
     @property
     def enabled(self) -> bool:
@@ -192,23 +192,22 @@ class _WiserEquipment:
     @property
     def available_control_states(self) -> list[str]:
         """Get the control states available for this equipment"""
-        states = self._data.get("AvailableControlState")
-        return list(states) if isinstance(states, list) else []
+        return self._data.get("AvailableControlState") or []
 
     @property
     def overview_schedule_id(self) -> int | None:
         """Get the overview schedule ID for this equipment"""
-        return self._data.get("OverviewScheduleId")
+        return self._data.get("OverviewScheduleId") or None
 
     @property
     def stated_power(self) -> int | None:
         """Get the stated power value available for this equipment"""
-        return self._data.get("StatedPower")
+        return self._data.get("StatedPower") or None
 
     @property
     def cable_stated_power(self) -> int | None:
         """Get the cabled stated power value available for this EVSE equipment"""
-        return self._data.get("CableStatedPower")
+        return self._data.get("CableStatedPower") or None
 
     @property
     def load_state_status(self) -> str:

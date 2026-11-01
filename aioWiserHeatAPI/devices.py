@@ -183,10 +183,7 @@ class _WiserDeviceCollection:
         self._wiser_rest_controller = wiser_rest_controller
         self._device_data = domain_data.get("Device", {})
         self._domain_data = domain_data
-        equipment_data = domain_data.get("Equipment")
-        self._equipment_data = (
-            equipment_data if isinstance(equipment_data, list) else []
-        )
+        self._equipment_data = domain_data.get("Equipment", []) or []
         self._equipments = _WiserEquipmentsCollection(
             wiser_rest_controller, self._equipment_data
         )
