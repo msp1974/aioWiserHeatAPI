@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Callable, Optional
+from urllib.parse import urlparse
 
 import aiohttp
 import aiohttp.client_exceptions
@@ -167,12 +168,14 @@ class _WiserRestController(object):
         # Set correct http(s) prefix
         if self.use_https:
             port = self._wiser_connection_info.port
-            url = "https://" + url.format(self._wiser_connection_info.host, 443 if port == 80 else port)    
+            url = "https://" + url.format(
+                self._wiser_connection_info.host, 443 if port == 80 else port
+            )
         else:
             url = "http://" + url.format(
-            self._wiser_connection_info.host,
-            self._wiser_connection_info.port,
-        )
+                self._wiser_connection_info.host,
+                self._wiser_connection_info.port,
+            )
 
         kwargs = {}
         kwargs["headers"] = {
@@ -192,6 +195,10 @@ class _WiserRestController(object):
             )
         if self._timeout is not None:
             kwargs["timeout"] = self._timeout
+        # Inspect redirects ourselves so an HTTPS redirect can change the
+        # protocol without following a Location header that may contain the
+        # hub's private address.
+        kwargs["allow_redirects"] = False
 
         try:
             async with aiohttp.ClientSession(
@@ -199,12 +206,19 @@ class _WiserRestController(object):
             ) as session:
                 async with session.request(action.value, url, **kwargs) as response:
                     await asyncio.sleep(0)
-                    if not response.ok:
+                    content = await response.read()
+                    # aiohttp reports 3xx responses as ``ok``. Redirects must
+                    # still be processed so an HTTP-to-HTTPS redirect is not
+                    # parsed as a successful JSON response.
+                    if not self._response_is_successful(response):
                         self._process_nok_response(
-                            response, url, data, raise_for_endpoint_error
+                            response,
+                            url,
+                            data,
+                            raise_for_endpoint_error,
+                            content.decode("utf-8", "ignore"),
                         )
                     else:
-                        content = await response.read()
                         if len(content) > 0:
                             response = content.decode("utf-8", "ignore")
                             try:
@@ -249,14 +263,48 @@ class _WiserRestController(object):
                 f"{self._wiser_connection_info.host} for url {url}.  Error is {ex}"
             ) from ex
 
+    @staticmethod
+    def _response_is_successful(response: aiohttp.ClientResponse) -> bool:
+        """Return whether a response can be handled as successful JSON."""
+        return response.ok and not 300 <= response.status < 400
+
+    @staticmethod
+    def _response_requires_https(
+        response: aiohttp.ClientResponse, response_body: str
+    ) -> bool:
+        """Return whether an HTTP response specifically requires HTTPS."""
+        location = response.headers.get("Location", "")
+        if 300 <= response.status < 400 and urlparse(location).scheme == "https":
+            return True
+
+        if response.status != 400:
+            return False
+
+        normalized_body = " ".join(response_body.lower().split())
+        return bool(
+            re.search(
+                r"(?:plain )?http request (?:was )?sent to (?:an )?https port",
+                normalized_body,
+            )
+        )
+
     def _process_nok_response(
         self,
         response: aiohttp.ClientResponse,
         url: str,
         data: dict,
         raise_for_endpoint_error: bool = True,
+        response_body: str = "",
     ):
         status = response.status
+
+        if not self.use_https and self._response_requires_https(
+            response, response_body
+        ):
+            self.use_https = True
+            raise WiserHubRESTError(
+                f"Hub requires HTTPS for REST API requests to {url}"
+            )
 
         if status == 400:
             _LOGGER.debug("400 error")
