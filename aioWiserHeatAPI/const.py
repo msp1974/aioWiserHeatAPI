@@ -154,9 +154,13 @@ class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
 
+class WiserSmartPlugLedIndicatorEnum(enum.Enum):
+    reverse = TEXT_REVERSE
+    consistent = TEXT_CONSISTENT
+    allwayson = TEXT_ALWAYSON
+    allwaysoff = TEXT_ALWAYSOFF
 
 # End added by Lgo44
-
 
 class WiserDeviceModeEnum(enum.Enum):
     auto = TEXT_AUTO
