@@ -1,7 +1,16 @@
-from .const import TEXT_OFF, TEXT_ON, TEXT_UNKNOWN, WiserDeviceModeEnum
+import inspect
+from typing import Union
+
+from .const import (
+    TEXT_OFF,
+    TEXT_ON,
+    TEXT_UNKNOWN,
+    WiserDeviceModeEnum,
+    WiserSmartPlugLedIndicatorEnum,
+)
 from .helpers.device import _WiserElectricalDevice
 from .helpers.equipment import _WiserEquipment
-
+from .helpers.misc import is_value_in_list
 
 class _WiserSmartPlug(_WiserElectricalDevice):
     """Class representing a Wiser Smart Plug device"""
@@ -54,6 +63,49 @@ class _WiserSmartPlug(_WiserElectricalDevice):
     def scheduled_state(self) -> str:
         """Get the current scheduled state of the smart plug"""
         return self._device_type_data.get("ScheduledState", TEXT_UNKNOWN)
+
+    @property
+    def is_led_indicator_supported(self) -> bool:
+        """Get is led indicator supported for the light"""
+
+        return (
+            True
+            if self._device_type_data.get("IsLedIndicatorSupported", False)
+            else False
+        )
+    
+    @property
+    def available_led_indicator(self):
+        """Get available led indicator"""
+        return [action.value for action in WiserSmartPlugLedIndicatorEnum]
+
+    # add led indicator property to the smart plug class
+    @property
+    def led_indicator(self) -> str:
+        """Get  led indicator for the plug"""
+        return self._device_type_data.get("LedIndicator", TEXT_UNKNOWN)
+
+    async def set_led_indicator(
+        self, led_indicator: Union[WiserSmartPlugLedIndicatorEnum, str]
+    ) -> bool:
+        if isinstance(led_indicator, WiserSmartPlugLedIndicatorEnum):
+            led_indicator = led_indicator.value
+        if is_value_in_list(led_indicator, self.available_led_indicator):
+            return await self._send_command({"LedIndicator": led_indicator})
+        else:
+            raise ValueError(
+                f"{led_indicator} is not a valid mode.  Valid modes are {self.available_led_indicator}"
+            )
+
+    @property
+    def next_scheduled_date(self) -> str:
+        """Get the next scheduled date for the smart plug"""
+        return self._device_type_data.get("NextScheduledDate", TEXT_UNKNOWN)
+
+    @property
+    def next_scheduled_end_date(self) -> str:
+        """Get the next scheduled end date for the smart plug"""
+        return self._device_type_data.get("NextScheduledEndDate", TEXT_UNKNOWN)
 
     async def turn_on(self) -> bool:
         """
