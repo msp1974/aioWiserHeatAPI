@@ -74,6 +74,9 @@ TEXT_OFF_AFTER_2S = "OffAfter2s"
 TEXT_LASTON = "LastOnBrightness"
 TEXT_LEVELPERCENT = "LevelPercent"
 
+TEXT_RELAY = "Relay"
+TEXT_FIL_PILOTE = "FilPilote"
+
 # End added by Lgo44
 
 # Day Value Lists
@@ -165,6 +168,9 @@ class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
 
+class WiserHeatingActuatorOutputTypeEnum(enum.Enum):
+    relay = TEXT_RELAY
+    fil_pilote = TEXT_FIL_PILOTE
 
 # End added by Lgo44
 
