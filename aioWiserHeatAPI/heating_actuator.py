@@ -1,11 +1,21 @@
-from .const import TEMP_OFF, TEXT_UNKNOWN, WISERHEATINGACTUATOR, WiserTempLimitsEnum
+import inspect
+from typing import Union
+
+from .const import (
+    TEMP_OFF,
+    TEXT_UNKNOWN,
+    WISERHEATINGACTUATOR,
+    WiserTempLimitsEnum,
+    WiserHeatingActuatorOutputTypeEnum,
+)
+
 from .helpers.device import _WiserDevice
 from .helpers.equipment import _WiserEquipment
 from .helpers.temp import _WiserTemperatureFunctions as tf
 from .helpers.threshold import _WiserThresholdSensor
 from .helpers.uiconfiguration import _WiserUIConfigSensor
 from .rest_controller import _WiserRestController
-
+from .helpers.misc import is_value_in_list
 
 class _WiserTemperatureSensor:
     """Data structure for plug in temp sensor"""
@@ -165,11 +175,6 @@ class _WiserHeatingActuator(_WiserDevice):
         return self._device_type_data.get("InstantaneousDemand", None)
 
     @property
-    def output_type(self) -> str:
-        """Get output type"""
-        return self._device_type_data.get("OutputType", TEXT_UNKNOWN)
-
-    @property
     def threshold_sensors(self) -> list[_WiserThresholdSensor]:
         """Get threshold sensors."""
         return self._threshold_sensors
@@ -178,6 +183,30 @@ class _WiserHeatingActuator(_WiserDevice):
     def uiconfig_sensors(self) -> list[_WiserUIConfigSensor]:
         """Get ui configuration sensors."""
         return self._uiconfig_sensors
+
+    #add output type
+
+    @property
+    def available_output_type(self):
+        """Get available output type"""
+        return [action.value for action in WiserHeatingActuatorOutputTypeEnum]
+
+    @property
+    def output_type(self) -> str:
+        """Get the output type for the heating actuator"""
+        return self._device_type_data.get("OutputType", TEXT_UNKNOWN)
+
+    async def set_output_type(
+        self, output_type: Union[WiserHeatingActuatorOutputTypeEnum, str]
+    ) -> bool:
+        if isinstance(output_type, WiserHeatingActuatorOutputTypeEnum):
+            output_type = output_type.value
+        if is_value_in_list(output_type, self.available_output_type):
+            return await self._send_command({"OutputType": output_type})
+        else:
+            raise ValueError(
+                f"{output_type} is not a valid type.  Valid types are {self.available_output_type}"
+            )
 
 
 class _WiserHeatingActuatorCollection(object):
