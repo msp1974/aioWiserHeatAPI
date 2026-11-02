@@ -10,6 +10,7 @@ from .const import (
     WiserDeviceModeEnum,
     WiserLightLedIndicatorEnum,
     WiserLightPowerOnBehaviourEnum,
+    WiserLightOutputModeEnum,
 )
 from .helpers.device import _WiserElectricalDevice
 from .helpers.misc import is_value_in_list
@@ -170,6 +171,21 @@ class _WiserLight(_WiserElectricalDevice):
     # end added by LGO
 
     @property
+    def manual_level(self) -> int:
+        """Get manual level of light"""
+        return self._device_type_data.get("ManualLevel", 0)
+
+    @property
+    def scheduled_percentage(self) -> int:
+        """Get the scheduled percentage for the light"""
+        return self._data.get("ScheduledPercentage", 0)
+
+    @property
+    def target_percentage(self) -> int:
+        """Get target percentage brightness of light"""
+        return self._device_type_data.get("TargetPercentage", 0)
+
+    @property
     def target_state(self) -> int:
         """Get target state of light"""
         return self._device_type_data.get("TargetState", 0)
@@ -232,15 +248,6 @@ class _WiserDimmableLight(_WiserLight):
         # TODO: Add setter for min max values
         return _WiserOutputRange(self._device_type_data.get("OutputRange", None))
 
-    @property
-    def scheduled_percentage(self) -> int:
-        """Get the scheduled percentage for the light"""
-        return self._data.get("ScheduledPercentage", 0)
-
-    @property
-    def target_percentage(self) -> int:
-        """Get target percentage brightness of light"""
-        return self._device_type_data.get("TargetPercentage", 0)
 
     # added by LGO
     # Hub V2  new features
@@ -271,6 +278,23 @@ class _WiserDimmableLight(_WiserLight):
     def power_on_level(self) -> int:
         """Get power on level for the light"""
         return self._device_type_data.get("PowerOnLevel", None)
+
+    @property
+    def available_output_mode(self):
+        """Get available output mode"""
+        return [action.value for action in WiserLightOutputModeEnum]
+
+    async def set_output_mode(
+        self, output_mode: Union[WiserLightOutputModeEnum, str]
+    ) -> bool:
+        if isinstance(output_mode, WiserLightOutputModeEnum):
+            output_mode = output_mode.value
+        if is_value_in_list(output_mode, self.available_output_mode):
+            return await self._send_command({"OutputMode": output_mode})
+        else:
+            raise ValueError(
+                f"{output_mode} is not a valid mode.  Valid modes are {self.available_output_mode}"
+            )
 
     # end added by LGO
 
