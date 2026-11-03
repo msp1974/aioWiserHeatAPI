@@ -279,6 +279,14 @@ class _WiserDimmableLight(_WiserLight):
         """Get power on level for the light"""
         return self._device_type_data.get("PowerOnLevel", None)
 
+    async def set_power_on_level(self, level: int):
+        """Set power on level for the light"""
+        if 0 <= level <= 100:
+            return await self._send_command({"PowerOnLevel": level})
+        else:
+            raise ValueError("Power on level must be between 0 and 100")
+
+
     @property
     def available_output_mode(self):
         """Get available output mode"""
