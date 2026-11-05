@@ -145,6 +145,39 @@ class WiserDeviceNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         )
         self.assertFalse(automation.notification_enabled)
 
+    async def test_automation_details_are_loaded_and_cached(self) -> None:
+        controller = AsyncMock()
+        controller.get_hub_data.return_value = {
+            "TriggerMode": "All",
+            "Triggers": [{"Domain": "SmartPlug", "Id": 1}],
+            "Actions": [{"Wait": 1}],
+            "TimeConstraints": [],
+        }
+        automation = _WiserAutomation(controller, {"id": 12, "Name": "Test"})
+
+        details = await automation.get_details()
+        cached = await automation.get_details()
+
+        controller.get_hub_data.assert_awaited_once_with(
+            "{}:{}/Automation/12", False
+        )
+        self.assertEqual(details, controller.get_hub_data.return_value)
+        self.assertEqual(cached, details)
+
+    async def test_automation_details_can_be_refreshed(self) -> None:
+        controller = AsyncMock()
+        controller.get_hub_data.side_effect = [
+            {"Triggers": [{"Id": 1}]},
+            {"Triggers": [{"Id": 2}]},
+        ]
+        automation = _WiserAutomation(controller, {"id": 12})
+
+        await automation.get_details()
+        details = await automation.get_details(refresh=True)
+
+        self.assertEqual(details, {"Triggers": [{"Id": 2}]})
+        self.assertEqual(controller.get_hub_data.await_count, 2)
+
     async def test_automation_delete_command(self) -> None:
         controller = AsyncMock()
         automation = _WiserAutomation(

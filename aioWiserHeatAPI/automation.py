@@ -1,7 +1,12 @@
 import inspect
 
 from . import _LOGGER
-from .const import TEXT_UNKNOWN, WISERAUTOMATION, WISERSYSTEM
+from .const import (
+    TEXT_UNKNOWN,
+    WISERAUTOMATION,
+    WISERHUBAUTOMATION,
+    WISERSYSTEM,
+)
 from .rest_controller import WiserRestActionEnum, _WiserRestController
 
 
@@ -11,6 +16,8 @@ class _WiserAutomation:
     ):
         self._wiser_rest_controller = wiser_rest_controller
         self._automation_data = automation_data
+        self._details = {}
+        self._details_loaded = False
 
     async def _send_command(self, cmd: dict) -> bool:
         """
@@ -45,6 +52,17 @@ class _WiserAutomation:
     @property
     def notification_enabled(self) -> bool:
         return self._automation_data.get("EnableNotification", False)
+
+    async def get_details(self, refresh: bool = False) -> dict:
+        """Return the automation triggers, actions and time constraints."""
+        if refresh or not self._details_loaded:
+            details = await self._wiser_rest_controller.get_hub_data(
+                f"{WISERHUBAUTOMATION}{self.id}",
+                False,
+            )
+            self._details = details if isinstance(details, dict) else {}
+            self._details_loaded = True
+        return self._details.copy()
 
     async def enable_notification(self):
         """Activate automation"""
