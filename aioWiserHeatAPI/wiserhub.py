@@ -41,6 +41,7 @@ from .const import (
     WISERHUBURL,
     WiserUnitsEnum,
 )
+from .automation import _WiserAutomationCollection
 from .devices import _WiserDeviceCollection
 from .exceptions import (
     WiserHubAuthenticationError,
@@ -99,6 +100,7 @@ class WiserAPI:
 
         # Data stores for exposed properties
         self._devices = None
+        self._automations = None
         self._hotwater = None
         self._heating_channels = None
         self._moments = None
@@ -273,6 +275,12 @@ class WiserAPI:
                     self._schedules,
                 )
 
+                # Automations Collection
+                self._automations = _WiserAutomationCollection(
+                    self._wiser_rest_controller,
+                    self._domain_data.get("Automation", []),
+                )
+
                 # Rooms Collection
                 room_data = self._domain_data.get("Room", [])
                 self._rooms = _WiserRoomCollection(
@@ -329,6 +337,11 @@ class WiserAPI:
     def devices(self) -> _WiserDeviceCollection:
         """List of device entities attached to the Wiser Hub"""
         return self._devices
+
+    @property
+    def automations(self) -> _WiserAutomationCollection:
+        """List of automations configured on the Wiser Hub."""
+        return self._automations
 
     @property
     def heating_channels(self) -> _WiserHeatingChannelCollection:
