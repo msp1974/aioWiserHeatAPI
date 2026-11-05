@@ -22,7 +22,7 @@ class WiserDeviceNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(await sensor.set_notification_enabled(True))
         controller._send_command.assert_awaited_once_with(
-            "BinarySensor/3", {"EnableNotification": "true"}
+            "BinarySensor/3", {"EnableNotification": True}
         )
         self.assertTrue(sensor.enable_notification)
 
@@ -38,7 +38,7 @@ class WiserDeviceNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(alarm.notification_supported)
         self.assertTrue(await alarm.set_notification_enabled(False))
         controller._send_command.assert_awaited_once_with(
-            "SmokeAlarmDevice/4", {"EnableNotification": "false"}
+            "SmokeAlarmDevice/4", {"EnableNotification": False}
         )
         self.assertFalse(alarm.notification_enabled)
 
