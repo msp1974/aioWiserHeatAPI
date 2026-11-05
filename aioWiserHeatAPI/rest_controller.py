@@ -93,7 +93,7 @@ class _WiserRestController(object):
         self,
         action: WiserRestActionEnum,
         url: str,
-        data: dict = None,
+        data: object | None = None,
         raise_for_endpoint_error: bool = True,
     ):
         """Function to retry on response errors due to inconsistant isues reading from the hub."""
@@ -153,7 +153,7 @@ class _WiserRestController(object):
         self,
         action: WiserRestActionEnum,
         url: str,
-        data: dict | None = None,
+        data: object | None = None,
         raise_for_endpoint_error: bool = True,
         http_version=aiohttp.HttpVersion11,
     ):
@@ -182,8 +182,7 @@ class _WiserRestController(object):
             "User-Agent": "HomeAssistant",
         }
 
-        # if data is not None:
-        if data:
+        if data is not None:
             kwargs["data"] = json.dumps(data, ensure_ascii=False).encode("utf8")
             kwargs["headers"].update(
                 {
@@ -309,7 +308,7 @@ class _WiserRestController(object):
     async def _send_command(
         self,
         url: str,
-        command_data: dict,
+        command_data: object,
         method: WiserRestActionEnum = WiserRestActionEnum.PATCH,
     ):
         """

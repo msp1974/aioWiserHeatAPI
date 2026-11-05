@@ -50,13 +50,13 @@ class _WiserAutomation:
         """Activate automation"""
         return await self._send_command({"EnableNotification": self.id})
 
-    async def set_notification_enabled(self, enabled: bool) -> bool:
-        """Enable or disable native notifications for this automation."""
+    async def set_enabled(self, enabled: bool) -> bool:
+        """Enable or disable this automation."""
         await self._wiser_rest_controller._send_command(
-            WISERAUTOMATION.format(self.id),
-            {"EnableNotification": str(enabled).lower()},
+            f"{WISERAUTOMATION.format(self.id)}/Enabled",
+            enabled,
         )
-        self._automation_data["EnableNotification"] = enabled
+        self._automation_data["Enabled"] = enabled
         return True
 
 
