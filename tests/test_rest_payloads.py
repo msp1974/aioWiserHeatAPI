@@ -12,6 +12,7 @@ from aioWiserHeatAPI.rest_controller import (
 
 class _FakeResponse:
     ok = True
+    status = 200
 
     async def __aenter__(self):
         return self
