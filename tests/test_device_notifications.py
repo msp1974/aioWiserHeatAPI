@@ -3,6 +3,7 @@
 import unittest
 from unittest.mock import AsyncMock
 
+from aioWiserHeatAPI.automation import _WiserAutomation
 from aioWiserHeatAPI.binary_sensor import _WiserBinarySensor
 from aioWiserHeatAPI.smokealarm import _WiserSmokeAlarm
 
@@ -50,3 +51,27 @@ class WiserDeviceNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertFalse(alarm.notification_supported)
+
+    async def test_automation_notification_command(self) -> None:
+        controller = AsyncMock()
+        automation = _WiserAutomation(
+            controller,
+            {"id": 12, "Name": "Door left open", "EnableNotification": True},
+        )
+
+        self.assertTrue(await automation.set_notification_enabled(False))
+        controller._send_command.assert_awaited_once_with(
+            "Automation/12", {"EnableNotification": "false"}
+        )
+        self.assertFalse(automation.notification_enabled)
+
+    async def test_automation_notification_accepts_empty_success_response(self) -> None:
+        controller = AsyncMock()
+        controller._send_command.return_value = {}
+        automation = _WiserAutomation(
+            controller,
+            {"id": 12, "Name": "Door left open", "EnableNotification": False},
+        )
+
+        self.assertTrue(await automation.set_notification_enabled(True))
+        self.assertTrue(automation.notification_enabled)

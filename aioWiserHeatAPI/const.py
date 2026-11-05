@@ -113,6 +113,7 @@ WISERBUTTONPANEL = "ButtonPanel/{}"
 WISEREQUIPMENT = "Equipment/{}"
 WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
+WISERAUTOMATION = "Automation/{}"
 
 
 # Enums
