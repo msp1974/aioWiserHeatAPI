@@ -112,7 +112,7 @@ class _WiserSmokeAlarm(_WiserDevice):
         """Enable or disable native notifications for this smoke alarm."""
         await self._wiser_rest_controller._send_command(
             self._endpoint.format(self.id),
-            {"EnableNotification": enabled},
+            {"EnableNotification": str(enabled).lower()},
         )
         self._device_type_data["EnableNotification"] = enabled
         return True
