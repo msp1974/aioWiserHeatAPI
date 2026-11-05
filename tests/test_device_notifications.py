@@ -38,7 +38,7 @@ class WiserDeviceNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(alarm.notification_supported)
         self.assertTrue(await alarm.set_notification_enabled(False))
         controller._send_command.assert_awaited_once_with(
-            "SmokeAlarmDevice/11", {"EnableNotification": "false"}
+            "SmokeAlarmDevice/4", {"EnableNotification": "false"}
         )
         self.assertFalse(alarm.notification_enabled)
 
