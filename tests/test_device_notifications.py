@@ -114,6 +114,37 @@ class WiserDeviceNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(await automation.set_enabled(True))
         self.assertTrue(automation.enabled)
 
+    async def test_automation_notification_enabled_command(self) -> None:
+        controller = AsyncMock()
+        automation = _WiserAutomation(
+            controller,
+            {
+                "id": 12,
+                "Name": "Door left open",
+                "Enabled": True,
+                "EnableNotification": False,
+            },
+        )
+
+        self.assertTrue(await automation.set_notification_enabled(True))
+        controller._send_command.assert_awaited_once_with(
+            "Automation/12/EnableNotification", True
+        )
+        self.assertTrue(automation.notification_enabled)
+
+    async def test_automation_notification_disabled_command(self) -> None:
+        controller = AsyncMock()
+        automation = _WiserAutomation(
+            controller,
+            {"id": 12, "EnableNotification": True},
+        )
+
+        self.assertTrue(await automation.set_notification_enabled(False))
+        controller._send_command.assert_awaited_once_with(
+            "Automation/12/EnableNotification", False
+        )
+        self.assertFalse(automation.notification_enabled)
+
     async def test_automation_delete_command(self) -> None:
         controller = AsyncMock()
         automation = _WiserAutomation(
