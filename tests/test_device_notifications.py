@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 
 from aioWiserHeatAPI.automation import _WiserAutomation
 from aioWiserHeatAPI.binary_sensor import _WiserBinarySensor
+from aioWiserHeatAPI.const import WiserWindowDoorEnableNotificationEnum
 from aioWiserHeatAPI.smokealarm import _WiserSmokeAlarm
 
 
@@ -17,14 +18,50 @@ class WiserDeviceNotificationCommandTest(unittest.IsolatedAsyncioTestCase):
             controller,
             "BinarySensor/{}",
             {"id": 8, "Name": "Patio door"},
-            {"id": 3, "Type": "WindowDoor", "EnableNotification": False},
+            {"id": 3, "Type": "WindowDoor", "EnableNotification": "None"},
         )
 
+        self.assertFalse(sensor.notification_enabled)
         self.assertTrue(await sensor.set_notification_enabled(True))
         controller._send_command.assert_awaited_once_with(
-            "BinarySensor/3", {"EnableNotification": True}
+            "BinarySensor/3", {"EnableNotification": "OnEither"}
         )
-        self.assertTrue(sensor.enable_notification)
+        self.assertEqual(sensor.enable_notification, "OnEither")
+        self.assertTrue(sensor.notification_enabled)
+
+    async def test_binary_sensor_notification_modes(self) -> None:
+        controller = AsyncMock()
+        sensor = _WiserBinarySensor(
+            controller,
+            "BinarySensor/{}",
+            {"id": 8, "Name": "Patio door"},
+            {"id": 3, "Type": "WindowDoor", "EnableNotification": "OnTrue"},
+        )
+
+        self.assertTrue(sensor.notification_enabled)
+        self.assertEqual(
+            sensor.available_enable_notification,
+            ["OnEither", "None", "OnTrue", "OnFalse"],
+        )
+        self.assertTrue(
+            await sensor.set_enable_notification(
+                WiserWindowDoorEnableNotificationEnum.onfalse
+            )
+        )
+        controller._send_command.assert_awaited_once_with(
+            "BinarySensor/3", {"EnableNotification": "OnFalse"}
+        )
+
+    async def test_binary_sensor_rejects_unknown_notification_mode(self) -> None:
+        sensor = _WiserBinarySensor(
+            AsyncMock(),
+            "BinarySensor/{}",
+            {"id": 8},
+            {"id": 3, "Type": "WindowDoor", "EnableNotification": "None"},
+        )
+
+        with self.assertRaisesRegex(ValueError, "invalid.*not a valid"):
+            await sensor.set_enable_notification("invalid")
 
     async def test_smoke_alarm_notification_command(self) -> None:
         controller = AsyncMock()

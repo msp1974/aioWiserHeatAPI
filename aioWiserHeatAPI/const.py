@@ -132,6 +132,15 @@ class WiserTempLimitsEnum(enum.Enum):
     floorHeatingOffset = {"min": -9, "max": 9, "type": "range"}
 
 
+class WiserWindowDoorEnableNotificationEnum(enum.Enum):
+    """Native notification modes supported by window and door sensors."""
+
+    oneither = "OnEither"
+    none = "None"
+    ontrue = "OnTrue"
+    onfalse = "OnFalse"
+
+
 class WiserAwayActionEnum(enum.Enum):
     off = TEXT_OFF
     nochange = TEXT_NO_CHANGE
