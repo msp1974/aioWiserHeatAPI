@@ -6,6 +6,7 @@ import inspect
 
 from aioWiserHeatAPI import _LOGGER
 
+from .const import WiserWindowDoorEnableNotificationEnum
 from .helpers.battery import _WiserBattery
 from .helpers.device import _WiserDevice
 from .helpers.threshold import _WiserThresholdSensor
@@ -60,9 +61,53 @@ class _WiserBinarySensor(_WiserDevice):
         return self._device_type_data.get("Type")
 
     @property
-    def enable_notification(self) -> str:
-        """Get if notifications is enable"""
+    def enable_notification(self) -> str | None:
+        """Return the native notification mode, when supported."""
         return self._device_type_data.get("EnableNotification")
+
+    @property
+    def available_enable_notification(self) -> list[str]:
+        """Return the native notification modes accepted by the hub."""
+        return [mode.value for mode in WiserWindowDoorEnableNotificationEnum]
+
+    @property
+    def notification_enabled(self) -> bool | None:
+        """Return whether any native notification mode is enabled."""
+        mode = self.enable_notification
+        if mode is None:
+            return None
+        if isinstance(mode, bool):
+            return mode
+        return mode != WiserWindowDoorEnableNotificationEnum.none.value
+
+    async def set_enable_notification(
+        self,
+        enable_notification: WiserWindowDoorEnableNotificationEnum | str,
+    ) -> bool:
+        """Set the native notification mode for this sensor."""
+        if isinstance(
+            enable_notification, WiserWindowDoorEnableNotificationEnum
+        ):
+            enable_notification = enable_notification.value
+        if enable_notification not in self.available_enable_notification:
+            raise ValueError(
+                f"{enable_notification} is not a valid notification mode. "
+                f"Valid modes are {self.available_enable_notification}"
+            )
+        await self._wiser_rest_controller._send_command(
+            self._endpoint.format(self.device_type_id),
+            {"EnableNotification": enable_notification},
+        )
+        self._device_type_data["EnableNotification"] = enable_notification
+        return True
+
+    async def set_notification_enabled(self, enabled: bool) -> bool:
+        """Enable or disable native notifications for this sensor."""
+        return await self.set_enable_notification(
+            WiserWindowDoorEnableNotificationEnum.oneither
+            if enabled
+            else WiserWindowDoorEnableNotificationEnum.none
+        )
 
     @property
     def battery(self) -> _WiserBattery:

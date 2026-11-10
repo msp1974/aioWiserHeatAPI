@@ -93,6 +93,7 @@ WISERHUBSCHEDULES = WISERHUBURL + "schedules/"
 WISERHUBOPENTHERM = WISERHUBURL + "opentherm/"
 WISERHUBOPENTHERMV2 = WISERHUBURL + "openTherm/"
 WISERHUBSTATUS = WISERHUBURL + "status/"
+WISERHUBAUTOMATION = "{}:{}/Automation/"
 WISERSYSTEM = "System"
 WISERDEVICE = "Device/{}"
 WISERHOTWATER = "HotWater/{}"
@@ -113,6 +114,7 @@ WISERBUTTONPANEL = "ButtonPanel/{}"
 WISEREQUIPMENT = "Equipment/{}"
 WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
+WISERAUTOMATION = "Automation/{}"
 
 
 # Enums
@@ -129,6 +131,15 @@ class WiserTempLimitsEnum(enum.Enum):
     floorHeatingMin = {"min": 5, "max": 39, "off": -20, "type": "range"}
     floorHeatingMax = {"min": 5, "max": 40, "off": -20, "type": "range"}
     floorHeatingOffset = {"min": -9, "max": 9, "type": "range"}
+
+
+class WiserWindowDoorEnableNotificationEnum(enum.Enum):
+    """Native notification modes supported by window and door sensors."""
+
+    oneither = "OnEither"
+    none = "None"
+    ontrue = "OnTrue"
+    onfalse = "OnFalse"
 
 
 class WiserAwayActionEnum(enum.Enum):
