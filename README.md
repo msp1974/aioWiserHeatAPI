@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.7.7
+# Drayton Wiser Hub API Async v1.7.8
 
 This repository contains a simple API which queries the Drayton Wiser Heating sysystem used in the UK.
 
@@ -55,6 +55,17 @@ To help understand the api simply look at the test sample code `tests/test_api_p
 Documentation available in [info.md](https://github.com/msp1974/wiserHeatAPIv2/blob/master/docs/info.md) in the docs directory and within comments in the code
 
 ## Changelog
+
+### v1.7.8
+
+- Added: Standalone equipment collection through `devices.equipments`, including equipment lookup, available control states, overview schedule IDs, and equipment/EVSE rated power values
+- Added: Create, update, enable, disable, and delete native equipment under-power and over-power notifications
+- Added: Enable or disable native smoke alarm notifications and configure window/door sensor notification modes
+- Added: Hub automation collection through `automations`, with cached automation details (triggers, actions, and time constraints), enable/disable controls, notification controls, and deletion
+- Fix: Retry requests over HTTPS when the hub redirects HTTP traffic or explicitly reports that HTTPS is required, while preserving the configured host and port mapping
+- Fix: Send JSON command payloads containing `false`, `0`, or empty values instead of omitting them
+- Fix: Accept successful EVSE commands with empty responses and preserve existing equipment telemetry when responses contain only changed fields
+- Fix: Correct over-power notification data and preserve zero values, disabled states, and missing settings in partial notification records
 
 ### v1.7.7
 
