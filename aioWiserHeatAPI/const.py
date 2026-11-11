@@ -166,9 +166,12 @@ class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
 
-class WiserLightOutputModeEnum(enum.Enum): 
+
+class WiserLightOutputModeEnum(enum.Enum):
     auto = TEXT_AUTO
-    rl_led = TEXT_RL_LED 
+    rl_led = TEXT_RL_LED
+
+
 # End added by Lgo44
 
 
