@@ -2,9 +2,8 @@
 
 ## v1.7.9 (unreleased)
 
-- Fix: Use `ManualState` for PowerTag Control on/off commands because the hub accepts but ignores `RequestOutput` (asantaga/wiserHomeAssistantPlatform#805)
-
 - Added: Configure smart-plug LED indicator modes and expose the next scheduled start and end dates (asantaga/wiserHomeAssistantPlatform#795)
+- Fix: Use `ManualState` for PowerTag Control on/off commands because the hub accepts but ignores `RequestOutput` (asantaga/wiserHomeAssistantPlatform#805)
 - Fix: Normalize smart-plug LED modes before sending commands, reject invalid modes, and route plug commands using the SmartPlug ID
 
 ## v1.7.8
