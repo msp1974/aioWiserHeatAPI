@@ -10,6 +10,7 @@ from .const import (
     WiserDeviceModeEnum,
     WiserLightLedIndicatorEnum,
     WiserLightPowerOnBehaviourEnum,
+    WiserLightOutputModeEnum,
 )
 from .helpers.device import _WiserElectricalDevice
 from .helpers.misc import is_value_in_list
@@ -170,6 +171,21 @@ class _WiserLight(_WiserElectricalDevice):
     # end added by LGO
 
     @property
+    def manual_level(self) -> int:
+        """Get manual level of light"""
+        return self._device_type_data.get("ManualLevel", 0)
+
+    @property
+    def scheduled_percentage(self) -> int:
+        """Get the scheduled percentage for the light"""
+        return self._data.get("ScheduledPercentage", 0)
+
+    @property
+    def target_percentage(self) -> int:
+        """Get target percentage brightness of light"""
+        return self._device_type_data.get("TargetPercentage", 0)
+
+    @property
     def target_state(self) -> int:
         """Get target state of light"""
         return self._device_type_data.get("TargetState", 0)
@@ -217,11 +233,6 @@ class _WiserDimmableLight(_WiserLight):
             raise ValueError("Brightness level percentage must be between 0 and 100")
 
     @property
-    def manual_level(self) -> int:
-        """Get manual level of light"""
-        return self._device_type_data.get("ManualLevel", 0)
-
-    @property
     def override_level(self) -> int:
         """Get override level of light"""
         return self._device_type_data.get("OverrideLevel", 0)
@@ -231,16 +242,6 @@ class _WiserDimmableLight(_WiserLight):
         """Get output range min/max."""
         # TODO: Add setter for min max values
         return _WiserOutputRange(self._device_type_data.get("OutputRange", None))
-
-    @property
-    def scheduled_percentage(self) -> int:
-        """Get the scheduled percentage for the light"""
-        return self._data.get("ScheduledPercentage", 0)
-
-    @property
-    def target_percentage(self) -> int:
-        """Get target percentage brightness of light"""
-        return self._device_type_data.get("TargetPercentage", 0)
 
     # added by LGO
     # Hub V2  new features
@@ -268,9 +269,34 @@ class _WiserDimmableLight(_WiserLight):
             )
 
     @property
-    def power_on_level(self) -> int:
+    def power_on_level(self) -> int | None:
         """Get power on level for the light"""
         return self._device_type_data.get("PowerOnLevel", None)
+
+    async def set_power_on_level(self, level: int) -> bool:
+        """Set power on level to a whole percentage between 0 and 100."""
+        if isinstance(level, bool) or not isinstance(level, int) or not 0 <= level <= 100:
+            raise ValueError("Power on level must be an integer between 0 and 100")
+        return await self._send_command({"PowerOnLevel": level})
+
+    @property
+    def available_output_mode(self) -> list[str]:
+        """Get available output modes."""
+        return [mode.value for mode in WiserLightOutputModeEnum]
+
+    async def set_output_mode(
+        self, output_mode: Union[WiserLightOutputModeEnum, str]
+    ) -> bool:
+        """Set output mode, accepting enum values or case-insensitive strings."""
+        if isinstance(output_mode, WiserLightOutputModeEnum):
+            output_mode = output_mode.value
+        if isinstance(output_mode, str):
+            for mode in WiserLightOutputModeEnum:
+                if output_mode.casefold() == mode.value.casefold():
+                    return await self._send_command({"OutputMode": mode.value})
+        raise ValueError(
+            f"{output_mode} is not a valid mode.  Valid modes are {self.available_output_mode}"
+        )
 
     # end added by LGO
 
