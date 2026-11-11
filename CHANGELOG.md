@@ -4,6 +4,9 @@
 
 - Fix: Use `ManualState` for PowerTag Control on/off commands because the hub accepts but ignores `RequestOutput` (asantaga/wiserHomeAssistantPlatform#805)
 
+- Added: Configure heating-actuator output types using `Relay` or `FilPilote` (asantaga/wiserHomeAssistantPlatform#797)
+- Fix: Normalize and validate heating-actuator output types before sending commands, and route actuator commands using the HeatingActuator ID
+
 ## v1.7.8
 
 - Added: Standalone equipment collection through `devices.equipments`, including equipment lookup, available control states, overview schedule IDs, and equipment/EVSE rated power values

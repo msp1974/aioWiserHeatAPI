@@ -168,9 +168,11 @@ class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
 
+
 class WiserHeatingActuatorOutputTypeEnum(enum.Enum):
     relay = TEXT_RELAY
     fil_pilote = TEXT_FIL_PILOTE
+
 
 # End added by Lgo44
 
