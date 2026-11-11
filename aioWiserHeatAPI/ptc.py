@@ -117,20 +117,20 @@ class _WiserPowerTagControl(_WiserElectricalDevice):
 
     async def turn_on(self) -> bool:
         """
-        Turn on the smart plug
+        Turn on the PowerTag Control using its manual state.
         return: boolean
         """
-        result = await self._send_command({"RequestOutput": TEXT_ON})
+        result = await self._send_command({"ManualState": TEXT_ON})
         if result:
             self._output_state = TEXT_ON
         return result
 
     async def turn_off(self) -> bool:
         """
-        Turn off the smart plug
+        Turn off the PowerTag Control using its manual state.
         return: boolean
         """
-        result = await self._send_command({"RequestOutput": TEXT_OFF})
+        result = await self._send_command({"ManualState": TEXT_OFF})
         if result:
             self._output_state = TEXT_OFF
         return result
