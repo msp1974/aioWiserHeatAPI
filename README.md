@@ -1,4 +1,4 @@
-# Drayton Wiser Hub API Async v1.7.8
+# Drayton Wiser Hub API Async
 
 An asynchronous Python API for the Drayton Wiser heating system used in the UK.
 It supports one-, two-, and three-channel HeatHubs, Smart Plugs, shutters, lights,

@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.7.9 (unreleased)
+## v1.7.9
 
 - Added: Configure heating-actuator output types using `Relay` or `FilPilote` (asantaga/wiserHomeAssistantPlatform#797)
 - Added: Configure dimmable-light output modes and power-on brightness, and expose manual level, scheduled percentage, and target percentage on all lights (asantaga/wiserHomeAssistantPlatform#790)
