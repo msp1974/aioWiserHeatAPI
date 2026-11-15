@@ -63,7 +63,6 @@ TEXT_WEEKDAYS = "Weekdays"
 TEXT_WEEKENDS = "Weekends"
 TEXT_ALL = "All"
 TEXT_UNABLE = "Unable"
-# added by Lgo44
 
 TEXT_REVERSE = "ReverseWithLoad"
 TEXT_CONSISTENT = "ConsistentWithLoad"
@@ -75,7 +74,9 @@ TEXT_LASTON = "LastOnBrightness"
 TEXT_LEVELPERCENT = "LevelPercent"
 
 TEXT_RL_LED = "RL_LED"
-# End added by Lgo44
+
+TEXT_RELAY = "Relay"
+TEXT_FIL_PILOTE = "FilPilote"
 
 # Day Value Lists
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -153,7 +154,6 @@ class WiserShutterAwayActionEnum(enum.Enum):
     nochange = TEXT_NO_CHANGE
 
 
-# added by Lgo44
 class WiserLightLedIndicatorEnum(enum.Enum):
     reverse = TEXT_REVERSE
     consistent = TEXT_CONSISTENT
@@ -167,6 +167,11 @@ class WiserLightPowerOnBehaviourEnum(enum.Enum):
     levelpercent = TEXT_LEVELPERCENT
 
 
+class WiserLightOutputModeEnum(enum.Enum):
+    auto = TEXT_AUTO
+    rl_led = TEXT_RL_LED
+
+
 class WiserSmartPlugLedIndicatorEnum(enum.Enum):
     reverse = TEXT_REVERSE
     consistent = TEXT_CONSISTENT
@@ -174,9 +179,9 @@ class WiserSmartPlugLedIndicatorEnum(enum.Enum):
     allwaysoff = TEXT_ALWAYSOFF
 
 
-class WiserLightOutputModeEnum(enum.Enum):
-    auto = TEXT_AUTO
-    rl_led = TEXT_RL_LED
+class WiserHeatingActuatorOutputTypeEnum(enum.Enum):
+    relay = TEXT_RELAY
+    fil_pilote = TEXT_FIL_PILOTE
 
 
 class WiserDeviceModeEnum(enum.Enum):
