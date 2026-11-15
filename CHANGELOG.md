@@ -2,7 +2,9 @@
 
 ## v1.7.9 (unreleased)
 
+- Added: Configure dimmable-light output modes and power-on brightness, and expose manual level, scheduled percentage, and target percentage on all lights (asantaga/wiserHomeAssistantPlatform#790)
 - Fix: Use `ManualState` for PowerTag Control on/off commands because the hub accepts but ignores `RequestOutput` (asantaga/wiserHomeAssistantPlatform#805)
+- Fix: Normalize light output modes before sending commands and validate power-on brightness as an integer percentage between 0 and 100
 
 ## v1.7.8
 
