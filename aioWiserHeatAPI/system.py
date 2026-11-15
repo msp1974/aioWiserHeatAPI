@@ -92,6 +92,8 @@ class _WiserSystem(object):
             "SummerDiscomfortPrevention"
         )
 
+        self._timezone_identifier = self._system_data.get("TimeZoneIdentifier", TEXT_UNKNOWN)
+        
         # End Added by LGO
 
     def _get_system_device(self, device_data: dict):
@@ -404,6 +406,26 @@ class _WiserSystem(object):
     def can_activate_pcm(self) -> bool:
         """Get Can activate PCM"""
         return self._system_data.get("CanActivatePCM", False)
+
+    @property
+    def pcm_online(self) -> bool:
+        """Get  PCM online"""
+        return self._system_data.get("PCMOnline", False)
+    
+    @property
+    def wec_version(self) -> str:
+        """Get WEC Web Energy Center version"""
+        return self._system_data.get("WECVersion", TEXT_UNKNOWN)
+
+    @property
+    def wes_status_available(self) -> bool:
+        """Get WES Web Energy Supervisor status available"""
+        return self._system_data.get("WESStatusAvailable", False)
+
+    @property
+    def RMB_follow_smart(self) -> bool:
+        """Get RMB Rduce My Bill follow smart"""
+        return self._system_data.get("RMBFollowSmart", False)
 
     # End Added LGO
 
