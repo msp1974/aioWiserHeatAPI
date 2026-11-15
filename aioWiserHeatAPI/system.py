@@ -423,7 +423,7 @@ class _WiserSystem(object):
         return self._system_data.get("WESStatusAvailable", False)
 
     @property
-    def RMB_follow_smart(self) -> bool:
+    def rmb_follow_smart(self) -> bool:
         """Get RMB Rduce My Bill follow smart"""
         return self._system_data.get("RMBFollowSmart", False)
 
