@@ -29,6 +29,7 @@ class _WiserSystem(object):
         network_data: dict,
         device_data: dict,
         opentherm_data: dict,
+        opentherm_ever_connected: bool = False,
     ):
         self._wiser_rest_controller = wiser_rest_controller
         self._data = domain_data
@@ -53,6 +54,7 @@ class _WiserSystem(object):
             self._wiser_rest_controller,
             opentherm_data,
             self._system_data.get("OpenThermConnectionStatus", TEXT_UNKNOWN),
+            opentherm_ever_connected,
         )
         self._signal = _WiserSignalStrength(self._device_data)
         self._upgrade_data = _WiserFirmareUpgradeInfo(self._data.get("UpgradeInfo", {}))

@@ -196,11 +196,13 @@ class WiserAPI:
             except WiserHubRESTError:
                 self._status_data = {}
 
-            # Only get opentherm data if connected
+            # Do not let an optional boiler endpoint invalidate fresh hub data.
             opentherm = self._domain_data.get("System", {}).get(
                 "OpenThermConnectionStatus", ""
             )
-            if opentherm and opentherm == "Connected" or True:
+            self._opentherm_data = {}
+            if opentherm == "Connected":
+                self.api_parameters.opentherm_ever_connected = True
                 fw_version = Version(
                     self._domain_data.get("System", {}).get(
                         "ActiveSystemVersion", "1.0.0"
@@ -209,12 +211,17 @@ class WiserAPI:
                 hw_version = self._domain_data.get("System", {}).get(
                     "HardwareGeneration", 1
                 )
-                self._opentherm_data = await self._wiser_rest_controller.get_hub_data(
-                    WISERHUBOPENTHERMV2
-                    if hw_version == 2 and fw_version >= OPENTHERMV2_MIN_VERSION
-                    else WISERHUBOPENTHERM,
-                    False,
-                )
+                try:
+                    data = await self._wiser_rest_controller.get_hub_data(
+                        WISERHUBOPENTHERMV2
+                        if hw_version == 2 and fw_version >= OPENTHERMV2_MIN_VERSION
+                        else WISERHUBOPENTHERM,
+                        False,
+                    )
+                    if isinstance(data, dict):
+                        self._opentherm_data = data
+                except (WiserHubConnectionError, WiserHubRESTError) as ex:
+                    _LOGGER.warning("Unable to read OpenTherm data: %s", ex)
         except (
             WiserHubConnectionError,
             WiserHubAuthenticationError,
@@ -258,6 +265,7 @@ class WiserAPI:
                     self._network_data,
                     _device_data,
                     self._opentherm_data,
+                    self.api_parameters.opentherm_ever_connected,
                 )
 
                 # Schedules Collection

@@ -1,5 +1,6 @@
 import inspect
 from datetime import datetime
+from math import isfinite
 from typing import Union
 
 from aioWiserHeatAPI.helpers.capabilities import _WiserClimateCapabilities
@@ -432,18 +433,30 @@ class _WiserRoom(object):
     @property
     def is_calling_for_heat(self) -> bool | None:
         """Return whether the room is requesting heat."""
-        if "PercentageDemand" not in self._data:
+        demand = self._data.get("PercentageDemand")
+        if (
+            isinstance(demand, bool)
+            or not isinstance(demand, (int, float))
+            or not 0 <= demand <= 100
+            or not isfinite(demand)
+        ):
             return None
-        return self.percentage_demand > 0
+        return demand > 0
 
     @property
-    def is_heating(self) -> bool:
+    def is_heating(self) -> bool | None:
         """Return whether central heating is currently servicing room demand."""
-        if self._opentherm and self._opentherm.connection_status == "Connected":
-            return (
-                self.is_calling_for_heat is True
-                and self._opentherm.central_heating_active
-            )
+        if self._opentherm and self._opentherm.is_configured:
+            if (
+                self._opentherm.connection_status != "Connected"
+                or not self._opentherm.enabled
+            ):
+                return None
+            calling = self.is_calling_for_heat
+            active = self._opentherm.central_heating_active
+            if calling is None or active is None:
+                return None
+            return calling and active
         return self._data.get("ControlOutputState", TEXT_OFF) == TEXT_ON
 
     @property
