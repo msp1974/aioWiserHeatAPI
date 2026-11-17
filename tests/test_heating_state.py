@@ -1,6 +1,7 @@
 """Heating state and refresh regressions using the real API objects."""
 
 import unittest
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from aioWiserHeatAPI.const import (
@@ -16,7 +17,9 @@ from aioWiserHeatAPI.exceptions import (
     WiserHubConnectionError,
     WiserHubRESTError,
 )
+from aioWiserHeatAPI.helpers.automations import _WiserHeatingChannelAutomations
 from aioWiserHeatAPI.helpers.opentherm import _WiserOpentherm
+from aioWiserHeatAPI.rest_controller import WiserAPIParams
 from aioWiserHeatAPI.room import _WiserRoom
 from aioWiserHeatAPI.wiserhub import WiserAPI
 
@@ -31,6 +34,53 @@ def room(opentherm=None, **data):
     result._data = data
     result._opentherm = opentherm
     return result
+
+
+class PassiveScheduleTest(unittest.IsolatedAsyncioTestCase):
+    async def test_limiter_leaves_matching_schedule_target_to_hub(self):
+        for active_demand in (0, 20):
+            for lower in (17, 16):
+                with self.subTest(active_demand=active_demand, lower=lower):
+                    limiter = room(
+                        id=1,
+                        DisplayedSetPoint=180,
+                        CalculatedTemperature=179,
+                        SetpointOrigin="FromSchedule",
+                    )
+                    limiter._enable_automations = True
+                    limiter._name = "Lounge"
+                    limiter._extra_config = {"passive_mode": True, "max": 22}
+                    limiter._mode = "Auto"
+                    limiter._schedule = SimpleNamespace(current_setting=17)
+                    limiter.set_target_temperature = AsyncMock(return_value=True)
+                    controller = SimpleNamespace(
+                        _api_parameters=WiserAPIParams(
+                            passive_mode_lower_temp_provider=lambda _: lower,
+                            passive_mode_temperature_limiter_provider=lambda _: True,
+                        )
+                    )
+                    limiter._wiser_rest_controller = controller
+                    active_room = SimpleNamespace(
+                        id=2,
+                        name="Office",
+                        is_passive_mode=False,
+                        percentage_demand=active_demand,
+                    )
+                    channels = SimpleNamespace(
+                        all=[SimpleNamespace(id=1, room_ids=[1, 2])],
+                        _rooms=SimpleNamespace(all=[limiter, active_room]),
+                    )
+
+                    updated = await _WiserHeatingChannelAutomations(
+                        controller, channels
+                    ).run_automations()
+
+                    if lower == 17:
+                        self.assertFalse(updated)
+                        limiter.set_target_temperature.assert_not_awaited()
+                    else:
+                        self.assertTrue(updated)
+                        limiter.set_target_temperature.assert_awaited_once_with(16)
 
 
 class HeatingStateTest(unittest.TestCase):

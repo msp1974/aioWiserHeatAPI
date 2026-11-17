@@ -255,6 +255,16 @@ class _WiserRoom(object):
                 )
         return False
 
+    @property
+    def passive_lower_limit_follows_schedule(self) -> bool:
+        """Return whether the hub schedule already supplies the limiter target."""
+        return (
+            not self.is_override
+            and not self.is_away_mode
+            and self._auto_uses_scheduled_passive_lower_temp
+            and self.passive_mode_lower_temp == self.schedule.current_setting
+        )
+
     async def set_passive_mode_lower_temp(self, temp):
         if not await self._update_extra_config("min", temp):
             _LOGGER.error(
