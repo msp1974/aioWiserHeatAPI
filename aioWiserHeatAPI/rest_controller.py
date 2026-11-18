@@ -43,6 +43,7 @@ class WiserAPIParams:
     stored_manual_target_temperature_alt_source: str = "current"
     boost_temp_delta: int = DEFAULT_BOOST_DELTA
     hw_climate_mode: bool = False
+    opentherm_ever_connected: bool = False
 
 
 # Connection info class

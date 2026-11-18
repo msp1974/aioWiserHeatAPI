@@ -174,9 +174,11 @@ class _WiserOpentherm(object):
         wiser_rest_controller: _WiserRestController,
         data: dict,
         enabled_status: str,
+        ever_connected: bool = False,
     ):
         self._data = data
         self._enabled_status = enabled_status
+        self._ever_connected = ever_connected or enabled_status == "Connected"
         self._wiser_rest_controller = wiser_rest_controller
 
     @property
@@ -219,10 +221,17 @@ class _WiserOpentherm(object):
         return tf._from_wiser_temp(self._data.get("ch2FlowSetpoint", None), "current")
 
     @property
-    def central_heating_active(self) -> bool:
+    def central_heating_active(self) -> bool | None:
         """Return whether the boiler is operating in central-heating mode."""
         slave_status = self.operational_data.slave_status
-        return isinstance(slave_status, int) and bool(slave_status & (1 << 1))
+        if isinstance(slave_status, bool) or not isinstance(slave_status, int):
+            return None
+        return bool(slave_status & (1 << 1))
+
+    @property
+    def is_configured(self) -> bool:
+        """Keep a known OpenTherm installation distinct during outages."""
+        return self._ever_connected or self.enabled
 
     @property
     def connection_status(self) -> str:
@@ -251,7 +260,8 @@ class _WiserOpentherm(object):
 
     @property
     def operational_data(self) -> _WiserOpenThermOperationalData:
-        return _WiserOpenThermOperationalData(self._data.get("operationalData", {}))
+        data = self._data.get("operationalData")
+        return _WiserOpenThermOperationalData(data if isinstance(data, dict) else {})
 
     @property
     def boiler_parameters(self) -> _WiserOpenThermBoilerParameters:

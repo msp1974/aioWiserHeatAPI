@@ -71,6 +71,9 @@ class _WiserHeatingChannelAutomations:
                 if room.is_passive_mode
                 and room.id in heating_channel.room_ids
                 and room.current_temperature is not None
+                # At a schedule transition the hub's room target can still be
+                # from the previous slot. Writing now would create an override.
+                and not room.passive_lower_limit_follows_schedule
             ]
 
             # If no passive mode rooms
