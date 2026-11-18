@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.7.10
 
 - Fix: Preserve unknown OpenTherm heating activity and reject invalid room demand readings instead of reporting idle or raising comparison errors.
 - Fix: Keep known OpenTherm rooms from falling back to relay output during connection loss; clients can restore this knowledge using `api_parameters.opentherm_ever_connected`.
