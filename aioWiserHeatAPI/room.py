@@ -1,5 +1,6 @@
 import inspect
 from datetime import datetime
+from math import isfinite
 from typing import Union
 
 from aioWiserHeatAPI.helpers.capabilities import _WiserClimateCapabilities
@@ -254,6 +255,16 @@ class _WiserRoom(object):
                 )
         return False
 
+    @property
+    def passive_lower_limit_follows_schedule(self) -> bool:
+        """Return whether the hub schedule already supplies the limiter target."""
+        return (
+            not self.is_override
+            and not self.is_away_mode
+            and self._auto_uses_scheduled_passive_lower_temp
+            and self.passive_mode_lower_temp == self.schedule.current_setting
+        )
+
     async def set_passive_mode_lower_temp(self, temp):
         if not await self._update_extra_config("min", temp):
             _LOGGER.error(
@@ -432,18 +443,30 @@ class _WiserRoom(object):
     @property
     def is_calling_for_heat(self) -> bool | None:
         """Return whether the room is requesting heat."""
-        if "PercentageDemand" not in self._data:
+        demand = self._data.get("PercentageDemand")
+        if (
+            isinstance(demand, bool)
+            or not isinstance(demand, (int, float))
+            or not 0 <= demand <= 100
+            or not isfinite(demand)
+        ):
             return None
-        return self.percentage_demand > 0
+        return demand > 0
 
     @property
-    def is_heating(self) -> bool:
+    def is_heating(self) -> bool | None:
         """Return whether central heating is currently servicing room demand."""
-        if self._opentherm and self._opentherm.connection_status == "Connected":
-            return (
-                self.is_calling_for_heat is True
-                and self._opentherm.central_heating_active
-            )
+        if self._opentherm and self._opentherm.is_configured:
+            if (
+                self._opentherm.connection_status != "Connected"
+                or not self._opentherm.enabled
+            ):
+                return None
+            calling = self.is_calling_for_heat
+            active = self._opentherm.central_heating_active
+            if calling is None or active is None:
+                return None
+            return calling and active
         return self._data.get("ControlOutputState", TEXT_OFF) == TEXT_ON
 
     @property
