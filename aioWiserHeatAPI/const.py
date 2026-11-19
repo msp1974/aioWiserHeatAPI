@@ -117,6 +117,7 @@ WISEREQUIPMENT = "Equipment/{}"
 WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
 WISERAUTOMATION = "Automation/{}"
+WISERWEATHER = "Weather"
 
 
 # Enums
