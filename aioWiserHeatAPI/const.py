@@ -78,6 +78,11 @@ TEXT_RL_LED = "RL_LED"
 TEXT_RELAY = "Relay"
 TEXT_FIL_PILOTE = "FilPilote"
 
+# Text for Tariffs
+TEXT_ENERGYTARIFFS = "EnergyTariffs"
+TEXT_FORECAST = "Forecast"
+TEXT_CURRENTDAY = "CurrentDay"
+
 # Day Value Lists
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 WEEKENDS = ["Saturday", "Sunday"]
@@ -118,6 +123,7 @@ WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
 WISERAUTOMATION = "Automation/{}"
 
+WISERTARIFFS = "Tariffs/{}"                 #add Energytariffs monitoring
 
 # Enums
 class WiserUnitsEnum(enum.Enum):
@@ -235,3 +241,11 @@ DEFAULT_LEVEL_SCHEDULE = {
     "Saturday": {"Time": [], "Level": []},
     "Sunday": {"Time": [], "Level": []},
 }
+
+class WiserTariffTypeEnum(enum.Enum):
+    energytariffs = TEXT_ENERGYTARIFFS
+    
+
+class WiserEnergyTariffTypeEnum(enum.Enum):
+    forecast = TEXT_FORECAST
+    currentday = TEXT_CURRENTDAY

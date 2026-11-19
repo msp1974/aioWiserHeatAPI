@@ -39,6 +39,8 @@ from .const import (
     WISERHUBSCHEDULES,
     WISERHUBSTATUS,
     WISERHUBURL,
+    WISERTARIFFS,
+    WiserTariffTypeEnum,
     WiserUnitsEnum,
 )
 from .automation import _WiserAutomationCollection
@@ -63,6 +65,7 @@ from .rest_controller import (
 from .room import _WiserRoomCollection
 from .schedule import WiserScheduleTypeEnum, _WiserScheduleCollection
 from .system import _WiserSystem
+from .tariffs import _WiserTariffs
 
 
 class WiserAPI:
@@ -97,6 +100,7 @@ class WiserAPI:
         self._schedule_data = {}
         self._opentherm_data = {}
         self._status_data = {}
+        self._tariff_data = {}
 
         # Data stores for exposed properties
         self._devices = None
@@ -196,6 +200,22 @@ class WiserAPI:
             except WiserHubRESTError:
                 self._status_data = {}
 
+            # Some hub firmware includes tariffs in the main domain response;
+            # use that data before trying the optional dedicated endpoint.
+            self._tariff_data = self._domain_data.get("Tariffs", {})
+            if not self._tariff_data:
+                try:
+                    self._tariff_data = await self._wiser_rest_controller.get_hub_data(
+                        WISERHUBURL
+                        + WISERTARIFFS.format(WiserTariffTypeEnum.energytariffs.value),
+                        raise_for_endpoint_error=False,
+                    )
+                except (WiserHubConnectionError, WiserHubRESTError) as ex:
+                    _LOGGER.warning(
+                        "Unable to retrieve optional energy tariff data: %s", ex
+                    )
+                    self._tariff_data = {}
+
             # Only get opentherm data if connected
             opentherm = self._domain_data.get("System", {}).get(
                 "OpenThermConnectionStatus", ""
@@ -250,6 +270,8 @@ class WiserAPI:
             await self._wiser_rest_controller.get_extra_config_data()
 
             if self._domain_data != {} and self._network_data != {}:
+                self._tariffs = _WiserTariffs(self._tariff_data)
+
                 # System Object
                 _device_data = self._domain_data.get("Device", [])
                 self._system = _WiserSystem(
@@ -374,6 +396,11 @@ class WiserAPI:
         return WiserStatus(self._status_data)
 
     @property
+    def tariffs(self) -> _WiserTariffs:
+        """Energy tariff information reported by the hub."""
+        return self._tariffs
+
+    @property
     def system(self) -> _WiserSystem:
         """Entity of the Wiser Hub"""
         return self._system
@@ -401,6 +428,7 @@ class WiserAPI:
             "Schedule": self._schedule_data,
             "OpenTherm": self._opentherm_data,
             "Status": self._status_data,
+            "Tariffs": self._tariff_data,
         }
 
     # @property
