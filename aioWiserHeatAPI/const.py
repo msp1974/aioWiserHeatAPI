@@ -119,7 +119,6 @@ WISERUICONFIGURATION = "UIConfiguration/{}"
 WISERAUTOMATION = "Automation/{}"
 WISERWEATHER = "Weather"
 
-
 # Enums
 class WiserUnitsEnum(enum.Enum):
     imperial = "imperial"

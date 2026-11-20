@@ -19,6 +19,7 @@ from .helpers.zigbee import _WiserZigbee
 from .rest_controller import _WiserRestController
 
 from .helpers.weather import _WiserWeather
+
 class _WiserSystem(object):
     """Class representing a Wiser Hub device"""
 
@@ -57,6 +58,9 @@ class _WiserSystem(object):
         self._signal = _WiserSignalStrength(self._device_data)
         self._upgrade_data = _WiserFirmareUpgradeInfo(self._data.get("UpgradeInfo", {}))
         self._zigbee_data = _WiserZigbee(self._data.get("Zigbee", {}))
+
+        # Weather       
+        self._weather_data = _WiserWeather(self._data.get("Weather", {}))  
 
         # Variables to hold values for settabel values
         self._automatic_daylight_saving = self._system_data.get(
@@ -401,6 +405,11 @@ class _WiserSystem(object):
         """Get type of zigbee device"""
         return self._device_data.get("Type", TEXT_UNKNOWN)
 
+    @property
+    def weather(self) -> _WiserWeather:
+        """Get weather info"""
+        return self._weather_data
+    
     @property
     def uuid(self) -> str:
         """Get UUID zigbee"""
