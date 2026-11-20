@@ -267,6 +267,52 @@ class _WiserShutter(_WiserElectricalDevice):
             return True
 
     @property
+    def respect_seasonal_comfort(self) -> bool:
+        """Get if the shutter respect seasonal comfort""" 
+        return self._device_type_data.get("RespectSeasonalComfort", False)
+
+    async def set_respect_seasonal_comfort(self, en: bool):
+        """Set respect summer comfort"""
+        if await self._send_command({"RespectSeasonalComfort": en}):
+            return True
+
+
+    @property
+    def seasonal_target_lift(self) -> int:
+        """Get seasonal target lift of shutter"""
+        return self._device_type_data.get("SeasonalTargetLift", 0)
+
+    async def set_seasonal_target_lift(self, lift: int):
+        if await self._send_command({"SeasonalTargetLift": lift}):
+            self._seasonal_target_lift = lift
+            return True
+        
+    @property
+    def facade(self) -> str:
+        """Get facade of shutter"""
+        return self._device_type_data.get("Facade", TEXT_UNKNOWN)
+
+    @property
+    def room_with_temperature_sensor (self) -> int:
+        """Get the index of the temperature sensor of the room for shutter"""
+        return self._device_type_data.get("RoomWithTemperatureSensor", 0)
+
+    @property
+    def use_average_temperature (self) -> bool:
+        """Get use average temperature of shutter"""
+        return self._device_type_data.get("UseAverageTemperature", False)
+
+    @property
+    def seasonal_derogation_utc_timestamp (self) -> int:
+        """Get derogation timestamp of shutter"""
+        return self._device_type_data.get("SeasonalDerogationUtcTimestamp", False)
+
+    @property
+    def covering_type (self) -> str:
+        """Get the covering type Door?"""
+        return self._device_type_data.get("CoveringType", TEXT_UNKNOWN)
+        
+    @property
     def summer_comfort_lift(self) -> int:
         """Get the shutter summer comfort lift"""
         return self._device_type_data.get("SummerComfortLift")
@@ -286,6 +332,55 @@ class _WiserShutter(_WiserElectricalDevice):
             self._summer_comfort_tilt = tilt
             return True
 
+    #Added by LGO Seasonal comfort
+    @property
+    def respect_seasonal_comfort(self) -> bool:
+        """Get if the shutter respect seasonal comfort""" 
+        return self._device_type_data.get("RespectSeasonalComfort", False)
+
+    async def set_respect_seasonal_comfort(self, en: bool):
+        """Set respect seasonal comfort"""
+        if await self._send_command({"RespectSeasonalComfort": en}):
+            return True
+
+    @property
+    def seasonal_target_lift(self) -> int:
+        """Get seasonal target lift of shutter"""
+        return self._device_type_data.get("SeasonalTargetLift", 0)
+
+    async def set_seasonal_target_lift(self, lift: int):
+        if await self._send_command({"SeasonalTargetLift": lift}):
+            self._seasonal_target_lift = lift
+            return True
+
+    @property
+    def facade(self) -> str:
+        """Get facade of shutter"""
+        return self._device_type_data.get("Facade", TEXT_UNKNOWN)
+
+    @property
+    def room_with_temperature_sensor (self) -> int:
+        """Get the index of the temperature sensor of the room for shutter"""
+        return self._device_type_data.get("RoomWithTemperatureSensor", 0)
+
+    @property
+    def use_average_temperature (self) -> bool:
+        """Get use average temperature of shutter"""
+        return self._device_type_data.get("UseAverageTemperature", False)
+
+    @property
+    def seasonal_derogation_utc_timestamp (self) -> int:
+        """Get derogation timestamp of shutter"""
+        return self._device_type_data.get("SeasonalDerogationUtcTimestamp", False)
+
+    @property
+    def covering_type (self) -> str:
+        """Get the covering type Door?"""
+        return self._device_type_data.get("CoveringType", TEXT_UNKNOWN)
+
+    #End Added by LGO Seasonal comfort
+
+ 
     async def open(self, percentage: int = 100):
         """Fully open shutter"""
         if percentage >= 0 and percentage <= 100:
