@@ -98,9 +98,6 @@ class _WiserSystem(object):
         self._seasonal_comfort_enabled = self._system_data.get(
             "SeasonalComfortEnabled")
 
-        # Weather       
-        self._weather_data = _WiserWeather(self._data.get("Weather", {}))  
-
         # End Added by LGO
 
     def _get_system_device(self, device_data: dict):
@@ -342,11 +339,6 @@ class _WiserSystem(object):
         if await self._send_command({"SummerComfortEnabled": enabled}):
             self._summer_comfort_enabled = enabled
             return True
-
-    @property
-    def weather(self) -> _WiserWeather:
-        """Get weather info"""
-        return self._weather_data
 
     # Wiser app V7 seasonnal comfort
     

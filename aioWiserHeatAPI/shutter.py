@@ -9,7 +9,6 @@ from .const import (
 )
 from .helpers.device import _WiserElectricalDevice
 
-
 class _WiserLiftMovementRange(object):
     """Data structure for min/max output range"""
 
@@ -90,7 +89,6 @@ class _WiserLiftMovementRange(object):
     async def set_tilt_enabled(self, en: bool):
         """Set tilt enable"""
         return await self._shutter_instance._send_command({"TiltEnabled": en})
-
 
 class _WiserShutter(_WiserElectricalDevice):
     """Class representing a Wiser Shutter device"""
@@ -266,51 +264,8 @@ class _WiserShutter(_WiserElectricalDevice):
         if await self._send_command({"RespectSummerComfort": en}):
             return True
 
-    @property
-    def respect_seasonal_comfort(self) -> bool:
-        """Get if the shutter respect seasonal comfort""" 
-        return self._device_type_data.get("RespectSeasonalComfort", False)
-
-    async def set_respect_seasonal_comfort(self, en: bool):
-        """Set respect summer comfort"""
-        if await self._send_command({"RespectSeasonalComfort": en}):
-            return True
-
-
-    @property
-    def seasonal_target_lift(self) -> int:
-        """Get seasonal target lift of shutter"""
-        return self._device_type_data.get("SeasonalTargetLift", 0)
-
-    async def set_seasonal_target_lift(self, lift: int):
-        if await self._send_command({"SeasonalTargetLift": lift}):
-            self._seasonal_target_lift = lift
-            return True
         
-    @property
-    def facade(self) -> str:
-        """Get facade of shutter"""
-        return self._device_type_data.get("Facade", TEXT_UNKNOWN)
 
-    @property
-    def room_with_temperature_sensor (self) -> int:
-        """Get the index of the temperature sensor of the room for shutter"""
-        return self._device_type_data.get("RoomWithTemperatureSensor", 0)
-
-    @property
-    def use_average_temperature (self) -> bool:
-        """Get use average temperature of shutter"""
-        return self._device_type_data.get("UseAverageTemperature", False)
-
-    @property
-    def seasonal_derogation_utc_timestamp (self) -> int:
-        """Get derogation timestamp of shutter"""
-        return self._device_type_data.get("SeasonalDerogationUtcTimestamp", False)
-
-    @property
-    def covering_type (self) -> str:
-        """Get the covering type Door?"""
-        return self._device_type_data.get("CoveringType", TEXT_UNKNOWN)
         
     @property
     def summer_comfort_lift(self) -> int:
@@ -434,7 +389,6 @@ class _WiserShutter(_WiserElectricalDevice):
         return await self._send_command(
             {"RequestAction": {"Action": "StopTilt"}}
         )
-
 
 class _WiserShutterCollection(object):
     """Class holding all wiser heating actuators"""
