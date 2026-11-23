@@ -2,30 +2,26 @@
 Handles weather data
 """
 
-import inspect
-
-from .. import _LOGGER
-from ..const import TEXT_UNKNOWN, WISERWEATHER
-from .temp import _WiserTemperatureFunctions as tf
+from ..const import TEMP_ERROR
 
 
 class _WiserWeather:
-    def __init__(
-        self, weather_data: dict
-    ):
-        self._weather_data = weather_data          
+    def __init__(self, weather_data: dict):
+        self._weather_data = weather_data
+
+    def _get_temperature(self, key: str) -> float | None:
+        """Convert weather readings without applying indoor temperature limits."""
+        temperature = self._weather_data.get(key)
+        if temperature is None or abs(temperature) >= TEMP_ERROR:
+            return None
+        return round(temperature / 10, 1)
 
     @property
-    def temperature(self) -> float:
-        """Get the outside temperature """
-        if  self._weather_data.get("Temperature") is not None:
-            return tf._from_wiser_temp(
-            self._weather_data.get("Temperature", None), "current"
-            )
-               
+    def temperature(self) -> float | None:
+        """Get the outside temperature."""
+        return self._get_temperature("Temperature")
+
     @property
-    def next_day_2pm_temperature(self) -> float:
+    def next_day_2pm_temperature(self) -> float | None:
         """Get the outside temperature next day at 2PM"""
-        return tf._from_wiser_temp(
-            self._weather_data.get("NextDay2pmTemperature", None), "current"
-        )
+        return self._get_temperature("NextDay2pmTemperature")
