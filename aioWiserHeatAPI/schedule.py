@@ -1031,7 +1031,7 @@ class _WiserScheduleCollection(object):
                 if schedule_type == "Smart":
                     self._smart_schedules.extend(
                         _WiserSmartSchedule(item)
-                        for item in schedule.get("Overview", [])
+                        for item in (schedule.get("Overview") or [])
                     )
 
     async def _send_schedule_command(

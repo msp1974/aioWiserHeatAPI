@@ -171,6 +171,7 @@ class HeatingRefreshTest(unittest.IsolatedAsyncioTestCase):
         }
         self.ot_data = {"Enabled": True, "operationalData": {"SlaveStatus": 2}}
         self.ot_error = None
+        self.schedule_data = []
         self.controller = self.hub._wiser_rest_controller
         self.controller.get_hub_data = AsyncMock(side_effect=self.read)
         self.controller.get_extra_config_data = AsyncMock()
@@ -183,9 +184,16 @@ class HeatingRefreshTest(unittest.IsolatedAsyncioTestCase):
         return {
             WISERHUBDOMAIN: self.domain,
             WISERHUBNETWORK: {"Station": {}},
-            WISERHUBSCHEDULES: [],
+            WISERHUBSCHEDULES: self.schedule_data,
             WISERHUBSTATUS: {},
         }[endpoint]
+
+    async def test_null_smart_overview_does_not_prevent_heating_refresh(self):
+        self.schedule_data = {"Smart": {"Overview": None}}
+        await self.hub.read_hub_data()
+        self.assertEqual(self.hub.schedules.smart_schedules, [])
+        self.assertTrue(self.hub.rooms.get_by_id(1).is_heating)
+        self.assertIsNotNone(self.hub.heating_channels)
 
     async def test_relay_hub_does_not_poll_opentherm(self):
         await self.hub.read_hub_data()
