@@ -526,7 +526,7 @@ class _WiserSmartSchedule:
     @property
     def rolling24h_view(self) -> dict:
         """Return the Rolling24HView details without altering the hub payload."""
-        return self._schedule_data.get("Rolling24HView", {})
+        return self._schedule_data.get("Rolling24HView") or {}
 
     @property
     def expiration_date(self) -> str | None:
