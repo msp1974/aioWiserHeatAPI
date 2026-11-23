@@ -54,6 +54,7 @@ from .exceptions import (
 from .heating import _WiserHeatingChannelCollection
 from .helpers.automations import _WiserHeatingChannelAutomations
 from .helpers.status import WiserStatus
+from .helpers.tariffs import _WiserTariffs
 from .hot_water import _WiserHotwater
 from .moments import _WiserMomentCollection
 from .refactor import refactor
@@ -65,7 +66,6 @@ from .rest_controller import (
 from .room import _WiserRoomCollection
 from .schedule import WiserScheduleTypeEnum, _WiserScheduleCollection
 from .system import _WiserSystem
-from .tariffs import _WiserTariffs
 
 
 class WiserAPI:

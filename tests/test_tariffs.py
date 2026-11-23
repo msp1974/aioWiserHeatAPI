@@ -17,12 +17,54 @@ from aioWiserHeatAPI.exceptions import (
     WiserHubConnectionError,
     WiserHubRESTError,
 )
+from aioWiserHeatAPI.helpers.tariffs import _WiserTariffs
 from aioWiserHeatAPI.wiserhub import WiserAPI
 
 
 TARIFF_ENDPOINT = WISERHUBURL + WISERTARIFFS.format(
     WiserTariffTypeEnum.energytariffs.value
 )
+
+
+class TariffModelsTest(unittest.TestCase):
+    def test_wrapped_and_direct_payloads_preserve_prices_and_intervals(self):
+        energy = {
+            "CurrentPrice": -0.05,
+            "CurrentPrice100Multiplier": -5.0,
+            "DailyAverage": 0.0,
+            "DailyAverage100Multiplier": 0.0,
+            "Forecast": [{
+                "id": 1, "from": "2026-11-23T12:00:00Z",
+                "to": "2026-11-23T13:00:00Z", "price": -0.05,
+            }],
+            "CurrentDay": [{"id": 2, "price": 0.0}],
+        }
+        for payload in (energy, {"EnergyTariff": energy}):
+            with self.subTest(payload=payload):
+                tariffs = _WiserTariffs(payload)
+                self.assertEqual(tariffs.current_price, -0.05)
+                self.assertEqual(tariffs.current_pricex100, -5.0)
+                self.assertEqual(tariffs.daily_average, 0.0)
+                self.assertEqual(tariffs.daily_averagex100, 0.0)
+                self.assertEqual(tariffs.forecast.count, 1)
+                interval = tariffs.forecast.all[0]
+                self.assertEqual(interval.id, 1)
+                self.assertEqual(interval.begin, energy["Forecast"][0]["from"])
+                self.assertEqual(interval.end, energy["Forecast"][0]["to"])
+                self.assertEqual(interval.price, -0.05)
+                self.assertEqual(list(tariffs.current_day)[0].price, 0.0)
+                self.assertEqual(tariffs.energy_tariff.current_price, -0.05)
+
+    def test_missing_data_remains_unavailable(self):
+        for payload in (None, {}, {"EnergyTariff": None}, {"EnergyTariff": {}}):
+            with self.subTest(payload=payload):
+                tariffs = _WiserTariffs(payload)
+                self.assertIsNone(tariffs.current_price)
+                self.assertIsNone(tariffs.current_pricex100)
+                self.assertIsNone(tariffs.daily_average)
+                self.assertIsNone(tariffs.daily_averagex100)
+                self.assertEqual(list(tariffs.forecast), [])
+                self.assertEqual(list(tariffs.current_day), [])
 
 
 class TariffInitializationTest(unittest.TestCase):
@@ -88,3 +130,18 @@ class TariffRefreshTest(unittest.IsolatedAsyncioTestCase):
         self.tariff_error = WiserHubAuthenticationError("unauthorized")
         with self.assertRaises(WiserHubAuthenticationError):
             await self.hub._get_hub_data()
+
+    async def test_refresh_rebuilds_public_tariffs_and_clears_missing_data(self):
+        self.domain["System"]["UnixTime"] = 0
+        self.domain["Device"] = []
+        self.hub._enable_automations = False
+        self.controller.get_extra_config_data = AsyncMock()
+        await self.hub.read_hub_data()
+        self.assertIsInstance(self.hub.tariffs, _WiserTariffs)
+        self.assertEqual(self.hub.tariffs.current_price, 0.25)
+        self.tariffs = {"EnergyTariff": {"CurrentPrice": -0.05}}
+        await self.hub.read_hub_data()
+        self.assertEqual(self.hub.tariffs.current_price, -0.05)
+        self.tariffs = {}
+        await self.hub.read_hub_data()
+        self.assertIsNone(self.hub.tariffs.current_price)
