@@ -445,6 +445,11 @@ class _WiserSystem(object):
         return self._system_data.get("SystemMode", TEXT_UNKNOWN)
 
     @property
+    def timezone_identifier(self) -> str:
+        """Get the timezone identifier reported by the hub."""
+        return self._timezone_identifier
+
+    @property
     def timezone_offset(self) -> int:
         """Get timezone offset in minutes"""
         return self._timezone_offset
