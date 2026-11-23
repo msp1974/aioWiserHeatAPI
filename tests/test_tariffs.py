@@ -25,6 +25,15 @@ TARIFF_ENDPOINT = WISERHUBURL + WISERTARIFFS.format(
 )
 
 
+class TariffInitializationTest(unittest.TestCase):
+    def test_tariffs_are_available_before_first_refresh(self):
+        tariffs = WiserAPI("wiser.example", "secret").tariffs
+        self.assertIsNone(tariffs.current_price)
+        self.assertIsNone(tariffs.daily_average)
+        self.assertEqual(list(tariffs.forecast), [])
+        self.assertEqual(list(tariffs.current_day), [])
+
+
 class TariffRefreshTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.hub = WiserAPI("wiser.example", "secret")

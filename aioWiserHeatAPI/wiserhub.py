@@ -111,6 +111,7 @@ class WiserAPI:
         self._rooms = None
         self._schedules = None
         self._system = None
+        self._tariffs = _WiserTariffs()
 
         self._enable_automations = enable_automations
         self._extra_config_file = extra_config_file
