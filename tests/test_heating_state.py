@@ -11,6 +11,9 @@ from aioWiserHeatAPI.const import (
     WISERHUBOPENTHERMV2,
     WISERHUBSCHEDULES,
     WISERHUBSTATUS,
+    WISERHUBURL,
+    WISERTARIFFS,
+    WiserTariffTypeEnum,
 )
 from aioWiserHeatAPI.exceptions import (
     WiserHubAuthenticationError,
@@ -175,7 +178,7 @@ class HeatingRefreshTest(unittest.IsolatedAsyncioTestCase):
         self.controller.get_hub_data = AsyncMock(side_effect=self.read)
         self.controller.get_extra_config_data = AsyncMock()
 
-    async def read(self, endpoint, *_args):
+    async def read(self, endpoint, raise_for_endpoint_error=True):
         if endpoint in (WISERHUBOPENTHERM, WISERHUBOPENTHERMV2):
             if self.ot_error:
                 raise self.ot_error
@@ -185,6 +188,9 @@ class HeatingRefreshTest(unittest.IsolatedAsyncioTestCase):
             WISERHUBNETWORK: {"Station": {}},
             WISERHUBSCHEDULES: [],
             WISERHUBSTATUS: {},
+            WISERHUBURL + WISERTARIFFS.format(
+                WiserTariffTypeEnum.energytariffs.value
+            ): {},
         }[endpoint]
 
     async def test_relay_hub_does_not_poll_opentherm(self):
