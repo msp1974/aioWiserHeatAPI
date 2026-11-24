@@ -171,6 +171,7 @@ class _WiserSchedule:
         """
         return None
 
+
     def _convert_yaml_to_wiser_day(self, day_schedule) -> list | None:
         """
         Convert from yaml format to wiser v2 schedule format.
@@ -506,6 +507,43 @@ class _WiserSchedule:
             raise WiserScheduleError(
                 f"Error setting schedule from websocket data - {ex}"
             )
+
+
+class _WiserSmartSchedule:
+    """Read-only Smart overview data returned alongside regular schedules."""
+
+    def __init__(self, schedule_data: dict):
+        self._schedule_data = schedule_data
+
+    @property
+    def id(self) -> int | None:
+        return self._schedule_data.get("id")
+
+    @property
+    def schedule_type(self) -> str:
+        return "Smart"
+
+    @property
+    def rolling24h_view(self) -> dict:
+        """Return the Rolling24HView details without altering the hub payload."""
+        return self._schedule_data.get("Rolling24HView") or {}
+
+    @property
+    def expiration_date(self) -> str | None:
+        return self.rolling24h_view.get("expirationDate")
+
+    @property
+    def current_state(self) -> str | None:
+        return self.rolling24h_view.get("currentState")
+
+    @property
+    def commands(self) -> list[dict]:
+        return self.rolling24h_view.get("commands", [])
+
+    @property
+    def schedule_data(self) -> dict:
+        """Return the raw Smart entry, including any fields added by the hub."""
+        return self._schedule_data
 
 
 class _WiserHeatingSchedule(_WiserSchedule):
@@ -950,12 +988,16 @@ class _WiserScheduleCollection(object):
         self._heating_schedules = []
         self._onoff_schedules = []
         self._level_schedules = []
+        self._smart_schedules = []
 
         self._build(schedule_data)
 
     def _build(self, schedule_data):
         for schedule_type in schedule_data:
-            for schedule in schedule_data.get(schedule_type):
+            schedules = schedule_data.get(schedule_type) or []
+            if schedule_type == "Smart" and isinstance(schedules, dict):
+                schedules = [schedules]
+            for schedule in schedules:
                 if schedule_type == WiserScheduleTypeEnum.heating.value:
                     self._heating_schedules.append(
                         _WiserHeatingSchedule(
@@ -985,6 +1027,11 @@ class _WiserScheduleCollection(object):
                             self._sunrises,
                             self._sunsets,
                         )
+                    )
+                if schedule_type == "Smart":
+                    self._smart_schedules.extend(
+                        _WiserSmartSchedule(item)
+                        for item in (schedule.get("Overview") or [])
                     )
 
     async def _send_schedule_command(
@@ -1029,6 +1076,16 @@ class _WiserScheduleCollection(object):
     @property
     def onoff_schedules(self) -> list[_WiserOnOffSchedule]:
         return self._onoff_schedules
+
+    @property
+    def smart_schedules(self) -> list[_WiserSmartSchedule]:
+        """List Smart overview schedules (read-only hub data)."""
+        return self._smart_schedules
+
+    @property
+    def smarts(self) -> list[_WiserSmartSchedule]:
+        """Alias for :attr:`smart_schedules`."""
+        return self._smart_schedules
 
     def get_by_id(
         self, schedule_type: WiserScheduleTypeEnum, schedule_id: int
