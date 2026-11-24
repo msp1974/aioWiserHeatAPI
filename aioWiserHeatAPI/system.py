@@ -18,6 +18,7 @@ from .helpers.temp import _WiserTemperatureFunctions as tf
 from .helpers.zigbee import _WiserZigbee
 from .rest_controller import _WiserRestController
 
+from .helpers.weather import _WiserWeather
 
 class _WiserSystem(object):
     """Class representing a Wiser Hub device"""
@@ -60,6 +61,9 @@ class _WiserSystem(object):
         self._upgrade_data = _WiserFirmareUpgradeInfo(self._data.get("UpgradeInfo", {}))
         self._zigbee_data = _WiserZigbee(self._data.get("Zigbee", {}))
 
+        # Weather       
+        self._weather_data = _WiserWeather(self._data.get("Weather", {}))  
+
         # Variables to hold values for settabel values
         self._automatic_daylight_saving = self._system_data.get(
             "AutomaticDaylightSaving"
@@ -93,7 +97,11 @@ class _WiserSystem(object):
         self._summer_discomfort_prevention = self._system_data.get(
             "SummerDiscomfortPrevention"
         )
+        self._seasonal_comfort_enabled = self._system_data.get(
+            "SeasonalComfortEnabled")
 
+        self._timezone_identifier = self._system_data.get("TimeZoneIdentifier", TEXT_UNKNOWN)
+        
         # End Added by LGO
 
     def _get_system_device(self, device_data: dict):
@@ -336,6 +344,18 @@ class _WiserSystem(object):
             self._summer_comfort_enabled = enabled
             return True
 
+    # Wiser app V7 seasonnal comfort
+    
+    @property
+    def seasonal_comfort_enabled(self) -> bool:
+        """Get or set if seasonal comfort is enabled"""
+        return self._seasonal_comfort_enabled
+
+    async def set_seasonal_comfort_enabled(self, enabled: bool):
+        if await self._send_command({"SeasonalComfortEnabled": enabled}):
+            self._seasonal_comfort_enabled = enabled
+            return True
+
     @property
     def indoor_discomfort_temperature(self) -> float:
         """Get indoor discomfort temperature for summer comfort"""
@@ -382,6 +402,11 @@ class _WiserSystem(object):
         return self._device_data.get("Type", TEXT_UNKNOWN)
 
     @property
+    def weather(self) -> _WiserWeather:
+        """Get weather info"""
+        return self._weather_data
+    
+    @property
     def uuid(self) -> str:
         """Get UUID zigbee"""
         return self._device_data.get("UUID", TEXT_UNKNOWN)
@@ -407,6 +432,26 @@ class _WiserSystem(object):
         """Get Can activate PCM"""
         return self._system_data.get("CanActivatePCM", False)
 
+    @property
+    def pcm_online(self) -> bool:
+        """Get  PCM online"""
+        return self._system_data.get("PCMOnline", False)
+    
+    @property
+    def wec_version(self) -> str:
+        """Get WEC Web Energy Center version"""
+        return self._system_data.get("WECVersion", TEXT_UNKNOWN)
+
+    @property
+    def wes_status_available(self) -> bool:
+        """Get WES Web Energy Supervisor status available"""
+        return self._system_data.get("WESStatusAvailable", False)
+
+    @property
+    def rmb_follow_smart(self) -> bool:
+        """Get RMB Rduce My Bill follow smart"""
+        return self._system_data.get("RMBFollowSmart", False)
+
     # End Added LGO
 
     @property
@@ -423,6 +468,11 @@ class _WiserSystem(object):
     def system_mode(self) -> str:
         """Get current system mode"""
         return self._system_data.get("SystemMode", TEXT_UNKNOWN)
+
+    @property
+    def timezone_identifier(self) -> str:
+        """Get the timezone identifier reported by the hub."""
+        return self._timezone_identifier
 
     @property
     def timezone_offset(self) -> int:

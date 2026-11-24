@@ -122,8 +122,8 @@ WISEREQUIPMENT = "Equipment/{}"
 WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
 WISERAUTOMATION = "Automation/{}"
-
 WISERTARIFFS = "Tariffs/{}"                 #add Energytariffs monitoring
+WISERWEATHER = "Weather"
 
 # Enums
 class WiserUnitsEnum(enum.Enum):
