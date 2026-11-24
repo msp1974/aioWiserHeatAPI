@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.7.11
+
+- Added: Energy tariff data through `tariffs`, including forecast and current-day intervals, current prices and daily averages. Use tariff data from the domain response where available, with an optional dedicated endpoint fallback.
+- Added: System seasonal comfort enable/disable control and shutter seasonal comfort settings and status, including target lift, facade, temperature-source selection, derogation timestamp and covering type.
+- Added: Outdoor weather readings through `system.weather`, including the current temperature and next-day 2 PM temperature, with support for temperatures below indoor heating limits.
+- Added: Read-only Smart schedule overviews through `schedules.smart_schedules` and `schedules.smarts`, including rolling 24-hour commands, current state and expiration date.
+- Added: System timezone identifier and energy-management properties for PCM connectivity, WEC version, WES availability and Reduce My Bill smart-follow status.
+- Fix: Handle null Smart schedule collections, overviews and rolling views without breaking hub refresh.
+- Fix: Initialize tariffs before the first refresh and isolate optional tariff endpoint failures from the main hub refresh.
+- Changed: Replace the deprecated aiohttp `verify_ssl` connector argument with `ssl`.
+
 ## v1.7.10
 
 - Fix: Preserve unknown OpenTherm heating activity and reject invalid room demand readings instead of reporting idle or raising comparison errors.
